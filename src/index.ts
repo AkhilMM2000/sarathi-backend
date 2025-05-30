@@ -1,5 +1,5 @@
 import "reflect-metadata";
-import "./infrastructure/config/di"; 
+import "./infrastructure/config/container"; 
 import http from 'http';
 import express from "express";
 import { connectDB } from "./config/database";
