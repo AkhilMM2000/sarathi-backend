@@ -10,7 +10,7 @@ let io: Server;
 export const initializeSocket = (server: HttpServer): void => {
  io = new Server(server, {
     cors: {
-      origin: 'http://localhost:5173',
+      origin: process.env.FRONTEND_URL,
     },
   });
 
