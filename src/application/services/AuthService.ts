@@ -2,7 +2,7 @@ import jwt, { JwtPayload } from "jsonwebtoken";
 
 export class AuthService {
   static generateAccessToken(payload: object): string {
-    return jwt.sign(payload, process.env.ACCESS_TOKEN_SECRET as string, { expiresIn: "1m" });
+    return jwt.sign(payload, process.env.ACCESS_TOKEN_SECRET as string, { expiresIn: "15m" });
   }
 
   static generateRefreshToken(payload: object): string {
