@@ -11,6 +11,7 @@ class AuthController {
     static async refreshToken(req, res) {
         try {
             const { role } = req.body;
+            console.log("Role from request body:", role);
             if (!role) {
                 throw new Autherror_1.AuthError("Role is required", 400);
             }
@@ -25,6 +26,7 @@ class AuthController {
                 throw new Autherror_1.AuthError("Invalid role", 400);
             }
             const refreshToken = req.cookies[refreshTokenKey];
+            console.log(refreshTokenKey, ":", refreshToken);
             if (!refreshToken) {
                 throw new Autherror_1.AuthError("No refresh token found", 403);
             }
