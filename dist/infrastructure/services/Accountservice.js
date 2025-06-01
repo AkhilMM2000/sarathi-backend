@@ -41,8 +41,8 @@ let StripeService = class StripeService {
         try {
             return await stripe.accountLinks.create({
                 account: accountId,
-                refresh_url: 'http://localhost:5173/driver/onboard-failure',
-                return_url: 'http://localhost:5173/driver/onboard-success',
+                refresh_url: `${process.env.FRONTEND_URL}/driver/onboard-failure`,
+                return_url: `${process.env.FRONTEND_URL}/driver/onboard-success`,
                 type: 'account_onboarding'
             });
         }
