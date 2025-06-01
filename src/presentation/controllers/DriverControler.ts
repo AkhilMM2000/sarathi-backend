@@ -159,6 +159,7 @@ console.log(' useridfor chat',userId)
   static async onboardDriver(req: AuthenticatedRequest, res: Response) {
     try {
       let{ email, driverId } = req.body;
+      console.log('onboard driver',req.body)
 if(!driverId){
   driverId=req.user?.id
 }

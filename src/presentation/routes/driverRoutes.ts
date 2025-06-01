@@ -31,7 +31,7 @@ router
       protectRoute(['driver']),checkBlockedMiddleware.handle.bind(checkBlockedMiddleware),
       AuthController.ChangePassword)
 
-      .post('onboard',
+      .post('/onboard',
         protectRoute(['driver']),checkBlockedMiddleware.handle.bind(checkBlockedMiddleware),
         DriverController.onboardDriver
       )
@@ -41,7 +41,7 @@ router
        .patch('/booking-status/:bookingId',protectRoute(['driver']),checkBlockedMiddleware.handle.bind(checkBlockedMiddleware),
         BookingController.updateStatus)
 
-        .post('verify-account',
+        .post('/verify-account',
           protectRoute(['driver']),checkBlockedMiddleware.handle.bind(checkBlockedMiddleware),
           DriverController.verifyAccount
         ).get('/chat/:roomId',protectRoute(['driver']),checkBlockedMiddleware.handle.bind(checkBlockedMiddleware),
