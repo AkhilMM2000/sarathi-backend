@@ -48,6 +48,12 @@ let SocketNotificationService = class SocketNotificationService {
             this.io.to(socketId).emit("booking:reject", data);
         }
     }
+    async adminChangeDriverStatusNotification(driverId, data) {
+        const socketId = await redisconfig_1.redis.get(`driver:socket:${driverId}`);
+        if (socketId) {
+            this.io.to(socketId).emit("admin:changeDriverStatus", data);
+        }
+    }
 };
 exports.SocketNotificationService = SocketNotificationService;
 exports.SocketNotificationService = SocketNotificationService = __decorate([

@@ -46,5 +46,14 @@ async rejectBookingNotification(userId: string, data: any): Promise<void> {
   this.io.to(socketId).emit("booking:reject", data);
   }
 }
+async adminChangeDriverStatusNotification(
+    driverId: string,
+    data: any
+  ): Promise<void> {
+    const socketId = await redis.get<string>(`driver:socket:${driverId}`);
+    if (socketId) {
+      this.io.to(socketId).emit("admin:changeDriverStatus", data);
+    }
+  }
     
 }

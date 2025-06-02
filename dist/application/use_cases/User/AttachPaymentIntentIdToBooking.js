@@ -53,7 +53,7 @@ let AttachPaymentIntentIdToBooking = class AttachPaymentIntentIdToBooking {
         await this.bookingRepo.updateBooking(bookingId, booking);
         console.log(booking.driverId.toString());
         if (paymentstatus == 'COMPLETED') {
-            this.notificationService.paymentNotification(booking.driverId.toString(), { status: paymentstatus, startDate: booking.startDate, bookingId });
+            await this.notificationService.paymentNotification(booking.driverId.toString(), { status: paymentstatus, startDate: booking.startDate, bookingId });
         }
     }
 };

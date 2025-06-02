@@ -51,7 +51,7 @@ let BookDriver = class BookDriver {
         };
         // Step 4: Save booking
         const savedBooking = await this.bookingRepo.createBooking(newBooking);
-        this.notificationService.sendBookingNotification(driverId, { startDate, newRide: savedBooking });
+        await this.notificationService.sendBookingNotification(driverId, { startDate, newRide: savedBooking });
         return savedBooking;
     }
 };

@@ -31,6 +31,6 @@ export class CancelBookingInputUseCase {
       status,
       reason
     });
-    this.notificationService.cancelBookingNotification(booking.driverId.toString(),{status,reason,startDate:booking.startDate,bookingId})
+   await this.notificationService.cancelBookingNotification(booking.driverId.toString(),{status,reason,startDate:booking.startDate,bookingId})
   }
 }
