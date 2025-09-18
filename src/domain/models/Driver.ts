@@ -7,10 +7,15 @@ export interface Driver {
     mobile: string;
     password: string;
     profileImage: string;
-    location: {
-      latitude: number;
-      longitude: number;
-    };
+    location:
+    | {
+        latitude: number;
+        longitude: number;
+      }
+    | {
+        type: "Point";
+        coordinates: [number, number];
+      };
     place:string;
     aadhaarNumber: string;
     licenseNumber: string;

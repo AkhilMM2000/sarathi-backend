@@ -19,7 +19,6 @@ import { initializeSocket } from "./infrastructure/socket/socket";
 import { initializeReferralSocket } from "./infrastructure/socket/referralSocket";
 import { NotificationSocket } from "./infrastructure/socket/SocketNotification";
 
-
 dotenv.config();
 const app = express();
 

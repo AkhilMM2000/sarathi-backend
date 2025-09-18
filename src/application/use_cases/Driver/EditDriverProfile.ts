@@ -13,7 +13,7 @@ export class EditDriverProfile {
     if (!driverId) {
       throw new AuthError("Driver ID is required", 400);
     }
-
+console.log(updateData.location)
     const existingDriver = await this.driverRepository.findDriverById(driverId);
     if (!existingDriver) {
       throw new AuthError("Driver not found", 404);

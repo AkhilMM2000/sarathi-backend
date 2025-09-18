@@ -8,8 +8,8 @@ import { INotificationService } from "../../services/NotificationService";
 export class AdminChangeDriverStatus {
   constructor(
     @inject("IDriverRepository") private driverRepository: IDriverRepository,
-     @inject("INotificationService")
-        private notificationService: INotificationService
+    @inject("INotificationService")
+    private notificationService: INotificationService
   ) {}
 
   async execute(
@@ -32,3 +32,6 @@ export class AdminChangeDriverStatus {
 
   }
 }
+
+
+

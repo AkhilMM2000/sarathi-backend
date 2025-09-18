@@ -3,8 +3,8 @@ import { injectable } from "tsyringe";
 
 @injectable()
 export class GoogleDistanceService {
-  private readonly API_URL = "https://maps.googleapis.com/maps/api/distancematrix/json";
-  private readonly API_KEY = process.env.GOOGLE_MAPS_API_KEY || "";
+  private readonly API_URL = process.env.GOOGLEMAP_API_URL! 
+  private readonly API_KEY = process.env.GOOGLE_MAPS_API_KEY! 
 
   async getDistances(userLocation: { latitude: number; longitude: number }, drivers: { id: string; latitude: number; longitude: number }[]) {
     if (!this.API_KEY) {

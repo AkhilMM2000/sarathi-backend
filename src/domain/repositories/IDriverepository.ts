@@ -1,4 +1,5 @@
 import { Driver } from "../models/Driver";
+import { PaginatedResult } from "./IBookingrepository";
 
 export interface IDriverRepository {
   create(driver: Driver): Promise<Driver>;
@@ -8,7 +9,8 @@ export interface IDriverRepository {
   updateStatus(driverId: string, status: "pending" | "approved" | "rejected", reason?: string):Promise<Driver | null>; 
   blockOrUnblockDriver(driverId: string, isBlocked: boolean): Promise<void>;
   update(userId: string, data: Partial<Driver>): Promise<Driver | null>;
-  findAllActiveDrivers():Promise<Driver[]>;
+ findActiveDrivers(page: number, limit: number, placeKey?: string): Promise<PaginatedResult<Driver>>;
+
   updateStripeAccount(driverId: string, stripeAccountId: string): Promise<Driver>;
   
   updateRatingStats(driverId: string, stats: {
@@ -16,5 +18,10 @@ export interface IDriverRepository {
   totalRatings: number;
   averageRating: number;
 }): Promise<void>;
+findNearbyDriversWithinRadius(
+  location: { latitude: number; longitude: number },
+  excludedDriverIds: string[],
+  radiusInKm: number
+): Promise<{ _id: string; latitude: number; longitude: number }[]>;
 
 }

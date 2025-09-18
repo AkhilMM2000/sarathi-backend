@@ -33,6 +33,10 @@ import { INotificationService } from "../../application/services/NotificationSer
 import { SocketNotificationService } from "../services/SocketNotification";
 import { IDriverReviewRepository } from "../../domain/repositories/IDriverReviewRepository";
 import { MongoDriverReviewRepository } from "../database/MongoDriverReviewRepository";
+import { IRideAssignmentQueue } from "../../domain/services/IRideAssignmentQueue";
+import { RideAssignmentQueue } from "../queues/rideAssignmentQueue";
+import { IGoogleMapService } from "../../domain/services/IGoogleMapService";
+import { GoogleMapService } from "../services/GoogleMapService";
 
 // Register repositories
 container.register<IUserRepository>("IUserRepository", { useClass: MongoUserRepository });
@@ -41,7 +45,7 @@ container.register<IVehicleRepository>("IVehicleRepository",{useClass:MongoVehic
 container.register<IBookingRepository>("IBookingRepository",{ useClass: MongoBookingRepository });
 // Register services
 container.register<HashService>("HashService", { useClass: HashService });
-container.register<EmailService>("EmailService", { useClass: EmailService });
+container.registerSingleton<EmailService>("EmailService",  EmailService );
 container.register<WalletService >("WalletService", { useClass: WalletService });
 container.register("ReferralCodeService", {
   useClass: ReferralCodeService,
@@ -87,3 +91,9 @@ container.registerSingleton<IRedisrepository>(
   'DriverReviewRepository',
   MongoDriverReviewRepository
 );
+container.registerSingleton<IRideAssignmentQueue>('IRideAssignmentQueue', RideAssignmentQueue);
+
+container.register<IGoogleMapService>('IGoogleMapService', {
+  useClass: GoogleMapService,
+});
+

@@ -274,7 +274,7 @@ export class UserController {
 
       // Execute the use case and fetch drivers
       const drivers = await findNearbyDrivers.execute(userId);
-
+console.log(drivers,'got it ')
       res.status(200).json({ success: true, drivers });
     } catch (error) {
       if (error instanceof AuthError) {
@@ -291,6 +291,7 @@ export class UserController {
     }
   }
 
+  
   static async createPaymentIntent(req: Request, res: Response) {
     const { amount, driverId } = req.body;
     console.log(req.body);

@@ -21,6 +21,9 @@ import { WalletPayment } from "../../application/use_cases/User/WalletRidePaymen
 import { GetDriverReviews } from "../../application/use_cases/DriverReview";
 import { DeleteMessageUseCase } from "../../application/use_cases/deleteMessage";
 
+import { GetBookingStatusSummary } from "../../application/use_cases/Driver/GetBookingStatusSummary";
+import { GetDriverEarningsSummary } from "../../application/use_cases/Driver/GetMonthlyEarningsReport";
+
 export class BookingController {
   static async bookDriver(req: AuthenticatedRequest, res: Response) {
     try {
@@ -424,7 +427,51 @@ res.status(HTTP_STATUS_CODES.OK).json(reviews);
 
 
 }
+static async getDriverBookingStatusSummary (req:AuthenticatedRequest, res: Response) {
+  try {
+ 
+   const driverId = req.user?.id;
+    const year = req.query.year ? parseInt(req.query.year as string) : undefined;
+    const month = req.query.month ? parseInt(req.query.month as string) : undefined;
 
+    const useCase = container.resolve(GetBookingStatusSummary);
+    const result = await useCase.execute(driverId!, year, month);
+    res.status(HTTP_STATUS_CODES.OK).json(result);
+  } catch (error: any) {
+   if (error instanceof AuthError) {
+    res
+      .status(error.statusCode)
+      .json({ success: false, error: error.message });
+    return;
+  }
+
+  console.error("Error fetching getDriverBookingStatusSummary", error);
+  res.status(500).json({ success: false, error:ERROR_MESSAGES.INTERNAL_SERVER_ERROR})
+  }
+};
+
+static async  getDriverEarningsByMonth  (req:AuthenticatedRequest, res: Response){
+  try {
+ 
+   const driverId = req.user?.id;
+    const year = req.query.year ? parseInt(req.query.year as string) : new Date().getFullYear();
+    const month = req.query.month ? parseInt(req.query.month as string) : undefined;
+
+    const useCase = container.resolve(GetDriverEarningsSummary);
+    const result = await useCase.execute(driverId!, year, month);
+    res.status(HTTP_STATUS_CODES.OK).json(result);
+  } catch (error: any) {
+   if (error instanceof AuthError) {
+    res
+      .status(error.statusCode)
+      .json({ success: false, error: error.message });
+    return;
+  }
+
+  console.error("Error fetching getDriverEarningsByMonth ", error);
+  res.status(HTTP_STATUS_CODES.INTERNAL_SERVER_ERROR).json({ success: false, error:ERROR_MESSAGES.INTERNAL_SERVER_ERROR})
+  }
+};
 
 
 }

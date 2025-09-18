@@ -1,11 +1,11 @@
 import { BookingWithUsername, IBookingRepository, PaginatedResult, rideHistory } from "../../domain/repositories/IBookingrepository"; 
-import { Booking, paymentStatus } from "../../domain/models/Booking"; // Domain model
-import BookingModel from "./modals/Bookingschema"; // Mongoose model
+import { Booking, paymentStatus } from "../../domain/models/Booking"; 
+import BookingModel from "./modals/Bookingschema"; 
 import { injectable } from "tsyringe";
 import { AuthError } from "../../domain/errors/Autherror";
-import { log } from "console";
 import { STATUS_CODES } from "http";
 import { HTTP_STATUS_CODES } from "../../constants/HttpStatusCode";
+import mongoose from "mongoose";
 @injectable()
 export class MongoBookingRepository implements IBookingRepository {
   async createBooking(booking: Booking): Promise<Booking> {
@@ -266,6 +266,105 @@ async getRideHistoryByRole(
     );
   }
 }
+async countBookingsByStatus(driverId: string, year?: number, month?: number): Promise<Record<string, number>> {
+    try {
+      const matchStage: any = {
+      driverId: new mongoose.Types.ObjectId(driverId)
+    };
 
+    if (year) {
+      matchStage.$expr = {
+        $eq: [{ $year: "$startDate" }, year]
+      };
+    }
+
+    if (year && month) {
+      matchStage.$expr = {
+        $and: [
+          { $eq: [{ $year: "$startDate" }, year] },
+          { $eq: [{ $month: "$startDate" }, month] }
+        ]
+      };
+    }
+
+    const result = await BookingModel.aggregate([
+      { $match: matchStage },
+      {
+        $group: {
+          _id: "$status",
+          count: { $sum: 1 }
+        }
+      }
+    ]);
+
+    const summary: Record<string, number> = {};
+    result.forEach((r) => {
+      summary[r._id] = r.count;
+    });
+
+    return summary;
+  
+    } catch (error: any) {
+      console.error('Error in countBookingsByStatus:', error.message);
+      throw new AuthError('Failed to fetch booking status summary', HTTP_STATUS_CODES.INTERNAL_SERVER_ERROR); 
+    }
+  }
+
+  async  getDriverEarningsByMonth(driverId: string, year: number, month?: number): Promise<{
+    chartData: { label: string; totalEarnings: number }[];
+    totalEarnings: number;
+    totalRides: number;
+  }> {
+    try {
+      const matchStage: any = {
+      driverId: new mongoose.Types.ObjectId(driverId),
+      paymentStatus: 'COMPLETED'
+    };
+
+    if (month) {
+      matchStage.$expr = {
+        $and: [
+          { $eq: [{ $year: "$startDate" }, year] },
+          { $eq: [{ $month: "$startDate" }, month] }
+        ]
+      };
+    } else {
+      matchStage.$expr = {
+        $eq: [{ $year: "$startDate" }, year]
+      };
+    }
+
+    const groupStage = month
+      ? {
+          _id: { $dayOfMonth: "$startDate" },
+          total: { $sum: "$driver_fee" },
+          count: { $sum: 1 }
+        }
+      : {
+          _id: { $month: "$startDate" },
+          total: { $sum: "$driver_fee" },
+          count: { $sum: 1 }
+        };
+
+    const result = await BookingModel.aggregate([
+      { $match: matchStage },
+      { $group: groupStage },
+      { $sort: { _id: 1 } }
+    ]);
+
+    const chartData = result.map((r) => ({
+      label: r._id.toString(),
+      totalEarnings: r.total
+    }));
+
+    const totalEarnings = result.reduce((sum, r) => sum + r.total, 0);
+    const totalRides = result.reduce((sum, r) => sum + r.count, 0);
+
+    return { chartData, totalEarnings, totalRides };
+    } catch (error: any) {
+      console.error('Error in getDriverEarningsByMonth:', error.message);
+      throw new AuthError('Failed to fetch earnings summary', HTTP_STATUS_CODES.INTERNAL_SERVER_ERROR);
+    }
+  }
 
   }

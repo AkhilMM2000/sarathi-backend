@@ -12,50 +12,66 @@ export class FindNearbyDrivers {
     @inject("GoogleDistanceService") private distanceService: GoogleDistanceService
   ) {}
 
-  async execute(userId: string) {
+   async execute(userId: string, page: number = 1, limit: number = 2, placeKey?: string) {
     // 1️⃣ Fetch the user's location from the database
-    const user = await this.userRepository.getUserById(userId)
+    const user = await this.userRepository.getUserById(userId);
     
     if (!user) {
-        throw new AuthError("User not found", 404);
+      throw new AuthError("User not found", 404);
+    }
+
+    if (!user.location) {
+      throw new AuthError("User location not found", 400);
+    }
+ const { latitude, longitude } = user.location;
+    // 2️⃣ Use paginated driver fetching from repository
+    const paginatedResult= await this.driverRepository.findActiveDrivers(
+      page,
+      limit,
+      placeKey
+    );
+    const drivers = paginatedResult.data;
+
+    if (drivers.length === 0) return { ...paginatedResult, data: [] };
+
+    // 3️⃣ Extract driver locations
+    const driverLocations = drivers.map((driver) => {
+      if ('coordinates' in driver.location) {
+        return {
+          id: driver._id?.toString() || "",
+          latitude: driver.location.coordinates[1],
+          longitude: driver.location.coordinates[0],
+        };
+      } else {
+        return {
+          id: driver._id?.toString() || "",
+          latitude: driver.location.latitude,
+          longitude: driver.location.longitude,
+        };
       }
-      
-      if (!user.location) {
-        throw new AuthError("User location not found", 400);
-      }
+    });
 
-    const { latitude, longitude } = user.location;
-
-    // 2️⃣ Fetch all active drivers from the database
-    const drivers = await this.driverRepository.findAllActiveDrivers();
-   
-    if (drivers.length === 0) return [];
-
-    // 3️⃣ Extract driver locations for API call
-    const driverLocations = drivers.map((driver) => ({
-      id: driver._id?.toString() || "", 
-      latitude: driver.location.latitude,
-      longitude: driver.location.longitude,
-    }));
-
-    // 4️⃣ Get real-world distances using Google Maps API
+    // 4️⃣ Get distances
     const distances = await this.distanceService.getDistances(
       { latitude, longitude },
       driverLocations
+      
     );
 
-    // 5️⃣ Attach distances to drivers
-    const driversWithDistance = drivers.map((driver) =>{
-        const driverId = driver._id?.toString(); // Convert ObjectId to string
-      
-        return {
-          ...driver,
-          distance: driverId ? distances[driverId] || null : null, 
-        };
-      });
-      
+    // 5️⃣ Add distance to driver
+    const driversWithDistance = drivers.map((driver) => {
+      const driverId = driver._id?.toString();
+      return {
+        ...driver,
+        distance: driverId ? distances[driverId] || null : null,
+      };
+    });
 
-    // 6️⃣ Sort drivers by distance (ascending)
-    return driversWithDistance.sort((a, b) => (a.distance ?? 0) - (b.distance ?? 0));
+    // 6️⃣ Sort & return with pagination info
+    return {
+      ...paginatedResult,
+      data: driversWithDistance.sort((a, b) => (a.distance ?? 0) - (b.distance ?? 0)),
+    };
   }
+  
 }
