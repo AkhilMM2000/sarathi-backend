@@ -2,12 +2,13 @@ import { inject, injectable } from "tsyringe";
 import { IUserRepository } from "../../../domain/repositories/IUserepository";
 import { AuthError } from "../../../domain/errors/Autherror"; 
 import { User } from "../../../domain/models/User";
+import { TOKENS } from "../../../constants/Tokens";
 
 
 @injectable()
 export class UpdateUserData {
   constructor(
-    @inject("IUserRepository") private userRepository: IUserRepository
+    @inject(TOKENS.IUSER_REPO) private userRepository: IUserRepository
   ) {}
 
   async execute(userId: string, updateData: Partial<User>) {

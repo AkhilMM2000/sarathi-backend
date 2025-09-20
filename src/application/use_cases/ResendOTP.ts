@@ -2,12 +2,13 @@ import { injectable ,inject} from "tsyringe";
 
 import { IRedisrepository } from "../../domain/repositories/IRedisrepository";
 import { EmailService } from "../services/Emailservice"; 
+import { TOKENS } from "../../constants/Tokens";
 
 @injectable()
 export class ResendOTP {
   constructor(
     @inject("EmailService") private emailService: EmailService,
-    @inject("UserRegistrationStore") private store: IRedisrepository
+    @inject(TOKENS.USER_REGISTERSTORE) private store: IRedisrepository
 ) {}
   async execute(email: string, role: string) {
  

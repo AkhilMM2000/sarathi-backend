@@ -3,12 +3,13 @@ import { inject, injectable } from 'tsyringe';
 import { IStripeAccountService } from '../../services/Accountservice'; 
 import { IDriverRepository } from '../../../domain/repositories/IDriverepository'; 
 import { AuthError } from '../../../domain/errors/Autherror'; 
+import { TOKENS } from '../../../constants/Tokens';
 
 @injectable()
 export class VerifyDriverPaymentAccount {
   constructor(
     @inject('StripeService') private stripeService: IStripeAccountService,
-    @inject("IDriverRepository") private driverRepository: IDriverRepository
+    @inject(TOKENS.IDRIVER_REPO) private driverRepository: IDriverRepository
   ) {}
 
   async execute(driverId: string): Promise<void> {

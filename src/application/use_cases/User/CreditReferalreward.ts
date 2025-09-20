@@ -5,13 +5,14 @@ import { IWalletRepository } from "../../../domain/repositories/IWalletRepositor
 
 import { AuthError } from "../../../domain/errors/Autherror";
 import { WalletService } from "../../services/WalletService";
+import { TOKENS } from "../../../constants/Tokens";
 
 @injectable()
 export class CreditReferralReward {
   constructor(
-    @inject("IUserRepository") private userRepo: IUserRepository,
+    @inject(TOKENS.IUSER_REPO) private userRepo: IUserRepository,
    
-        @inject("WalletService") private walletService:WalletService ,
+        @inject(TOKENS.WALLET_SERVICE) private walletService:WalletService ,
   ) {}
 
   async execute(userId: string, amount: number): Promise<void> {

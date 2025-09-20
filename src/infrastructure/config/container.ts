@@ -1,4 +1,5 @@
 import { container } from "tsyringe";
+import './useCaseContainer'
 import { IUserRepository } from "../../domain/repositories/IUserepository"; 
 import { MongoUserRepository } from "../database/MongoUserRepository";
 import { HashService} from "../../application/services/HashService";
@@ -37,17 +38,18 @@ import { IRideAssignmentQueue } from "../../domain/services/IRideAssignmentQueue
 import { RideAssignmentQueue } from "../queues/rideAssignmentQueue";
 import { IGoogleMapService } from "../../domain/services/IGoogleMapService";
 import { GoogleMapService } from "../services/GoogleMapService";
+import { TOKENS } from "../../constants/Tokens";
 
 // Register repositories
-container.register<IUserRepository>("IUserRepository", { useClass: MongoUserRepository });
-container.register<IDriverRepository>("IDriverRepository", { useClass:MongoDriverRepository })
+container.registerSingleton<IUserRepository>(TOKENS.IUSER_REPO,  MongoUserRepository );
+container.registerSingleton<IDriverRepository>(TOKENS.IDRIVER_REPO,MongoDriverRepository )
 container.register<IVehicleRepository>("IVehicleRepository",{useClass:MongoVehicleRepository})
 container.register<IBookingRepository>("IBookingRepository",{ useClass: MongoBookingRepository });
 // Register services
 container.register<HashService>("HashService", { useClass: HashService });
-container.registerSingleton<EmailService>("EmailService",  EmailService );
-container.register<WalletService >("WalletService", { useClass: WalletService });
-container.register("ReferralCodeService", {
+container.registerSingleton<EmailService>(TOKENS.EMAILSERVICE,  EmailService );
+container.registerSingleton<WalletService >(TOKENS.WALLET_SERVICE, WalletService );
+container.register(TOKENS.REFERAL_CODE_SERVICE, {
   useClass: ReferralCodeService,
 });
 
@@ -55,7 +57,7 @@ container.register("ReferralCodeService", {
 container.registerSingleton<IFileStorageService>("IFileStorageService",  CloudinaryFileStorageService)
 
 container.registerSingleton<IRedisrepository>(
-    "UserRegistrationStore",
+         TOKENS.USER_REGISTERSTORE,
     RedisUserRegistrationStore
   );
   container.registerSingleton<GoogleDistanceService>("GoogleDistanceService", GoogleDistanceService);

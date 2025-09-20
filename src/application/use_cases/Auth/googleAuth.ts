@@ -5,6 +5,7 @@ import { IDriverRepository } from "../../../domain/repositories/IDriverepository
 import { AuthService } from "../../services/AuthService";
 import { AuthError } from "../../../domain/errors/Autherror";
 import dotenv from "dotenv";
+import { TOKENS } from "../../../constants/Tokens";
 
 dotenv.config();
 
@@ -13,8 +14,8 @@ export class GoogleAuthUseCase {
   private client: OAuth2Client;
 
   constructor(
-    @inject("IUserRepository") private userRepository: IUserRepository,
-    @inject("IDriverRepository") private driverRepository: IDriverRepository
+    @inject(TOKENS.IUSER_REPO) private userRepository: IUserRepository,
+    @inject(TOKENS.IDRIVER_REPO) private driverRepository: IDriverRepository
   ) {
     this.client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
   }

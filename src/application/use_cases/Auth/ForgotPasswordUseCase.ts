@@ -6,12 +6,13 @@ import { inject, injectable } from 'tsyringe';
 import { IRedisrepository } from '../../../domain/repositories/IRedisrepository';
 import { IDriverRepository } from '../../../domain/repositories/IDriverepository';
 import { EmailService } from '../../services/Emailservice';
+import { TOKENS } from '../../../constants/Tokens';
 @injectable()
 export class ForgotPasswordUseCase {
   constructor(
-    @inject("UserRegistrationStore") private store: IRedisrepository,
-    @inject("IUserRepository") private userRepository: IUserRepository,
-    @inject("IDriverRepository") private driverRepository: IDriverRepository,
+    @inject(TOKENS.USER_REGISTERSTORE) private store: IRedisrepository,
+    @inject(TOKENS.IUSER_REPO) private userRepository: IUserRepository,
+    @inject(TOKENS.IDRIVER_REPO) private driverRepository: IDriverRepository,
     @inject("EmailService") private emailService: EmailService,
   ) {}
 

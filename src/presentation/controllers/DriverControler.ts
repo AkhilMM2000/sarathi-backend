@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import { container } from "tsyringe";
-import { RegisterUser } from "../../application/use_cases/RegisterUser";
+import { RegisterUser } from "../../application/use_cases/User/RegisterUser";
 import { VerifyOTP } from "../../application/use_cases/VerifyOTP";
 import { ResendOTP } from "../../application/use_cases/ResendOTP";
 import { Login } from "../../application/use_cases/Login";

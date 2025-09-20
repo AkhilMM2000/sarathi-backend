@@ -1,17 +1,18 @@
 import express from "express";
-import { UserController } from "../controllers/UserController";
+
 import { protectRoute } from "../../middleware/authMiddleware"; 
 import { CheckBlockedUserOrDriver } from "../../middleware/checkBlocked";
 import { container } from "tsyringe";
 import { AuthController } from "../controllers/AuthController";
 import { BookingController } from "../controllers/BookingController";
+import { userController } from "../../config/controllerResolve";
 
 const router= express.Router();
 const checkBlockedMiddleware = container.resolve(CheckBlockedUserOrDriver);
 
 // Authentication Routes
 router
-  .post("/register", UserController.register)
+  .post("/register", userController.register.bind(userController))
   .post("/verify-otp", UserController.verifyOTPUser)
   .post("/resend-otp", UserController.resendOTP)
   .post("/login", UserController.login);
@@ -31,7 +32,7 @@ router
   router
   .route("/profile")
   .all(protectRoute(["user"]), checkBlockedMiddleware.handle.bind(checkBlockedMiddleware))
-  .get(UserController.getUserData)
+  .get(userController.getUserData.bind(userController))
    
 
 router

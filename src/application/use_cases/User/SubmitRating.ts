@@ -4,6 +4,7 @@ import { IDriverRepository } from "../../../domain/repositories/IDriverepository
 import { DriverReview } from "../../../domain/models/DriverReview"; 
 import { AuthError } from "../../../domain/errors/Autherror";
 import { HTTP_STATUS_CODES } from "../../../constants/HttpStatusCode";
+import { TOKENS } from "../../../constants/Tokens";
 
 interface SubmitDriverReviewInput {
   driverId: string;
@@ -19,7 +20,7 @@ export class SubmitDriverReview {
     @inject("DriverReviewRepository")
     private reviewRepo: IDriverReviewRepository,
 
-     @inject("IDriverRepository")
+     @inject(TOKENS.IDRIVER_REPO)
     private driverRepo: IDriverRepository
   ) {}
 

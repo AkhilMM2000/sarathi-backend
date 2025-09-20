@@ -6,12 +6,13 @@ import { AuthService } from "../services/AuthService";
 import { User } from "../../domain/models/User";
 import { Driver } from "../../domain/models/Driver";
 import { AuthError } from "../../domain/errors/Autherror";
+import { TOKENS } from "../../constants/Tokens";
 @injectable()
 
 export class RefreshToken {
   constructor(
-     @inject("IUserRepository") private userRepository: IUserRepository,
-      @inject("IDriverRepository") private driverRepository: IDriverRepository
+     @inject(TOKENS.IUSER_REPO) private userRepository: IUserRepository,
+      @inject(TOKENS.IDRIVER_REPO) private driverRepository: IDriverRepository
     
     ) {}
 

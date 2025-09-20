@@ -4,11 +4,12 @@ import { EmailService } from "../services/Emailservice";
 import { IRedisrepository } from "../../domain/repositories/IRedisrepository"; 
 import { randomInt } from "crypto";
 import { Driver } from "../../domain/models/Driver";
+import { TOKENS } from "../../constants/Tokens";
 @injectable()
 export class RegisterDriver {
   constructor(
     @inject("EmailService") private emailService: EmailService,
-    @inject("UserRegistrationStore") private store: IRedisrepository
+    @inject(TOKENS.USER_REGISTERSTORE) private store: IRedisrepository
   ) {}
 
   async execute(driverData:Driver ) {

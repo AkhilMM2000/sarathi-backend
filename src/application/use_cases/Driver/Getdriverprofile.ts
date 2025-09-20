@@ -2,11 +2,12 @@ import { IDriverRepository } from "../../../domain/repositories/IDriverepository
 import { Driver } from "../../../domain/models/Driver";
 import { inject, injectable } from "tsyringe";
 import { AuthError } from "../../../domain/errors/Autherror";
+import { TOKENS } from "../../../constants/Tokens";
 
 @injectable()
 export class GetDriverProfile {
   constructor(
-    @inject("IDriverRepository") private driverRepository: IDriverRepository
+    @inject(TOKENS.IDRIVER_REPO) private driverRepository: IDriverRepository
   ) {}
 
   async execute(driverId: string): Promise<Driver|null> {

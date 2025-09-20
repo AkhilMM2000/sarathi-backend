@@ -4,11 +4,12 @@
 import { inject, injectable } from "tsyringe";
 import { IDriverRepository} from "../../../domain/repositories/IDriverepository";
 import { Driver } from "../../../domain/models/Driver";
+import { TOKENS } from "../../../constants/Tokens";
 
 @injectable()
 export class GetDrivers {
   constructor(
-    @inject("IDriverRepository") private driverRepository: IDriverRepository
+    @inject(TOKENS.IDRIVER_REPO) private driverRepository: IDriverRepository
 
 
   ) {}

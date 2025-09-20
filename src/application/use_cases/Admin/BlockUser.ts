@@ -1,11 +1,12 @@
 import { inject, injectable } from "tsyringe";
 import { IUserRepository ,UserWithVehicleCount} from "../../../domain/repositories/IUserepository";
 import { AuthError } from "../../../domain/errors/Autherror";
+import { TOKENS } from "../../../constants/Tokens";
 
 @injectable()
 export class BlockUserUseCase {
   constructor(
-    @inject("IUserRepository")
+    @inject(TOKENS.IUSER_REPO)
     private readonly userRepository: IUserRepository
   ) {}
 

@@ -4,12 +4,13 @@ import { IUserRepository } from "../domain/repositories/IUserepository";
 import { IDriverRepository } from "../domain/repositories/IDriverepository"; 
 import { AuthenticatedRequest } from "./authMiddleware"; // Import AuthenticatedRequest type
 import { isValidObjectId } from "mongoose";
+import { TOKENS } from "../constants/Tokens";
 
 @injectable()
 export class CheckBlockedUserOrDriver {
   constructor(
-    @inject("IUserRepository") private userRepository: IUserRepository,
-    @inject("IDriverRepository") private driverRepository: IDriverRepository
+    @inject(TOKENS.IUSER_REPO) private userRepository: IUserRepository,
+    @inject(TOKENS.IDRIVER_REPO) private driverRepository: IDriverRepository
   ) {}
 
   async handle(req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> {

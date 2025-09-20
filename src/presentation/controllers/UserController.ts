@@ -1,6 +1,6 @@
-import { Request, Response } from "express";
-import { container } from "tsyringe";
-import { RegisterUser } from "../../application/use_cases/RegisterUser";
+import { NextFunction, Request, Response } from "express";
+import { container, inject } from "tsyringe";
+import { RegisterUser } from "../../application/use_cases/User/RegisterUser";
 import { VerifyOTP } from "../../application/use_cases/VerifyOTP";
 import { ResendOTP } from "../../application/use_cases/ResendOTP";
 import { Login } from "../../application/use_cases/Login";
@@ -21,57 +21,57 @@ import { ERROR_MESSAGES } from "../../constants/ErrorMessages";
 import { walletTransaction } from "../../application/use_cases/User/walletTransaction";
 import { HTTP_STATUS_CODES } from "../../constants/HttpStatusCode";
 import { SubmitDriverReview } from "../../application/use_cases/User/SubmitRating";
-
+import { IRegisterUser } from "../../application/use_cases/User/interfaces/IRegisterUser";
+import { TOKENS } from "../../constants/Tokens";
+import { INFO_MESSAGES } from "../../constants/Info_Messages";
+import { IGetUserData } from "../../application/use_cases/User/interfaces/IGetUserData";
+import { IVerifyOtp } from "../../application/use_cases/Interfaces/IVerifyOtp";
 
 export class UserController {
-  static async register(req: Request, res: Response) {
-    try {
-      const registerUser = container.resolve(RegisterUser);
-      const user = await registerUser.execute(req.body);
-      res
-        .status(201)
-        .json({ success: true, message: "User registered successfully", user });
-    } catch (error) {
-      if (error instanceof AuthError) {
-        res.status(error.statusCode).json({
-          success: false,
-          error: error.message,
-        });
-        return;
-      }
+  constructor(
+    @inject(TOKENS.REGISTER_USER_USECASE)
+    private registerUsecase: IRegisterUser,
+    @inject(TOKENS.GET_USER_DATA_USECASE)
+    private getUserDataUsecase: IGetUserData,
+    @inject(TOKENS.VERIFY_OTP_USECAE)
+    private verifyOtpUsecase: IVerifyOtp
+  ) {}
 
-      res.status(500).json({ success: false, error: "Something went wrong" });
-      return;
+  async register(req: Request, res: Response, next: NextFunction) {
+    try {
+      const user = await this.registerUsecase.execute(req.body);
+      res
+        .status(HTTP_STATUS_CODES.CREATED)
+        .json({ success: true, message: INFO_MESSAGES.USER.REGISTERED, user });
+    } catch (error) {
+      next(error);
     }
   }
-
-  static async verifyOTPUser(req: Request, res: Response) {
+  async verifyOTPUser(req: Request, res: Response, next: NextFunction) {
     try {
       const { email, otp } = req.body;
 
- if(otp.length<6){
-  throw new AuthError('please enter complete otp',400)
-
- }
+      if (otp.length < 6) {
+        throw new AuthError(
+          ERROR_MESSAGES.OTP_INVALID,
+          HTTP_STATUS_CODES.BAD_REQUEST
+        );
+      }
 
       console.log(req.body);
 
-      const verifyOTP = container.resolve(VerifyOTP);
-
-      const result = await verifyOTP.execute(req, res, email, otp, "user");
-
-      res.status(200).json({ success: true, ...result });
+      const { accessToken, refreshToken, user } =
+        await this.verifyOtpUsecase.execute(email, otp, "user");
+      res.cookie(`userRefreshToken`, refreshToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        maxAge: 7 * 24 * 60 * 60 * 1000,
+      });
+      res
+        .status(HTTP_STATUS_CODES.OK)
+        .json({ success: true, accessToken, user });
     } catch (error) {
-      if (error instanceof AuthError) {
-        res.status(error.statusCode).json({
-          success: false,
-          error: error.message,
-        });
-        return;
-      }
-
-      res.status(500).json({ success: false, error: "Something went wrong" });
-      return;
+      next(error);
     }
   }
   static async resendOTP(req: Request, res: Response) {
@@ -210,29 +210,25 @@ export class UserController {
     }
   }
 
-  static async getUserData(req: AuthenticatedRequest, res: Response) {
+  async getUserData(
+    req: AuthenticatedRequest,
+    res: Response,
+    next: NextFunction
+  ) {
     try {
-      const userId = req.user?.id; // Assuming user ID is set in `req.user` by authentication middleware
-
+      const userId = req.user?.id;
       if (!userId) {
-        res.status(400).json({ success: false, error: "User ID is required" });
-        return;
+        throw new AuthError(
+          ERROR_MESSAGES.USER_ID_NOT_FOUND,
+          HTTP_STATUS_CODES.BAD_REQUEST
+        );
       }
 
-      const getUserData = container.resolve(GetUserData);
-      const user = await getUserData.execute(userId);
+      const user = await this.getUserDataUsecase.execute(userId);
 
-      res.status(200).json({ success: true, user });
+      res.status(HTTP_STATUS_CODES.OK).json({ success: true, user });
     } catch (error) {
-      if (error instanceof AuthError) {
-        res
-          .status(error.statusCode)
-          .json({ success: false, error: error.message });
-        return;
-      }
-
-      console.error("Error fetching user data:", error);
-      res.status(500).json({ success: false, error: "Internal server error" });
+      next(error);
     }
   }
 
@@ -274,7 +270,7 @@ export class UserController {
 
       // Execute the use case and fetch drivers
       const drivers = await findNearbyDrivers.execute(userId);
-console.log(drivers,'got it ')
+      console.log(drivers, "got it ");
       res.status(200).json({ success: true, drivers });
     } catch (error) {
       if (error instanceof AuthError) {
@@ -291,7 +287,6 @@ console.log(drivers,'got it ')
     }
   }
 
-  
   static async createPaymentIntent(req: Request, res: Response) {
     const { amount, driverId } = req.body;
     console.log(req.body);
@@ -353,22 +348,28 @@ console.log(drivers,'got it ')
 
   static async WalletTransaction(req: AuthenticatedRequest, res: Response) {
     try {
-
-  const {page, limit} = req.query;
-      const userId = req.user?.id; 
-
+      const { page, limit } = req.query;
+      const userId = req.user?.id;
 
       if (!userId) {
-        res.status(HTTP_STATUS_CODES.BAD_REQUEST).json({ success: false, error:ERROR_MESSAGES.USER_ID_NOT_FOUND });
+        res
+          .status(HTTP_STATUS_CODES.BAD_REQUEST)
+          .json({ success: false, error: ERROR_MESSAGES.USER_ID_NOT_FOUND });
         return;
       }
 
       const getWalletTransaction = container.resolve(walletTransaction);
 
-const transactionHistory = await getWalletTransaction.getTransactionHistory(userId,Number(page),Number(limit));
-const ballence= await getWalletTransaction.getWalletBallence(userId);
- res.status(HTTP_STATUS_CODES.OK).json({ success: true, transactionHistory,ballence });
-
+      const transactionHistory =
+        await getWalletTransaction.getTransactionHistory(
+          userId,
+          Number(page),
+          Number(limit)
+        );
+      const ballence = await getWalletTransaction.getWalletBallence(userId);
+      res
+        .status(HTTP_STATUS_CODES.OK)
+        .json({ success: true, transactionHistory, ballence });
     } catch (error) {
       if (error instanceof AuthError) {
         res.status(error.statusCode).json({
@@ -377,22 +378,26 @@ const ballence= await getWalletTransaction.getWalletBallence(userId);
         });
         return;
       }
-      res.status(HTTP_STATUS_CODES.INTERNAL_SERVER_ERROR).json({ success: false, error: "Something went wrong" });
+      res
+        .status(HTTP_STATUS_CODES.INTERNAL_SERVER_ERROR)
+        .json({ success: false, error: "Something went wrong" });
       return;
     }
   }
 
-
-   static async submitReview(req: AuthenticatedRequest, res: Response) {
+  static async submitReview(req: AuthenticatedRequest, res: Response) {
     try {
       const { driverId, rideId, rating, review } = req.body;
       const userId = req.user?.id;
-      if(!driverId || !rideId || !rating) {
-        throw new AuthError("All fields are required", HTTP_STATUS_CODES.BAD_REQUEST);
+      if (!driverId || !rideId || !rating) {
+        throw new AuthError(
+          "All fields are required",
+          HTTP_STATUS_CODES.BAD_REQUEST
+        );
       }
       if (!userId) {
         res.status(401).json({ message: "Unauthorized" });
-         return
+        return;
       }
 
       const useCase = container.resolve(SubmitDriverReview);
@@ -404,17 +409,21 @@ const ballence= await getWalletTransaction.getWalletBallence(userId);
         rating,
         review,
       });
-res.status(201).json({ message: "Review submitted", review: createdReview });
+      res
+        .status(201)
+        .json({ message: "Review submitted", review: createdReview });
     } catch (error: any) {
-      console.log(error)
-     if (error instanceof AuthError) {
+      console.log(error);
+      if (error instanceof AuthError) {
         res.status(error.statusCode).json({
           success: false,
           error: error.message,
         });
         return;
       }
-      res.status(HTTP_STATUS_CODES.INTERNAL_SERVER_ERROR).json({ success: false, error: "Something went wrong" });
+      res
+        .status(HTTP_STATUS_CODES.INTERNAL_SERVER_ERROR)
+        .json({ success: false, error: "Something went wrong" });
       return;
     }
   }

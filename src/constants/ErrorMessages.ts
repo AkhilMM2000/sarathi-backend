@@ -11,7 +11,7 @@ export const ERROR_MESSAGES = {
     INVALID_TOKEN: "Invalid or expired token.",
     ACCESS_DENIED: "Access denied.",
     SESSION_EXPIRED: "Session expired. Please login again.",
-    
+    ALREDY_EXIST:"A driver with this email, mobile, Aadhaar, or license number already exists.",
     // User
     USER_NOT_FOUND: "User not found.",
     USER_ID_NOT_FOUND: "User ID not found.",
@@ -20,6 +20,7 @@ export const ERROR_MESSAGES = {
     MOBILE_ALREADY_REGISTERED: "Mobile number is already registered.",
     OTP_EXPIRED: "OTP has expired.",
     OTP_INVALID: "Invalid OTP provided.",
+    
     ACCOUNT_NOT_VERIFIED: "Account not verified. Please verify first.",
     EMAIL_OR_MOBILE_EXIST:"User already exists with this email or mobile",
     // Driver

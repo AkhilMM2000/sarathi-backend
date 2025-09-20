@@ -1,17 +1,12 @@
 export class AuthError extends Error {
-    public statusCode: number;
-  
-    constructor(message = "Authentication failed", statusCode = 401) {
-      super(message);
-      this.statusCode = statusCode;
-  
-      // Ensure the name property is properly set (useful for debugging)
-      this.name = "AuthError";
-  
-      // Maintain proper stack trace
-      if (Error.captureStackTrace) {
-        Error.captureStackTrace(this, AuthError);
-      }
-    }
+      public readonly statusCode: number;
+
+  constructor(message: string, statusCode = 400) {
+    super(message);
+    this.statusCode = statusCode;
+
+    Object.setPrototypeOf(this, new.target.prototype);
+    Error.captureStackTrace(this);
+  }
   }
   

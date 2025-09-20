@@ -3,13 +3,14 @@ import { IUserRepository } from "../../../domain/repositories/IUserepository";
 import { IDriverRepository } from "../../../domain/repositories/IDriverepository"; 
 import { HashService } from "../../services/HashService"; 
 import { AuthError } from "../../../domain/errors/Autherror";
+import { TOKENS } from "../../../constants/Tokens";
 
 
 @injectable()
 export class ChangePassword {
   constructor(
-    @inject("IUserRepository") private userRepository: IUserRepository,
-    @inject("IDriverRepository") private driverRepository: IDriverRepository,
+    @inject(TOKENS.IUSER_REPO) private userRepository: IUserRepository,
+    @inject(TOKENS.IDRIVER_REPO) private driverRepository: IDriverRepository,
     @inject("HashService") private hashService: HashService
   ) {}
 

@@ -38,11 +38,9 @@ app.use("/api/files", fileroute);
 app.use('/api', Bookroute)
 app.use('/api/auth', AuthRoute);
 app.use('/api/auth/google', googleRoute )
+app.use(errorHandler)
 const PORT = process.env.PORT||5000;
 
-app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
-  errorHandler(err, req, res, next);
-});
 
 const server = http.createServer(app);
 initializeSocket(server);
@@ -53,6 +51,8 @@ NotificationSocket()
 connectDB().then(() => {
   server.listen(PORT, () => console.log(`Server running on port ${PORT}`));
 });
+
+
 
 
 

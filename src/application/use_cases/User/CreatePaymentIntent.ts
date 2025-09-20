@@ -6,6 +6,7 @@ import { am } from '@upstash/redis/zmscore-BdNsMd17';
 import { IDriverRepository } from '../../../domain/repositories/IDriverepository';
 import { AuthError } from '../../../domain/errors/Autherror';
 import { HTTP_STATUS_CODES } from '../../../constants/HttpStatusCode';
+import { TOKENS } from '../../../constants/Tokens';
 
 interface CreatePaymentIntentRequest {
   amount: number;
@@ -17,7 +18,7 @@ export class CreatePaymentIntent {
   constructor(
     @inject('StripePaymentService')
     private stripeService: IStripeService,
-     @inject("IDriverRepository") private driverRepository: IDriverRepository,
+     @inject(TOKENS.IDRIVER_REPO) private driverRepository: IDriverRepository,
   ) {}
 
   async execute({

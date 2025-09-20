@@ -9,12 +9,13 @@ import { Driver } from "../../domain/models/Driver"
 import { AuthService } from "../services/AuthService";
 import { AuthError } from "../../domain/errors/Autherror"; 
 import { HashService } from "../services/HashService";
+import { TOKENS } from "../../constants/Tokens";
 dotenv.config();
 @injectable()
 export class Login {
   constructor(
-    @inject("IUserRepository") private userRepository: IUserRepository,
-    @inject("IDriverRepository") private driverRepository: IDriverRepository,
+    @inject(TOKENS.IUSER_REPO) private userRepository: IUserRepository,
+    @inject(TOKENS.IDRIVER_REPO) private driverRepository: IDriverRepository,
  @inject("HashService") private hashService: HashService
   ) {}
   async execute(email: string, password: string, role: "user" | "driver" | "admin") {

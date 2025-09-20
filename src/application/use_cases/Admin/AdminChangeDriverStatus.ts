@@ -3,11 +3,12 @@ import { IDriverRepository } from "../../../domain/repositories/IDriverepository
 import { Driver } from "../../../domain/models/Driver";
 import { AuthError } from "../../../domain/errors/Autherror";
 import { INotificationService } from "../../services/NotificationService";
+import { TOKENS } from "../../../constants/Tokens";
 
 @injectable()
 export class AdminChangeDriverStatus {
   constructor(
-    @inject("IDriverRepository") private driverRepository: IDriverRepository,
+    @inject(TOKENS.IDRIVER_REPO) private driverRepository: IDriverRepository,
     @inject("INotificationService")
     private notificationService: INotificationService
   ) {}

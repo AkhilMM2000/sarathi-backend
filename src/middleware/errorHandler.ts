@@ -1,13 +1,20 @@
-import { Request, Response, NextFunction } from "express";
+import { ErrorRequestHandler } from "express";
 import { AuthError } from "../domain/errors/Autherror";
+import { ERROR_MESSAGES } from "../constants/ErrorMessages";
 
-
-export function errorHandler(err: any, req: Request, res: Response, next: NextFunction) {
+export const errorHandler: ErrorRequestHandler = (err, req, res, _next) => {
   if (err instanceof AuthError) {
-    
-    return res.status(err.statusCode).json({ error: err.message });
+    res.status(err.statusCode).json({
+      success: false,
+      message: err.message,
+    });
+    return; 
   }
 
-  console.error("Unhandled Error:", err);
-  return res.status(500).json({ error: "Internal Server Error" });
-}
+  console.error("Unexpected error:", err);
+
+  res.status(500).json({
+    success: false,
+    message: ERROR_MESSAGES.INTERNAL_SERVER_ERROR,
+  });
+};

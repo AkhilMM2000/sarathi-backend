@@ -3,12 +3,13 @@ import { IDriverRepository } from "../../../domain/repositories/IDriverepository
 import { IUserRepository } from "../../../domain/repositories/IUserepository"; 
 import { GoogleDistanceService } from "../../services/GoogleDistanceService"; 
 import { AuthError } from "../../../domain/errors/Autherror";
+import { TOKENS } from "../../../constants/Tokens";
 
 @injectable()
 export class FindNearbyDrivers {
   constructor(
-    @inject("IDriverRepository") private driverRepository: IDriverRepository,
-    @inject("IUserRepository") private userRepository: IUserRepository,
+    @inject(TOKENS.IDRIVER_REPO) private driverRepository: IDriverRepository,
+    @inject(TOKENS.IUSER_REPO) private userRepository: IUserRepository,
     @inject("GoogleDistanceService") private distanceService: GoogleDistanceService
   ) {}
 

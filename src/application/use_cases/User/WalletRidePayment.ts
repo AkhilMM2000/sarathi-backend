@@ -7,6 +7,7 @@ import { IBookingRepository } from "../../../domain/repositories/IBookingreposit
 import { paymentStatus } from "../../../domain/models/Booking";
 import { IStripeService } from "../../../domain/services/IStripeService";
 import { IDriverRepository } from "../../../domain/repositories/IDriverepository";
+import { TOKENS } from "../../../constants/Tokens";
 
 @injectable()
 export class WalletPayment {
@@ -16,7 +17,7 @@ export class WalletPayment {
     private bookingRepo: IBookingRepository,
     @inject("StripePaymentService")
     private stripeService: IStripeService,
-    @inject("IDriverRepository") private driverRepository: IDriverRepository
+    @inject(TOKENS.IDRIVER_REPO) private driverRepository: IDriverRepository
   ) {}
   async WalletRidePayment(rideId: string, userId: string, amount: number) {
     try {

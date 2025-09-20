@@ -7,6 +7,7 @@ import { WalletService } from "../../services/WalletService";
 import { IUserRepository } from "../../../domain/repositories/IUserepository";
 import { INotificationService } from "../../services/NotificationService";
 import { IWalletRepository } from "../../../domain/repositories/IWalletRepository";
+import { TOKENS } from "../../../constants/Tokens";
 
 @injectable()
 export class AttachPaymentIntentIdToBooking {
@@ -14,7 +15,7 @@ export class AttachPaymentIntentIdToBooking {
     @inject("IBookingRepository")
     private bookingRepo: IBookingRepository,
         @inject("IWalletRepository") private walletRepository: IWalletRepository,
-           @inject("IUserRepository") private userRepository: IUserRepository,
+           @inject(TOKENS.IUSER_REPO) private userRepository: IUserRepository,
       @inject('StripePaymentService')
         private stripeService: IStripeService,
            @inject("INotificationService")
