@@ -4,11 +4,12 @@ import { inject, injectable } from "tsyringe";
 import { AuthError } from "../../domain/errors/Autherror";
 import { H } from "@upstash/redis/zmscore-BdNsMd17";
 import { HTTP_STATUS_CODES } from "../../constants/HttpStatusCode";
+import { TOKENS } from "../../constants/Tokens";
 
 @injectable()
 export class EditVehicle {
   constructor(
-    @inject("IVehicleRepository") private vehicleRepository: IVehicleRepository
+    @inject(TOKENS.VEHICLE_REPO) private vehicleRepository: IVehicleRepository
   ) {}
 
   async execute(vehicleId: string, updateData: Partial<Vehicle>): Promise<Vehicle|null> {

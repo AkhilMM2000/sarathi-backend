@@ -15,18 +15,21 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.GetUserData = void 0;
 const tsyringe_1 = require("tsyringe");
 const Autherror_1 = require("../../../domain/errors/Autherror");
+const Tokens_1 = require("../../../constants/Tokens");
+const HttpStatusCode_1 = require("../../../constants/HttpStatusCode");
+const ErrorMessages_1 = require("../../../constants/ErrorMessages");
 let GetUserData = class GetUserData {
     constructor(userRepository) {
         this.userRepository = userRepository;
     }
     async execute(userId) {
         if (!userId) {
-            throw new Autherror_1.AuthError("User ID is required", 400);
+            throw new Autherror_1.AuthError(ErrorMessages_1.ERROR_MESSAGES.USER_ID_NOT_FOUND, HttpStatusCode_1.HTTP_STATUS_CODES.BAD_REQUEST);
         }
         console.log(userId);
         const user = await this.userRepository.getUserById(userId);
         if (!user) {
-            throw new Autherror_1.AuthError("User not founde", 404);
+            throw new Autherror_1.AuthError(ErrorMessages_1.ERROR_MESSAGES.USER_NOT_FOUND, HttpStatusCode_1.HTTP_STATUS_CODES.NOT_FOUND);
         }
         return user;
     }
@@ -34,7 +37,7 @@ let GetUserData = class GetUserData {
 exports.GetUserData = GetUserData;
 exports.GetUserData = GetUserData = __decorate([
     (0, tsyringe_1.injectable)(),
-    __param(0, (0, tsyringe_1.inject)("IUserRepository")),
+    __param(0, (0, tsyringe_1.inject)(Tokens_1.TOKENS.IUSER_REPO)),
     __metadata("design:paramtypes", [Object])
 ], GetUserData);
 //# sourceMappingURL=GetUserData.js.map

@@ -17,6 +17,7 @@ const uuid_1 = require("uuid");
 const Autherror_1 = require("../../../domain/errors/Autherror");
 const tsyringe_1 = require("tsyringe");
 const Emailservice_1 = require("../../services/Emailservice");
+const Tokens_1 = require("../../../constants/Tokens");
 let ForgotPasswordUseCase = class ForgotPasswordUseCase {
     constructor(store, userRepository, driverRepository, emailService) {
         this.store = store;
@@ -56,10 +57,10 @@ let ForgotPasswordUseCase = class ForgotPasswordUseCase {
 exports.ForgotPasswordUseCase = ForgotPasswordUseCase;
 exports.ForgotPasswordUseCase = ForgotPasswordUseCase = __decorate([
     (0, tsyringe_1.injectable)(),
-    __param(0, (0, tsyringe_1.inject)("UserRegistrationStore")),
-    __param(1, (0, tsyringe_1.inject)("IUserRepository")),
-    __param(2, (0, tsyringe_1.inject)("IDriverRepository")),
-    __param(3, (0, tsyringe_1.inject)("EmailService")),
+    __param(0, (0, tsyringe_1.inject)(Tokens_1.TOKENS.USER_REGISTERSTORE)),
+    __param(1, (0, tsyringe_1.inject)(Tokens_1.TOKENS.IUSER_REPO)),
+    __param(2, (0, tsyringe_1.inject)(Tokens_1.TOKENS.IDRIVER_REPO)),
+    __param(3, (0, tsyringe_1.inject)(Tokens_1.TOKENS.EMAIL_SERVICE)),
     __metadata("design:paramtypes", [Object, Object, Object, Emailservice_1.EmailService])
 ], ForgotPasswordUseCase);
 //# sourceMappingURL=ForgotPasswordUseCase.js.map

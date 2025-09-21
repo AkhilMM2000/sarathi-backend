@@ -17,11 +17,11 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Login = void 0;
 const tsyringe_1 = require("tsyringe");
-const bcryptjs_1 = __importDefault(require("bcryptjs"));
 const dotenv_1 = __importDefault(require("dotenv"));
 const AuthService_1 = require("../services/AuthService");
 const Autherror_1 = require("../../domain/errors/Autherror");
-const HashService_1 = require("../services/HashService");
+const Tokens_1 = require("../../constants/Tokens");
+const HttpStatusCode_1 = require("../../constants/HttpStatusCode");
 dotenv_1.default.config();
 let Login = class Login {
     constructor(userRepository, driverRepository, hashService) {
@@ -30,52 +30,66 @@ let Login = class Login {
         this.hashService = hashService;
     }
     async execute(email, password, role) {
-        let user = null;
+        let user;
+        // --- User / Admin login ---
         if (role === "user" || role === "admin") {
-            user = await this.userRepository.findByEmail(email);
-            if (!user) {
-                throw new Autherror_1.AuthError(`${role} not found register as user`, 401);
+            const found = await this.userRepository.findByEmail(email);
+            if (!found) {
+                throw new Autherror_1.AuthError(`${role} not found. Please register.`, HttpStatusCode_1.HTTP_STATUS_CODES.UNAUTHORIZED);
             }
+            user = found;
         }
-        else if (role === "driver") {
-            user = await this.driverRepository.findByEmail(email);
-            // if (user?.status === "pending") {
-            //   throw new AuthError("Your account is under review. Please wait for approval.", 403);
-            // }
-            if (user?.status === "rejected") {
-                throw new Autherror_1.AuthError("Your registration has been rejected. just clear your verification ", 403);
+        // --- Driver login ---
+        else {
+            const found = await this.driverRepository.findByEmail(email);
+            if (!found) {
+                throw new Autherror_1.AuthError("Driver not found. Please register.", HttpStatusCode_1.HTTP_STATUS_CODES.UNAUTHORIZED);
             }
+            if (found.status === "pending") {
+                throw new Autherror_1.AuthError("Your account is under review. Please wait for approval.", HttpStatusCode_1.HTTP_STATUS_CODES.FORBIDDEN);
+            }
+            if (found.status === "rejected") {
+                throw new Autherror_1.AuthError("Your registration has been rejected. Please contact support.", HttpStatusCode_1.HTTP_STATUS_CODES.FORBIDDEN);
+            }
+            user = found;
         }
-        if (user?.isBlock) {
-            throw new Autherror_1.AuthError("Your account has been blocked. Please contact support.", 403);
+        // --- Blocked check ---
+        if (user.isBlock) {
+            throw new Autherror_1.AuthError("Your account has been blocked. Please contact support.", HttpStatusCode_1.HTTP_STATUS_CODES.FORBIDDEN);
         }
-        const status = await this.hashService.compare(password, user?.password || '');
-        console.log(status);
-        if (user) {
-            (await bcryptjs_1.default.compare(password, user.password));
+        // --- Password check ---
+        const validPassword = await this.hashService.compare(password, user.password);
+        if (!validPassword) {
+            throw new Autherror_1.AuthError("Invalid email or password.", HttpStatusCode_1.HTTP_STATUS_CODES.UNAUTHORIZED);
         }
-        if (!user || !(await bcryptjs_1.default.compare(password, user.password))) {
-            throw new Autherror_1.AuthError("Invalid email or password", 401);
+        // --- Role check ---
+        if (role !== user.role) {
+            throw new Autherror_1.AuthError("Role mismatch. Please login with the correct role.", HttpStatusCode_1.HTTP_STATUS_CODES.UNAUTHORIZED);
         }
-        // Ensure admin users are correctly assigned
-        if (role === "user" && user.role === "admin") {
-            role = "admin";
-        }
-        const accessToken = AuthService_1.AuthService.generateAccessToken({ id: user._id, email: user.email, role });
-        const refreshToken = AuthService_1.AuthService.generateRefreshToken({ id: user._id, email: user.email, role });
+        // --- Token generation ---
+        const accessToken = AuthService_1.AuthService.generateAccessToken({
+            id: user._id,
+            email: user.email,
+            role: user.role,
+        });
+        const refreshToken = AuthService_1.AuthService.generateRefreshToken({
+            id: user._id,
+            email: user.email,
+            role: user.role,
+        });
         return {
             accessToken,
             refreshToken,
-            role
+            role: user.role,
         };
     }
 };
 exports.Login = Login;
 exports.Login = Login = __decorate([
     (0, tsyringe_1.injectable)(),
-    __param(0, (0, tsyringe_1.inject)("IUserRepository")),
-    __param(1, (0, tsyringe_1.inject)("IDriverRepository")),
-    __param(2, (0, tsyringe_1.inject)("HashService")),
-    __metadata("design:paramtypes", [Object, Object, HashService_1.HashService])
+    __param(0, (0, tsyringe_1.inject)(Tokens_1.TOKENS.IUSER_REPO)),
+    __param(1, (0, tsyringe_1.inject)(Tokens_1.TOKENS.IDRIVER_REPO)),
+    __param(2, (0, tsyringe_1.inject)(Tokens_1.TOKENS.HASH_SERVICE)),
+    __metadata("design:paramtypes", [Object, Object, Object])
 ], Login);
 //# sourceMappingURL=Login.js.map

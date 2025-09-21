@@ -10,10 +10,11 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.MongoBookingRepository = void 0;
-const Bookingschema_1 = __importDefault(require("./modals/Bookingschema")); // Mongoose model
+const Bookingschema_1 = __importDefault(require("./modals/Bookingschema"));
 const tsyringe_1 = require("tsyringe");
 const Autherror_1 = require("../../domain/errors/Autherror");
 const HttpStatusCode_1 = require("../../constants/HttpStatusCode");
+const mongoose_1 = __importDefault(require("mongoose"));
 let MongoBookingRepository = class MongoBookingRepository {
     async createBooking(booking) {
         try {
@@ -225,6 +226,92 @@ let MongoBookingRepository = class MongoBookingRepository {
         catch (error) {
             console.log(error.message);
             throw new Autherror_1.AuthError(`Failed to fetch ${role} ride history. ${error.message}`, HttpStatusCode_1.HTTP_STATUS_CODES.INTERNAL_SERVER_ERROR);
+        }
+    }
+    async countBookingsByStatus(driverId, year, month) {
+        try {
+            const matchStage = {
+                driverId: new mongoose_1.default.Types.ObjectId(driverId)
+            };
+            if (year) {
+                matchStage.$expr = {
+                    $eq: [{ $year: "$startDate" }, year]
+                };
+            }
+            if (year && month) {
+                matchStage.$expr = {
+                    $and: [
+                        { $eq: [{ $year: "$startDate" }, year] },
+                        { $eq: [{ $month: "$startDate" }, month] }
+                    ]
+                };
+            }
+            const result = await Bookingschema_1.default.aggregate([
+                { $match: matchStage },
+                {
+                    $group: {
+                        _id: "$status",
+                        count: { $sum: 1 }
+                    }
+                }
+            ]);
+            const summary = {};
+            result.forEach((r) => {
+                summary[r._id] = r.count;
+            });
+            return summary;
+        }
+        catch (error) {
+            console.error('Error in countBookingsByStatus:', error.message);
+            throw new Autherror_1.AuthError('Failed to fetch booking status summary', HttpStatusCode_1.HTTP_STATUS_CODES.INTERNAL_SERVER_ERROR);
+        }
+    }
+    async getDriverEarningsByMonth(driverId, year, month) {
+        try {
+            const matchStage = {
+                driverId: new mongoose_1.default.Types.ObjectId(driverId),
+                paymentStatus: 'COMPLETED'
+            };
+            if (month) {
+                matchStage.$expr = {
+                    $and: [
+                        { $eq: [{ $year: "$startDate" }, year] },
+                        { $eq: [{ $month: "$startDate" }, month] }
+                    ]
+                };
+            }
+            else {
+                matchStage.$expr = {
+                    $eq: [{ $year: "$startDate" }, year]
+                };
+            }
+            const groupStage = month
+                ? {
+                    _id: { $dayOfMonth: "$startDate" },
+                    total: { $sum: "$driver_fee" },
+                    count: { $sum: 1 }
+                }
+                : {
+                    _id: { $month: "$startDate" },
+                    total: { $sum: "$driver_fee" },
+                    count: { $sum: 1 }
+                };
+            const result = await Bookingschema_1.default.aggregate([
+                { $match: matchStage },
+                { $group: groupStage },
+                { $sort: { _id: 1 } }
+            ]);
+            const chartData = result.map((r) => ({
+                label: r._id.toString(),
+                totalEarnings: r.total
+            }));
+            const totalEarnings = result.reduce((sum, r) => sum + r.total, 0);
+            const totalRides = result.reduce((sum, r) => sum + r.count, 0);
+            return { chartData, totalEarnings, totalRides };
+        }
+        catch (error) {
+            console.error('Error in getDriverEarningsByMonth:', error.message);
+            throw new Autherror_1.AuthError('Failed to fetch earnings summary', HttpStatusCode_1.HTTP_STATUS_CODES.INTERNAL_SERVER_ERROR);
         }
     }
 };

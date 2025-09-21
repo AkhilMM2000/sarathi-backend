@@ -6,6 +6,10 @@ import { IGetUserData } from "../../application/use_cases/User/interfaces/IGetUs
 import { GetUserData } from "../../application/use_cases/User/GetUserData";
 import { IVerifyOtp } from "../../application/use_cases/Interfaces/IVerifyOtp";
 import { VerifyOTP } from "../../application/use_cases/VerifyOTP";
+import { IResendOTP } from "../../application/use_cases/Interfaces/IResendOTP";
+import { ResendOTP } from "../../application/use_cases/ResendOTP";
+import { Login } from "../../application/use_cases/Login";
+import { ILogin } from "../../application/use_cases/Interfaces/ILogin";
 
 container.registerSingleton<IRegisterUser>(
   TOKENS.REGISTER_USER_USECASE,
@@ -21,3 +25,5 @@ container.registerSingleton<IVerifyOtp>(
 TOKENS.VERIFY_OTP_USECAE,
 VerifyOTP
 )
+container.registerSingleton<IResendOTP>(TOKENS.RESEND_OTP_USECASE, ResendOTP);
+container.registerSingleton<ILogin>(TOKENS.LOGIN_USECASE, Login);

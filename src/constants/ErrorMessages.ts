@@ -9,6 +9,7 @@ export const ERROR_MESSAGES = {
     // Authentication / Authorization
     AUTH_FAILED: "Authentication failed.",
     INVALID_TOKEN: "Invalid or expired token.",
+     PENDING_NOTFOUND :"No pending registration found. Please sign up again.",
     ACCESS_DENIED: "Access denied.",
     SESSION_EXPIRED: "Session expired. Please login again.",
     ALREDY_EXIST:"A driver with this email, mobile, Aadhaar, or license number already exists.",

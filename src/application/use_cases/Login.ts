@@ -1,70 +1,111 @@
 import { inject, injectable } from "tsyringe";
-import { IUserRepository } from "../../domain/repositories/IUserepository"; 
+import { IUserRepository } from "../../domain/repositories/IUserepository";
 import { IDriverRepository } from "../../domain/repositories/IDriverepository";
-import bcrypt from "bcryptjs";
-
 import dotenv from "dotenv";
 import { User } from "../../domain/models/User";
-import { Driver } from "../../domain/models/Driver"
+import { Driver } from "../../domain/models/Driver";
 import { AuthService } from "../services/AuthService";
-import { AuthError } from "../../domain/errors/Autherror"; 
-import { HashService } from "../services/HashService";
+import { AuthError } from "../../domain/errors/Autherror";
+import { IHashService } from "../services/HashService";
 import { TOKENS } from "../../constants/Tokens";
+import { HTTP_STATUS_CODES } from "../../constants/HttpStatusCode";
+import { ILogin } from "./Interfaces/ILogin";
+import { LoginResponseDto } from "./Data_transerObj/LoginDto";
 dotenv.config();
 @injectable()
-export class Login {
+export class Login implements ILogin {
   constructor(
     @inject(TOKENS.IUSER_REPO) private userRepository: IUserRepository,
     @inject(TOKENS.IDRIVER_REPO) private driverRepository: IDriverRepository,
- @inject("HashService") private hashService: HashService
+    @inject(TOKENS.HASH_SERVICE) private hashService: IHashService
   ) {}
-  async execute(email: string, password: string, role: "user" | "driver" | "admin") {
-    let user: User | Driver | null = null;
+  async execute(
+    email: string,
+    password: string,
+    role: "user" | "driver" | "admin"
+  ): Promise<LoginResponseDto> {
+    let user: User | Driver;
 
-   
+    // --- User / Admin login ---
     if (role === "user" || role === "admin") {
-      user = await this.userRepository.findByEmail(email);
-        if (!user) {
-        throw new AuthError(`${role} not found register as user`, 401);
+      const found = await this.userRepository.findByEmail(email);
+      if (!found) {
+        throw new AuthError(
+          `${role} not found. Please register.`,
+          HTTP_STATUS_CODES.UNAUTHORIZED
+        );
       }
-    } else if (role === "driver") {
-      user = await this.driverRepository.findByEmail(email);
-      // if (user?.status === "pending") {
-      //   throw new AuthError("Your account is under review. Please wait for approval.", 403);
-      // }
-  
-      if (user?.status === "rejected") {
-        throw new AuthError("Your registration has been rejected. just clear your verification ", 403);
+      user = found;
+    }
+    // --- Driver login ---
+    else {
+      const found = await this.driverRepository.findByEmail(email);
+      if (!found) {
+        throw new AuthError(
+          "Driver not found. Please register.",
+          HTTP_STATUS_CODES.UNAUTHORIZED
+        );
       }
+      if (found.status === "pending") {
+        throw new AuthError(
+          "Your account is under review. Please wait for approval.",
+          HTTP_STATUS_CODES.FORBIDDEN
+        );
+      }
+      if (found.status === "rejected") {
+        throw new AuthError(
+          "Your registration has been rejected. Please contact support.",
+          HTTP_STATUS_CODES.FORBIDDEN
+        );
+      }
+      user = found;
     }
 
-    if(user?.isBlock){
-      throw new AuthError("Your account has been blocked. Please contact support.", 403);
-    }
-    const status= await this.hashService.compare(password,user?.password||'')
-    console.log(status);
-    
-  if(user){
-    (await bcrypt.compare(password,user.password));
-  }
-
-
-    if (!user || !(await bcrypt.compare(password, user.password))) {
-      throw new AuthError("Invalid email or password", 401);
+    // --- Blocked check ---
+    if (user.isBlock) {
+      throw new AuthError(
+        "Your account has been blocked. Please contact support.",
+        HTTP_STATUS_CODES.FORBIDDEN
+      );
     }
 
-    // Ensure admin users are correctly assigned
-    if (role === "user" && user.role === "admin") {
-      role = "admin";
+    // --- Password check ---
+    const validPassword = await this.hashService.compare(
+      password,
+      user.password
+    );
+    if (!validPassword) {
+      throw new AuthError(
+        "Invalid email or password.",
+        HTTP_STATUS_CODES.UNAUTHORIZED
+      );
     }
 
-    const accessToken = AuthService.generateAccessToken({ id: user._id, email: user.email, role });
-    const refreshToken = AuthService.generateRefreshToken({ id: user._id, email: user.email, role });
+    // --- Role check ---
+    if (role !== user.role) {
+      throw new AuthError(
+        "Role mismatch. Please login with the correct role.",
+        HTTP_STATUS_CODES.UNAUTHORIZED
+      );
+    }
+
+    // --- Token generation ---
+    const accessToken = AuthService.generateAccessToken({
+      id: user._id,
+      email: user.email,
+      role: user.role,
+    });
+
+    const refreshToken = AuthService.generateRefreshToken({
+      id: user._id,
+      email: user.email,
+      role: user.role,
+    });
 
     return {
       accessToken,
       refreshToken,
-      role
+      role: user.role,
     };
   }
 }

@@ -8,7 +8,7 @@ import { TOKENS } from "../../constants/Tokens";
 @injectable()
 export class RegisterDriver {
   constructor(
-    @inject("EmailService") private emailService: EmailService,
+    @inject(TOKENS.EMAIL_SERVICE) private emailService: EmailService,
     @inject(TOKENS.USER_REGISTERSTORE) private store: IRedisrepository
   ) {}
 

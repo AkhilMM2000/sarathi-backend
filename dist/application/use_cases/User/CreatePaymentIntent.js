@@ -16,6 +16,7 @@ exports.CreatePaymentIntent = void 0;
 const tsyringe_1 = require("tsyringe");
 const Autherror_1 = require("../../../domain/errors/Autherror");
 const HttpStatusCode_1 = require("../../../constants/HttpStatusCode");
+const Tokens_1 = require("../../../constants/Tokens");
 let CreatePaymentIntent = class CreatePaymentIntent {
     constructor(stripeService, driverRepository) {
         this.stripeService = stripeService;
@@ -42,7 +43,7 @@ exports.CreatePaymentIntent = CreatePaymentIntent;
 exports.CreatePaymentIntent = CreatePaymentIntent = __decorate([
     (0, tsyringe_1.injectable)(),
     __param(0, (0, tsyringe_1.inject)('StripePaymentService')),
-    __param(1, (0, tsyringe_1.inject)("IDriverRepository")),
+    __param(1, (0, tsyringe_1.inject)(Tokens_1.TOKENS.IDRIVER_REPO)),
     __metadata("design:paramtypes", [Object, Object])
 ], CreatePaymentIntent);
 //# sourceMappingURL=CreatePaymentIntent.js.map

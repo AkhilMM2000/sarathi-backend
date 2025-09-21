@@ -45,8 +45,16 @@ const DriverSchema = new mongoose_1.Schema({
     password: { type: String, required: true },
     profileImage: { type: String },
     location: {
-        latitude: { type: Number, required: true },
-        longitude: { type: Number, required: true },
+        type: {
+            type: String,
+            enum: ['Point'],
+            required: true,
+            default: 'Point'
+        },
+        coordinates: {
+            type: [Number], // [longitude, latitude]
+            required: true
+        }
     },
     place: { type: String },
     aadhaarNumber: { type: String, required: true, unique: true },
@@ -79,6 +87,7 @@ const DriverSchema = new mongoose_1.Schema({
         default: 0,
     }
 }, { timestamps: true });
+DriverSchema.index({ location: '2dsphere' });
 DriverSchema.pre("save", async function (next) {
     if (!this.isModified("password"))
         return next();

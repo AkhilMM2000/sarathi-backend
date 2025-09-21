@@ -20,6 +20,8 @@ const WalletBallence_1 = require("../../application/use_cases/User/WalletBallenc
 const WalletRidePayment_1 = require("../../application/use_cases/User/WalletRidePayment");
 const DriverReview_1 = require("../../application/use_cases/DriverReview");
 const deleteMessage_1 = require("../../application/use_cases/deleteMessage");
+const GetBookingStatusSummary_1 = require("../../application/use_cases/Driver/GetBookingStatusSummary");
+const GetMonthlyEarningsReport_1 = require("../../application/use_cases/Driver/GetMonthlyEarningsReport");
 class BookingController {
     static async bookDriver(req, res) {
         try {
@@ -360,6 +362,48 @@ class BookingController {
             res.status(500).json({ success: false, error: ErrorMessages_1.ERROR_MESSAGES.INTERNAL_SERVER_ERROR });
         }
     }
+    static async getDriverBookingStatusSummary(req, res) {
+        try {
+            const driverId = req.user?.id;
+            const year = req.query.year ? parseInt(req.query.year) : undefined;
+            const month = req.query.month ? parseInt(req.query.month) : undefined;
+            const useCase = tsyringe_1.container.resolve(GetBookingStatusSummary_1.GetBookingStatusSummary);
+            const result = await useCase.execute(driverId, year, month);
+            res.status(HttpStatusCode_1.HTTP_STATUS_CODES.OK).json(result);
+        }
+        catch (error) {
+            if (error instanceof Autherror_1.AuthError) {
+                res
+                    .status(error.statusCode)
+                    .json({ success: false, error: error.message });
+                return;
+            }
+            console.error("Error fetching getDriverBookingStatusSummary", error);
+            res.status(500).json({ success: false, error: ErrorMessages_1.ERROR_MESSAGES.INTERNAL_SERVER_ERROR });
+        }
+    }
+    ;
+    static async getDriverEarningsByMonth(req, res) {
+        try {
+            const driverId = req.user?.id;
+            const year = req.query.year ? parseInt(req.query.year) : new Date().getFullYear();
+            const month = req.query.month ? parseInt(req.query.month) : undefined;
+            const useCase = tsyringe_1.container.resolve(GetMonthlyEarningsReport_1.GetDriverEarningsSummary);
+            const result = await useCase.execute(driverId, year, month);
+            res.status(HttpStatusCode_1.HTTP_STATUS_CODES.OK).json(result);
+        }
+        catch (error) {
+            if (error instanceof Autherror_1.AuthError) {
+                res
+                    .status(error.statusCode)
+                    .json({ success: false, error: error.message });
+                return;
+            }
+            console.error("Error fetching getDriverEarningsByMonth ", error);
+            res.status(HttpStatusCode_1.HTTP_STATUS_CODES.INTERNAL_SERVER_ERROR).json({ success: false, error: ErrorMessages_1.ERROR_MESSAGES.INTERNAL_SERVER_ERROR });
+        }
+    }
+    ;
 }
 exports.BookingController = BookingController;
 //# sourceMappingURL=BookingController.js.map

@@ -5,7 +5,7 @@ import { VerifyOTP } from "../../application/use_cases/VerifyOTP";
 import { ResendOTP } from "../../application/use_cases/ResendOTP";
 import { Login } from "../../application/use_cases/Login";
 
-import { AddVehicle } from "../../application/use_cases/AddVehicle";
+import { AddVehicle } from "../../application/use_cases/User/AddVehicle";
 import { EditVehicle } from "../../application/use_cases/EditVehicle";
 import { AuthError } from "../../domain/errors/Autherror";
 import { AuthenticatedRequest } from "../../middleware/authMiddleware";
@@ -26,6 +26,8 @@ import { TOKENS } from "../../constants/Tokens";
 import { INFO_MESSAGES } from "../../constants/Info_Messages";
 import { IGetUserData } from "../../application/use_cases/User/interfaces/IGetUserData";
 import { IVerifyOtp } from "../../application/use_cases/Interfaces/IVerifyOtp";
+import { IResendOTP } from "../../application/use_cases/Interfaces/IResendOTP";
+import { ILogin } from "../../application/use_cases/Interfaces/ILogin";
 
 export class UserController {
   constructor(
@@ -34,7 +36,11 @@ export class UserController {
     @inject(TOKENS.GET_USER_DATA_USECASE)
     private getUserDataUsecase: IGetUserData,
     @inject(TOKENS.VERIFY_OTP_USECAE)
-    private verifyOtpUsecase: IVerifyOtp
+    private verifyOtpUsecase: IVerifyOtp,
+    @inject(TOKENS.RESEND_OTP_USECASE)
+    private resendOtpUsecase:IResendOTP,
+    @inject(TOKENS.LOGIN_USECASE)
+    private loginUsecase:ILogin
   ) {}
 
   async register(req: Request, res: Response, next: NextFunction) {
@@ -74,31 +80,27 @@ export class UserController {
       next(error);
     }
   }
-  static async resendOTP(req: Request, res: Response) {
+   async resendOTP(req: Request, res: Response,next:NextFunction) {
     try {
       const { email, role } = req.body;
       console.log(email, role);
 
-      const resendOTP = container.resolve(ResendOTP);
-      const result = await resendOTP.execute(email, role);
-      res.status(200).json({ success: true, message: result.message });
+      
+      const result = await this.resendOtpUsecase.execute(email, role);
+      res.status(HTTP_STATUS_CODES.OK).json({ success: true, message: result.message });
     } catch (error) {
-      res.status(400).json({
-        success: false,
-        message:
-          error instanceof Error ? error.message : "Something went wrong",
-      });
+      next(error)
     }
   }
 
-  static async login(req: Request, res: Response) {
+ async login(req: Request, res: Response,next:NextFunction) {
     try {
-      const login = container.resolve(Login);
+    
       const { email, password, role } = req.body;
 
       console.log(req.body);
 
-      const { accessToken, refreshToken } = await login.execute(
+      const { accessToken, refreshToken } = await this.loginUsecase.execute(
         email,
         password,
         role
@@ -112,27 +114,19 @@ export class UserController {
         sameSite: "none",
         maxAge: 7 * 24 * 60 * 60 * 1000,
       });
-      res.status(200).json({
+      res.status(HTTP_STATUS_CODES.OK).json({
         accessToken,
         role,
       });
     } catch (error) {
-      if (error instanceof AuthError) {
-        res.status(error.statusCode).json({
-          success: false,
-          error: error.message,
-        });
-        return;
-      }
-
-      res.status(500).json({ success: false, error: "Something went wrong" });
-      return;
+      next(error)
     }
   }
 
   static async addVehicle(
     req: AuthenticatedRequest,
-    res: Response
+    res: Response,
+    next:NextFunction
   ): Promise<void> {
     try {
       const vehicleData = req.body;
@@ -143,21 +137,13 @@ export class UserController {
         userId: req.user?.id,
       });
 
-      res.status(201).json({ success: true, data: vehicle });
+      res.status(HTTP_STATUS_CODES.OK).json({ success: true, data: vehicle });
     } catch (error) {
-      if (error instanceof AuthError) {
-        res
-          .status(error.statusCode)
-          .json({ success: false, message: error.message });
-      } else {
-        res
-          .status(500)
-          .json({ success: false, message: "Internal Server Error" });
-      }
+     next(error)
     }
   }
 
-  static async editVehicle(req: Request, res: Response) {
+  static async editVehicle(req: Request, res: Response,next:NextFunction) {
     try {
       const { vehicleId } = req.params;
       const updateData = req.body;
@@ -169,16 +155,9 @@ export class UserController {
         updateData
       );
 
-      res.status(200).json({ success: true, data: updatedVehicle });
+      res.status(HTTP_STATUS_CODES.OK).json({ success: true, data: updatedVehicle });
     } catch (error) {
-      if (error instanceof AuthError) {
-        res
-          .status(error.statusCode)
-          .json({ success: false, message: error.message });
-      }
-      res
-        .status(500)
-        .json({ success: false, message: "Internal Server Error" });
+      next(error)
     }
   }
 

@@ -16,6 +16,7 @@ exports.GetVehiclesByUser = void 0;
 const tsyringe_1 = require("tsyringe");
 const mongoose_1 = require("mongoose");
 const Autherror_1 = require("../../../domain/errors/Autherror");
+const Tokens_1 = require("../../../constants/Tokens");
 let GetVehiclesByUser = class GetVehiclesByUser {
     constructor(vehicleRepository) {
         this.vehicleRepository = vehicleRepository;
@@ -30,7 +31,7 @@ let GetVehiclesByUser = class GetVehiclesByUser {
 exports.GetVehiclesByUser = GetVehiclesByUser;
 exports.GetVehiclesByUser = GetVehiclesByUser = __decorate([
     (0, tsyringe_1.injectable)(),
-    __param(0, (0, tsyringe_1.inject)("IVehicleRepository")),
+    __param(0, (0, tsyringe_1.inject)(Tokens_1.TOKENS.VEHICLE_REPO)),
     __metadata("design:paramtypes", [Object])
 ], GetVehiclesByUser);
 //# sourceMappingURL=GetVehiclesByUser.js.map

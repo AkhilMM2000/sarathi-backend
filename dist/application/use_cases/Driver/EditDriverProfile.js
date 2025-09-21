@@ -15,6 +15,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.EditDriverProfile = void 0;
 const tsyringe_1 = require("tsyringe");
 const Autherror_1 = require("../../../domain/errors/Autherror");
+const Tokens_1 = require("../../../constants/Tokens");
 let EditDriverProfile = class EditDriverProfile {
     constructor(driverRepository) {
         this.driverRepository = driverRepository;
@@ -23,6 +24,7 @@ let EditDriverProfile = class EditDriverProfile {
         if (!driverId) {
             throw new Autherror_1.AuthError("Driver ID is required", 400);
         }
+        console.log(updateData.location);
         const existingDriver = await this.driverRepository.findDriverById(driverId);
         if (!existingDriver) {
             throw new Autherror_1.AuthError("Driver not found", 404);
@@ -34,7 +36,7 @@ let EditDriverProfile = class EditDriverProfile {
 exports.EditDriverProfile = EditDriverProfile;
 exports.EditDriverProfile = EditDriverProfile = __decorate([
     (0, tsyringe_1.injectable)(),
-    __param(0, (0, tsyringe_1.inject)("IDriverRepository")),
+    __param(0, (0, tsyringe_1.inject)(Tokens_1.TOKENS.IDRIVER_REPO)),
     __metadata("design:paramtypes", [Object])
 ], EditDriverProfile);
 //# sourceMappingURL=EditDriverProfile.js.map

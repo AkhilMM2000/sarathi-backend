@@ -15,6 +15,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.AdminChangeDriverStatus = void 0;
 const tsyringe_1 = require("tsyringe");
 const Autherror_1 = require("../../../domain/errors/Autherror");
+const Tokens_1 = require("../../../constants/Tokens");
 let AdminChangeDriverStatus = class AdminChangeDriverStatus {
     constructor(driverRepository, notificationService) {
         this.driverRepository = driverRepository;
@@ -34,7 +35,7 @@ let AdminChangeDriverStatus = class AdminChangeDriverStatus {
 exports.AdminChangeDriverStatus = AdminChangeDriverStatus;
 exports.AdminChangeDriverStatus = AdminChangeDriverStatus = __decorate([
     (0, tsyringe_1.injectable)(),
-    __param(0, (0, tsyringe_1.inject)("IDriverRepository")),
+    __param(0, (0, tsyringe_1.inject)(Tokens_1.TOKENS.IDRIVER_REPO)),
     __param(1, (0, tsyringe_1.inject)("INotificationService")),
     __metadata("design:paramtypes", [Object, Object])
 ], AdminChangeDriverStatus);

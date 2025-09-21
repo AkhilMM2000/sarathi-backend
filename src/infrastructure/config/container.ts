@@ -2,7 +2,7 @@ import { container } from "tsyringe";
 import './useCaseContainer'
 import { IUserRepository } from "../../domain/repositories/IUserepository"; 
 import { MongoUserRepository } from "../database/MongoUserRepository";
-import { HashService} from "../../application/services/HashService";
+import { IHashService} from "../../application/services/HashService";
 import { EmailService } from "../../application/services/Emailservice"; 
 import { IDriverRepository } from "../../domain/repositories/IDriverepository";
 import { MongoDriverRepository } from "../database/MongodriverRepository";
@@ -39,15 +39,16 @@ import { RideAssignmentQueue } from "../queues/rideAssignmentQueue";
 import { IGoogleMapService } from "../../domain/services/IGoogleMapService";
 import { GoogleMapService } from "../services/GoogleMapService";
 import { TOKENS } from "../../constants/Tokens";
+import { BcryptHashService } from "../services/Hashservice";
 
 // Register repositories
 container.registerSingleton<IUserRepository>(TOKENS.IUSER_REPO,  MongoUserRepository );
 container.registerSingleton<IDriverRepository>(TOKENS.IDRIVER_REPO,MongoDriverRepository )
-container.register<IVehicleRepository>("IVehicleRepository",{useClass:MongoVehicleRepository})
+container.registerSingleton<IVehicleRepository>(TOKENS.VEHICLE_REPO,MongoVehicleRepository)
 container.register<IBookingRepository>("IBookingRepository",{ useClass: MongoBookingRepository });
-// Register services
-container.register<HashService>("HashService", { useClass: HashService });
-container.registerSingleton<EmailService>(TOKENS.EMAILSERVICE,  EmailService );
+// Register servicesimplements 
+container.registerSingleton<IHashService>(TOKENS.HASH_SERVICE,BcryptHashService );
+container.registerSingleton<EmailService>(TOKENS.EMAIL_SERVICE,  EmailService );
 container.registerSingleton<WalletService >(TOKENS.WALLET_SERVICE, WalletService );
 container.register(TOKENS.REFERAL_CODE_SERVICE, {
   useClass: ReferralCodeService,

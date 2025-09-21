@@ -14,8 +14,8 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ChangePassword = void 0;
 const tsyringe_1 = require("tsyringe");
-const HashService_1 = require("../../services/HashService");
 const Autherror_1 = require("../../../domain/errors/Autherror");
+const Tokens_1 = require("../../../constants/Tokens");
 let ChangePassword = class ChangePassword {
     constructor(userRepository, driverRepository, hashService) {
         this.userRepository = userRepository;
@@ -49,9 +49,9 @@ let ChangePassword = class ChangePassword {
 exports.ChangePassword = ChangePassword;
 exports.ChangePassword = ChangePassword = __decorate([
     (0, tsyringe_1.injectable)(),
-    __param(0, (0, tsyringe_1.inject)("IUserRepository")),
-    __param(1, (0, tsyringe_1.inject)("IDriverRepository")),
-    __param(2, (0, tsyringe_1.inject)("HashService")),
-    __metadata("design:paramtypes", [Object, Object, HashService_1.HashService])
+    __param(0, (0, tsyringe_1.inject)(Tokens_1.TOKENS.IUSER_REPO)),
+    __param(1, (0, tsyringe_1.inject)(Tokens_1.TOKENS.IDRIVER_REPO)),
+    __param(2, (0, tsyringe_1.inject)(Tokens_1.TOKENS.HASH_SERVICE)),
+    __metadata("design:paramtypes", [Object, Object, Object])
 ], ChangePassword);
 //# sourceMappingURL=ChangePassword.js.map

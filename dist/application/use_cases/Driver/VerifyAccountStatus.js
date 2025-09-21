@@ -16,6 +16,7 @@ exports.VerifyDriverPaymentAccount = void 0;
 // src/application/use_cases/VerifyDriverPaymentAccount.ts
 const tsyringe_1 = require("tsyringe");
 const Autherror_1 = require("../../../domain/errors/Autherror");
+const Tokens_1 = require("../../../constants/Tokens");
 let VerifyDriverPaymentAccount = class VerifyDriverPaymentAccount {
     constructor(stripeService, driverRepository) {
         this.stripeService = stripeService;
@@ -42,7 +43,7 @@ exports.VerifyDriverPaymentAccount = VerifyDriverPaymentAccount;
 exports.VerifyDriverPaymentAccount = VerifyDriverPaymentAccount = __decorate([
     (0, tsyringe_1.injectable)(),
     __param(0, (0, tsyringe_1.inject)('StripeService')),
-    __param(1, (0, tsyringe_1.inject)("IDriverRepository")),
+    __param(1, (0, tsyringe_1.inject)(Tokens_1.TOKENS.IDRIVER_REPO)),
     __metadata("design:paramtypes", [Object, Object])
 ], VerifyDriverPaymentAccount);
 //# sourceMappingURL=VerifyAccountStatus.js.map

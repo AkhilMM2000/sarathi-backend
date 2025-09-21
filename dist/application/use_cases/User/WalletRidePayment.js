@@ -17,6 +17,7 @@ const Autherror_1 = require("../../../domain/errors/Autherror");
 const tsyringe_1 = require("tsyringe");
 const HttpStatusCode_1 = require("../../../constants/HttpStatusCode");
 const Booking_1 = require("../../../domain/models/Booking");
+const Tokens_1 = require("../../../constants/Tokens");
 let WalletPayment = class WalletPayment {
     constructor(walletRepository, bookingRepo, stripeService, driverRepository) {
         this.walletRepository = walletRepository;
@@ -56,7 +57,7 @@ exports.WalletPayment = WalletPayment = __decorate([
     __param(0, (0, tsyringe_1.inject)("IWalletRepository")),
     __param(1, (0, tsyringe_1.inject)("IBookingRepository")),
     __param(2, (0, tsyringe_1.inject)("StripePaymentService")),
-    __param(3, (0, tsyringe_1.inject)("IDriverRepository")),
+    __param(3, (0, tsyringe_1.inject)(Tokens_1.TOKENS.IDRIVER_REPO)),
     __metadata("design:paramtypes", [Object, Object, Object, Object])
 ], WalletPayment);
 //# sourceMappingURL=WalletRidePayment.js.map

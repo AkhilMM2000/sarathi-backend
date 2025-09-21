@@ -23,6 +23,9 @@ const AuthService_1 = require("../services/AuthService");
 const Autherror_1 = require("../../domain/errors/Autherror");
 const WalletService_1 = require("../services/WalletService");
 const ReferralCodeService_1 = require("../services/ReferralCodeService");
+const Tokens_1 = require("../../constants/Tokens");
+const HttpStatusCode_1 = require("../../constants/HttpStatusCode");
+const ErrorMessages_1 = require("../../constants/ErrorMessages");
 dotenv_1.default.config();
 let VerifyOTP = class VerifyOTP {
     constructor(userRepository, driverRepository, store, walletService, referralCodeService) {
@@ -32,13 +35,13 @@ let VerifyOTP = class VerifyOTP {
         this.walletService = walletService;
         this.referralCodeService = referralCodeService;
     }
-    async execute(req, res, email, otp, role) {
+    async execute(email, otp, role) {
         const userData = await this.store.getUser(email);
         console.log('userData', userData);
         if (!userData)
-            throw new Error("Register again, data not found");
+            throw new Autherror_1.AuthError(ErrorMessages_1.ERROR_MESSAGES.USER_NOT_FOUND, HttpStatusCode_1.HTTP_STATUS_CODES.BAD_REQUEST);
         if (userData.otp !== otp || userData.otpExpires < new Date())
-            throw new Autherror_1.AuthError("Invalid or expired OTP", 400);
+            throw new Autherror_1.AuthError(ErrorMessages_1.ERROR_MESSAGES.OTP_INVALID, HttpStatusCode_1.HTTP_STATUS_CODES.BAD_REQUEST);
         // Choose repository based on role
         const repository = role === "user" ? this.userRepository : this.driverRepository;
         let savedUser;
@@ -55,7 +58,7 @@ let VerifyOTP = class VerifyOTP {
             });
             if (existingDriver) {
                 console.error("❌ Duplicate driver found:", existingDriver);
-                throw new Autherror_1.AuthError("A driver with this email, mobile, Aadhaar, or license number already exists.", 409);
+                throw new Autherror_1.AuthError(ErrorMessages_1.ERROR_MESSAGES.ALREDY_EXIST, HttpStatusCode_1.HTTP_STATUS_CODES.CONFLICT);
             }
             // Ensure necessary fields are set for drivers
             driverData.status = "pending";
@@ -91,26 +94,24 @@ let VerifyOTP = class VerifyOTP {
         console.log("📝 Required Schema Fields:", Object.keys(Driverschema_1.default.schema.paths));
         const accessToken = AuthService_1.AuthService.generateAccessToken({ id: savedUser._id, email: savedUser.email, role });
         const refreshToken = AuthService_1.AuthService.generateRefreshToken({ id: savedUser._id, email: savedUser.email, role });
-        res.cookie(`${role}RefreshToken`, refreshToken, {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === "production",
-            maxAge: 7 * 24 * 60 * 60 * 1000,
-        });
-        console.log("✅ Tokens generated & refreshToken set in cookies");
         return {
             accessToken,
-            user: { id: savedUser._id, role },
+            refreshToken,
+            user: {
+                id: savedUser._id ? savedUser._id.toString() : "",
+                role,
+            },
         };
     }
 };
 exports.VerifyOTP = VerifyOTP;
 exports.VerifyOTP = VerifyOTP = __decorate([
     (0, tsyringe_1.injectable)(),
-    __param(0, (0, tsyringe_1.inject)("IUserRepository")),
-    __param(1, (0, tsyringe_1.inject)("IDriverRepository")),
-    __param(2, (0, tsyringe_1.inject)("UserRegistrationStore")),
-    __param(3, (0, tsyringe_1.inject)("WalletService")),
-    __param(4, (0, tsyringe_1.inject)("ReferralCodeService")),
+    __param(0, (0, tsyringe_1.inject)(Tokens_1.TOKENS.IUSER_REPO)),
+    __param(1, (0, tsyringe_1.inject)(Tokens_1.TOKENS.IDRIVER_REPO)),
+    __param(2, (0, tsyringe_1.inject)(Tokens_1.TOKENS.USER_REGISTERSTORE)),
+    __param(3, (0, tsyringe_1.inject)(Tokens_1.TOKENS.WALLET_SERVICE)),
+    __param(4, (0, tsyringe_1.inject)(Tokens_1.TOKENS.REFERAL_CODE_SERVICE)),
     __metadata("design:paramtypes", [Object, Object, Object, WalletService_1.WalletService,
         ReferralCodeService_1.ReferralCodeService])
 ], VerifyOTP);

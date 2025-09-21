@@ -21,6 +21,7 @@ const google_auth_library_1 = require("google-auth-library");
 const AuthService_1 = require("../../services/AuthService");
 const Autherror_1 = require("../../../domain/errors/Autherror");
 const dotenv_1 = __importDefault(require("dotenv"));
+const Tokens_1 = require("../../../constants/Tokens");
 dotenv_1.default.config();
 let GoogleAuthUseCase = class GoogleAuthUseCase {
     constructor(userRepository, driverRepository) {
@@ -89,8 +90,8 @@ let GoogleAuthUseCase = class GoogleAuthUseCase {
 exports.GoogleAuthUseCase = GoogleAuthUseCase;
 exports.GoogleAuthUseCase = GoogleAuthUseCase = __decorate([
     (0, tsyringe_1.injectable)(),
-    __param(0, (0, tsyringe_1.inject)("IUserRepository")),
-    __param(1, (0, tsyringe_1.inject)("IDriverRepository")),
+    __param(0, (0, tsyringe_1.inject)(Tokens_1.TOKENS.IUSER_REPO)),
+    __param(1, (0, tsyringe_1.inject)(Tokens_1.TOKENS.IDRIVER_REPO)),
     __metadata("design:paramtypes", [Object, Object])
 ], GoogleAuthUseCase);
 //# sourceMappingURL=googleAuth.js.map

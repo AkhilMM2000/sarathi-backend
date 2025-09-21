@@ -3,7 +3,8 @@ export const INFO_MESSAGES={
     REGISTERED: "User registered successfully.",
     LOGGED_IN: "Login successful.",
     OTP:"OTP sent to email",
-    USER_ID:"User ID is required"
+    USER_ID:"User ID is required",
+    OTP_RESEND:"OTP resent successfully" 
   },
   DRIVER: {
   

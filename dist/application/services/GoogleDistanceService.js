@@ -14,8 +14,8 @@ const axios_1 = __importDefault(require("axios"));
 const tsyringe_1 = require("tsyringe");
 let GoogleDistanceService = class GoogleDistanceService {
     constructor() {
-        this.API_URL = "https://maps.googleapis.com/maps/api/distancematrix/json";
-        this.API_KEY = process.env.GOOGLE_MAPS_API_KEY || "";
+        this.API_URL = process.env.GOOGLEMAP_API_URL;
+        this.API_KEY = process.env.GOOGLE_MAPS_API_KEY;
     }
     async getDistances(userLocation, drivers) {
         if (!this.API_KEY) {

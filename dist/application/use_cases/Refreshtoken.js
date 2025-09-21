@@ -20,6 +20,7 @@ const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const tsyringe_1 = require("tsyringe");
 const AuthService_1 = require("../services/AuthService");
 const Autherror_1 = require("../../domain/errors/Autherror");
+const Tokens_1 = require("../../constants/Tokens");
 let RefreshToken = class RefreshToken {
     constructor(userRepository, driverRepository) {
         this.userRepository = userRepository;
@@ -61,8 +62,8 @@ let RefreshToken = class RefreshToken {
 exports.RefreshToken = RefreshToken;
 exports.RefreshToken = RefreshToken = __decorate([
     (0, tsyringe_1.injectable)(),
-    __param(0, (0, tsyringe_1.inject)("IUserRepository")),
-    __param(1, (0, tsyringe_1.inject)("IDriverRepository")),
+    __param(0, (0, tsyringe_1.inject)(Tokens_1.TOKENS.IUSER_REPO)),
+    __param(1, (0, tsyringe_1.inject)(Tokens_1.TOKENS.IDRIVER_REPO)),
     __metadata("design:paramtypes", [Object, Object])
 ], RefreshToken);
 //# sourceMappingURL=Refreshtoken.js.map

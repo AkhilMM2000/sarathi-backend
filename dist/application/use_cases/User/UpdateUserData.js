@@ -15,6 +15,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.UpdateUserData = void 0;
 const tsyringe_1 = require("tsyringe");
 const Autherror_1 = require("../../../domain/errors/Autherror");
+const Tokens_1 = require("../../../constants/Tokens");
 let UpdateUserData = class UpdateUserData {
     constructor(userRepository) {
         this.userRepository = userRepository;
@@ -35,7 +36,7 @@ let UpdateUserData = class UpdateUserData {
 exports.UpdateUserData = UpdateUserData;
 exports.UpdateUserData = UpdateUserData = __decorate([
     (0, tsyringe_1.injectable)(),
-    __param(0, (0, tsyringe_1.inject)("IUserRepository")),
+    __param(0, (0, tsyringe_1.inject)(Tokens_1.TOKENS.IUSER_REPO)),
     __metadata("design:paramtypes", [Object])
 ], UpdateUserData);
 //# sourceMappingURL=UpdateUserData.js.map

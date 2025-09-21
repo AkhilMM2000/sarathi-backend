@@ -13,7 +13,7 @@ export class ForgotPasswordUseCase {
     @inject(TOKENS.USER_REGISTERSTORE) private store: IRedisrepository,
     @inject(TOKENS.IUSER_REPO) private userRepository: IUserRepository,
     @inject(TOKENS.IDRIVER_REPO) private driverRepository: IDriverRepository,
-    @inject("EmailService") private emailService: EmailService,
+    @inject(TOKENS.EMAIL_SERVICE) private emailService: EmailService,
   ) {}
 
   async execute(email: string,role:'user'|'driver') {

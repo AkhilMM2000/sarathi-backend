@@ -17,6 +17,7 @@ exports.CreditReferralReward = void 0;
 const tsyringe_1 = require("tsyringe");
 const Autherror_1 = require("../../../domain/errors/Autherror");
 const WalletService_1 = require("../../services/WalletService");
+const Tokens_1 = require("../../../constants/Tokens");
 let CreditReferralReward = class CreditReferralReward {
     constructor(userRepo, walletService) {
         this.userRepo = userRepo;
@@ -45,8 +46,8 @@ let CreditReferralReward = class CreditReferralReward {
 exports.CreditReferralReward = CreditReferralReward;
 exports.CreditReferralReward = CreditReferralReward = __decorate([
     (0, tsyringe_1.injectable)(),
-    __param(0, (0, tsyringe_1.inject)("IUserRepository")),
-    __param(1, (0, tsyringe_1.inject)("WalletService")),
+    __param(0, (0, tsyringe_1.inject)(Tokens_1.TOKENS.IUSER_REPO)),
+    __param(1, (0, tsyringe_1.inject)(Tokens_1.TOKENS.WALLET_SERVICE)),
     __metadata("design:paramtypes", [Object, WalletService_1.WalletService])
 ], CreditReferralReward);
 //# sourceMappingURL=CreditReferalreward.js.map

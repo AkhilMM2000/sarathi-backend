@@ -16,6 +16,7 @@ exports.EditVehicle = void 0;
 const tsyringe_1 = require("tsyringe");
 const Autherror_1 = require("../../domain/errors/Autherror");
 const HttpStatusCode_1 = require("../../constants/HttpStatusCode");
+const Tokens_1 = require("../../constants/Tokens");
 let EditVehicle = class EditVehicle {
     constructor(vehicleRepository) {
         this.vehicleRepository = vehicleRepository;
@@ -34,7 +35,7 @@ let EditVehicle = class EditVehicle {
 exports.EditVehicle = EditVehicle;
 exports.EditVehicle = EditVehicle = __decorate([
     (0, tsyringe_1.injectable)(),
-    __param(0, (0, tsyringe_1.inject)("IVehicleRepository")),
+    __param(0, (0, tsyringe_1.inject)(Tokens_1.TOKENS.VEHICLE_REPO)),
     __metadata("design:paramtypes", [Object])
 ], EditVehicle);
 //# sourceMappingURL=EditVehicle.js.map

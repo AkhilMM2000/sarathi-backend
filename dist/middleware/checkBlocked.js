@@ -15,6 +15,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.CheckBlockedUserOrDriver = void 0;
 const tsyringe_1 = require("tsyringe");
 const mongoose_1 = require("mongoose");
+const Tokens_1 = require("../constants/Tokens");
 let CheckBlockedUserOrDriver = class CheckBlockedUserOrDriver {
     constructor(userRepository, driverRepository) {
         this.userRepository = userRepository;
@@ -62,8 +63,8 @@ let CheckBlockedUserOrDriver = class CheckBlockedUserOrDriver {
 exports.CheckBlockedUserOrDriver = CheckBlockedUserOrDriver;
 exports.CheckBlockedUserOrDriver = CheckBlockedUserOrDriver = __decorate([
     (0, tsyringe_1.injectable)(),
-    __param(0, (0, tsyringe_1.inject)("IUserRepository")),
-    __param(1, (0, tsyringe_1.inject)("IDriverRepository")),
+    __param(0, (0, tsyringe_1.inject)(Tokens_1.TOKENS.IUSER_REPO)),
+    __param(1, (0, tsyringe_1.inject)(Tokens_1.TOKENS.IDRIVER_REPO)),
     __metadata("design:paramtypes", [Object, Object])
 ], CheckBlockedUserOrDriver);
 //# sourceMappingURL=checkBlocked.js.map

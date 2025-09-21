@@ -15,6 +15,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.BlockOrUnblockDriver = void 0;
 const tsyringe_1 = require("tsyringe");
 const Autherror_1 = require("../../../domain/errors/Autherror");
+const Tokens_1 = require("../../../constants/Tokens");
 let BlockOrUnblockDriver = class BlockOrUnblockDriver {
     constructor(driverRepository) {
         this.driverRepository = driverRepository;
@@ -30,7 +31,7 @@ let BlockOrUnblockDriver = class BlockOrUnblockDriver {
 exports.BlockOrUnblockDriver = BlockOrUnblockDriver;
 exports.BlockOrUnblockDriver = BlockOrUnblockDriver = __decorate([
     (0, tsyringe_1.injectable)(),
-    __param(0, (0, tsyringe_1.inject)("IDriverRepository")),
+    __param(0, (0, tsyringe_1.inject)(Tokens_1.TOKENS.IDRIVER_REPO)),
     __metadata("design:paramtypes", [Object])
 ], BlockOrUnblockDriver);
 //# sourceMappingURL=BlockOrUnblockDriver.js.map

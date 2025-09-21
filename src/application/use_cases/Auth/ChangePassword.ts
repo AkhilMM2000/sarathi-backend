@@ -1,7 +1,7 @@
 import { inject, injectable } from "tsyringe";
 import { IUserRepository } from "../../../domain/repositories/IUserepository"; 
 import { IDriverRepository } from "../../../domain/repositories/IDriverepository"; 
-import { HashService } from "../../services/HashService"; 
+import { IHashService} from "../../services/HashService"; 
 import { AuthError } from "../../../domain/errors/Autherror";
 import { TOKENS } from "../../../constants/Tokens";
 
@@ -11,7 +11,7 @@ export class ChangePassword {
   constructor(
     @inject(TOKENS.IUSER_REPO) private userRepository: IUserRepository,
     @inject(TOKENS.IDRIVER_REPO) private driverRepository: IDriverRepository,
-    @inject("HashService") private hashService: HashService
+    @inject(TOKENS.HASH_SERVICE) private hashService: IHashService
   ) {}
 
   async execute(userId: string, oldPassword: string, newPassword: string, role: "user" | "driver"): Promise<void> {

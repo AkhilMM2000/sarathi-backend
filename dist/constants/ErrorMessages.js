@@ -11,8 +11,10 @@ exports.ERROR_MESSAGES = {
     // Authentication / Authorization
     AUTH_FAILED: "Authentication failed.",
     INVALID_TOKEN: "Invalid or expired token.",
+    PENDING_NOTFOUND: "No pending registration found. Please sign up again.",
     ACCESS_DENIED: "Access denied.",
     SESSION_EXPIRED: "Session expired. Please login again.",
+    ALREDY_EXIST: "A driver with this email, mobile, Aadhaar, or license number already exists.",
     // User
     USER_NOT_FOUND: "User not found.",
     USER_ID_NOT_FOUND: "User ID not found.",
@@ -22,6 +24,7 @@ exports.ERROR_MESSAGES = {
     OTP_EXPIRED: "OTP has expired.",
     OTP_INVALID: "Invalid OTP provided.",
     ACCOUNT_NOT_VERIFIED: "Account not verified. Please verify first.",
+    EMAIL_OR_MOBILE_EXIST: "User already exists with this email or mobile",
     // Driver
     DRIVER_NOT_FOUND: "Driver not found.",
     DRIVER_ID_NOT_FOUND: "Driver ID not found.",
@@ -40,6 +43,8 @@ exports.ERROR_MESSAGES = {
     NO_AVAILABLE_DRIVERS: "No drivers available near your location.",
     BOOKING_CANCELLATION_FAILED: "Booking cancellation failed.",
     INVALID_BOOKING_STATUS: "Invalid booking status for this action.",
+    BOOKING_STATUS_SUMMARY_NOT_FOUND: "unable to fetch book status summary ",
+    BOOKING_EARNINGS_SUMMARY_NOT_FOUND: "unable to fetch earnings summary",
     // Payments
     PAYMENT_FAILED: "Payment failed.",
     INVALID_PAYMENT_DETAILS: "Invalid payment details provided.",
@@ -61,5 +66,6 @@ exports.ERROR_MESSAGES = {
     TOO_MANY_REQUESTS: "Too many requests. Please try again later.",
     // External Services
     EXTERNAL_SERVICE_UNAVAILABLE: "External service is currently unavailable.",
+    GOOGLE_MAPS_API_ERROR: "Error fetching data from Google Maps API.",
 };
 //# sourceMappingURL=ErrorMessages.js.map

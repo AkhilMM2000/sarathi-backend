@@ -3,11 +3,12 @@ import { IVehicleRepository } from "../../../domain/repositories/IVehicleReposit
 import { Vehicle } from "../../../domain/models/Vehicle";
 import { Types } from "mongoose";
 import { AuthError } from "../../../domain/errors/Autherror";
+import { TOKENS } from "../../../constants/Tokens";
 
 @injectable()
 export class GetVehiclesByUser {
   constructor(
-    @inject("IVehicleRepository") private vehicleRepository: IVehicleRepository
+    @inject(TOKENS.VEHICLE_REPO) private vehicleRepository: IVehicleRepository
   ) {}
 
   async execute(userId: string): Promise<Vehicle[]> {

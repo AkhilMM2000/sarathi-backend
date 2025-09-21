@@ -38,10 +38,8 @@ app.use("/api/files", fileRoutes_1.default);
 app.use('/api', BookingRoute_1.default);
 app.use('/api/auth', AuthRoute_1.default);
 app.use('/api/auth/google', googleAuthRoute_1.default);
+app.use(errorHandler_1.errorHandler);
 const PORT = process.env.PORT || 5000;
-app.use((err, req, res, next) => {
-    (0, errorHandler_1.errorHandler)(err, req, res, next);
-});
 const server = http_1.default.createServer(app);
 (0, socket_1.initializeSocket)(server);
 (0, referralSocket_1.initializeReferralSocket)();

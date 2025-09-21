@@ -15,6 +15,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.AttachPaymentIntentIdToBooking = void 0;
 const tsyringe_1 = require("tsyringe");
 const Autherror_1 = require("../../../domain/errors/Autherror");
+const Tokens_1 = require("../../../constants/Tokens");
 let AttachPaymentIntentIdToBooking = class AttachPaymentIntentIdToBooking {
     constructor(bookingRepo, walletRepository, userRepository, stripeService, notificationService) {
         this.bookingRepo = bookingRepo;
@@ -62,7 +63,7 @@ exports.AttachPaymentIntentIdToBooking = AttachPaymentIntentIdToBooking = __deco
     (0, tsyringe_1.injectable)(),
     __param(0, (0, tsyringe_1.inject)("IBookingRepository")),
     __param(1, (0, tsyringe_1.inject)("IWalletRepository")),
-    __param(2, (0, tsyringe_1.inject)("IUserRepository")),
+    __param(2, (0, tsyringe_1.inject)(Tokens_1.TOKENS.IUSER_REPO)),
     __param(3, (0, tsyringe_1.inject)('StripePaymentService')),
     __param(4, (0, tsyringe_1.inject)("INotificationService")),
     __metadata("design:paramtypes", [Object, Object, Object, Object, Object])

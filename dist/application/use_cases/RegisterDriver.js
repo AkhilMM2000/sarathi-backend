@@ -16,6 +16,7 @@ exports.RegisterDriver = void 0;
 const tsyringe_1 = require("tsyringe");
 const Emailservice_1 = require("../services/Emailservice");
 const crypto_1 = require("crypto");
+const Tokens_1 = require("../../constants/Tokens");
 let RegisterDriver = class RegisterDriver {
     constructor(emailService, store) {
         this.emailService = emailService;
@@ -38,8 +39,8 @@ let RegisterDriver = class RegisterDriver {
 exports.RegisterDriver = RegisterDriver;
 exports.RegisterDriver = RegisterDriver = __decorate([
     (0, tsyringe_1.injectable)(),
-    __param(0, (0, tsyringe_1.inject)("EmailService")),
-    __param(1, (0, tsyringe_1.inject)("UserRegistrationStore")),
+    __param(0, (0, tsyringe_1.inject)(Tokens_1.TOKENS.EMAIL_SERVICE)),
+    __param(1, (0, tsyringe_1.inject)(Tokens_1.TOKENS.USER_REGISTERSTORE)),
     __metadata("design:paramtypes", [Emailservice_1.EmailService, Object])
 ], RegisterDriver);
 //# sourceMappingURL=RegisterDriver.js.map

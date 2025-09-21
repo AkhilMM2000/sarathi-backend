@@ -12,7 +12,7 @@ import { INFO_MESSAGES } from "../../../constants/Info_Messages";
 @injectable()
 export class RegisterUser implements IRegisterUser {
   constructor(
-    @inject(TOKENS.EMAILSERVICE) private emailService: EmailService,
+    @inject(TOKENS.EMAIL_SERVICE) private emailService: EmailService,
     @inject(TOKENS.USER_REGISTERSTORE) private store: IRedisrepository,
       @inject(TOKENS.IUSER_REPO) private userRepository: IUserRepository,
 ) {}

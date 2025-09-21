@@ -13,9 +13,9 @@ const checkBlockedMiddleware = container.resolve(CheckBlockedUserOrDriver);
 // Authentication Routes
 router
   .post("/register", userController.register.bind(userController))
-  .post("/verify-otp", UserController.verifyOTPUser)
-  .post("/resend-otp", UserController.resendOTP)
-  .post("/login", UserController.login);
+  .post("/verify-otp", userController.verifyOTPUser.bind(userController))
+  .post("/resend-otp", userController.resendOTP.bind(userController))
+  .post("/login",userController.login.bind(userController));
 
 // Vehicle Routes (Protected)
 router

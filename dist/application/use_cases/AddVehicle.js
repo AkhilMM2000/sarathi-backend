@@ -15,6 +15,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.AddVehicle = void 0;
 const tsyringe_1 = require("tsyringe");
 const Autherror_1 = require("../../domain/errors/Autherror");
+const Tokens_1 = require("../../constants/Tokens");
 let AddVehicle = class AddVehicle {
     constructor(vehicleRepository) {
         this.vehicleRepository = vehicleRepository;
@@ -44,7 +45,7 @@ let AddVehicle = class AddVehicle {
 exports.AddVehicle = AddVehicle;
 exports.AddVehicle = AddVehicle = __decorate([
     (0, tsyringe_1.injectable)(),
-    __param(0, (0, tsyringe_1.inject)("IVehicleRepository")),
+    __param(0, (0, tsyringe_1.inject)(Tokens_1.TOKENS.VEHICLE_REPO)),
     __metadata("design:paramtypes", [Object])
 ], AddVehicle);
 //# sourceMappingURL=AddVehicle.js.map

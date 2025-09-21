@@ -15,6 +15,10 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.ResendOTP = void 0;
 const tsyringe_1 = require("tsyringe");
 const Emailservice_1 = require("../services/Emailservice");
+const Tokens_1 = require("../../constants/Tokens");
+const Info_Messages_1 = require("../../constants/Info_Messages");
+const Autherror_1 = require("../../domain/errors/Autherror");
+const ErrorMessages_1 = require("../../constants/ErrorMessages");
 let ResendOTP = class ResendOTP {
     constructor(emailService, store) {
         this.emailService = emailService;
@@ -23,23 +27,27 @@ let ResendOTP = class ResendOTP {
     async execute(email, role) {
         const existingUser = await this.store.getUser(email);
         if (!existingUser) {
-            throw new Error("No pending registration found. Please sign up again.");
+            throw new Autherror_1.AuthError(ErrorMessages_1.ERROR_MESSAGES.PENDING_NOTFOUND);
         }
         // Generate new OTP
         const newOTP = Math.floor(100000 + Math.random() * 900000).toString();
         const otpExpires = new Date(Date.now() + 5 * 60 * 1000); // Expires in 5 min
         // // Update the OTP in store
-        this.store.addUser(existingUser.email, { ...existingUser, otp: newOTP, otpExpires });
+        this.store.addUser(existingUser.email, {
+            ...existingUser,
+            otp: newOTP,
+            otpExpires,
+        });
         // Send OTP via email
         await this.emailService.sendOTP(email, newOTP);
-        return { message: "OTP resent successfully" };
+        return { message: Info_Messages_1.INFO_MESSAGES.USER.OTP_RESEND };
     }
 };
 exports.ResendOTP = ResendOTP;
 exports.ResendOTP = ResendOTP = __decorate([
     (0, tsyringe_1.injectable)(),
-    __param(0, (0, tsyringe_1.inject)("EmailService")),
-    __param(1, (0, tsyringe_1.inject)("UserRegistrationStore")),
+    __param(0, (0, tsyringe_1.inject)(Tokens_1.TOKENS.EMAIL_SERVICE)),
+    __param(1, (0, tsyringe_1.inject)(Tokens_1.TOKENS.USER_REGISTERSTORE)),
     __metadata("design:paramtypes", [Emailservice_1.EmailService, Object])
 ], ResendOTP);
 //# sourceMappingURL=ResendOTP.js.map

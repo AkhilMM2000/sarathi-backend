@@ -1,12 +1,13 @@
 import { inject, injectable } from "tsyringe";
-import { IVehicleRepository } from "../../domain/repositories/IVehicleRepository";
-import { Vehicle} from "../../domain/models/Vehicle";
-import { AuthError } from "../../domain/errors/Autherror";
+import { IVehicleRepository } from "../../../domain/repositories/IVehicleRepository";
+import { Vehicle} from "../../../domain/models/Vehicle";
+import { AuthError } from "../../../domain/errors/Autherror";
+import { TOKENS } from "../../../constants/Tokens";
 
 @injectable()
 export class AddVehicle {
   constructor(
-    @inject("IVehicleRepository") private vehicleRepository: IVehicleRepository
+    @inject(TOKENS.VEHICLE_REPO) private vehicleRepository: IVehicleRepository
   ) {}
 
   
