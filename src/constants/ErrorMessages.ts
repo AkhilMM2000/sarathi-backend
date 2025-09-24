@@ -32,6 +32,9 @@ export const ERROR_MESSAGES = {
     DRIVER_REJECTED: "Driver application was rejected by admin.",
     DRIVER_NOT_AVAILABLE: "Driver is not available at the moment.",
   
+    //vehicle related
+    VIHICLE_ID_MISS:"Vehicle ID is required",
+    VEHICLE_UPDATE_FAILE :"Vehicle not found or update failed",
     // Wallet
     WALLET_NOT_FOUND: "Wallet not found.",
     WALLET_ALREADY_EXISTS: "Wallet already exists for this user.",

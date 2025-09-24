@@ -21,13 +21,13 @@ router
 router
   .route("/vehicle")
   .all(protectRoute(["user"]), checkBlockedMiddleware.handle.bind(checkBlockedMiddleware)) 
-  .post(UserController.addVehicle)
-  .get(UserController.getAllVehicle);
+  .post(userController.addVehicle.bind(userController))
+  .get(userController.getAllVehicle.bind(userController));
 
 router
   .route("/vehicle/:vehicleId")
   .all(protectRoute(["user"]), checkBlockedMiddleware.handle.bind(checkBlockedMiddleware)) // Ensures protection for all requests to this route
-  .put(UserController.editVehicle)
+  .put(userController.editVehicle.bind(userController))
 
   router
   .route("/profile")
@@ -38,7 +38,7 @@ router
 router
   .route("/profile/:id")
   .all(protectRoute(["user"]), checkBlockedMiddleware.handle.bind(checkBlockedMiddleware))
-  .patch(UserController.updateUser)
+  .patch(userController.updateUser.bind(userController))
    
 
 

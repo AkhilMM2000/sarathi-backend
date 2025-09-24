@@ -8,7 +8,7 @@ import { BlockUserUseCase } from "../../application/use_cases/Admin/BlockUser";
 import { GetDrivers } from "../../application/use_cases/Admin/GetDrivers";
 import { AdminChangeDriverStatus } from "../../application/use_cases/Admin/AdminChangeDriverStatus";
 import { BlockOrUnblockDriver } from "../../application/use_cases/Admin/BlockOrUnblockDriver";
-import { GetVehiclesByUser } from "../../application/use_cases/Admin/GetVehiclesByUser";
+import { GetVehiclesByUser } from "../../application/use_cases/User/GetVehiclesByUser";
 import { HTTP_STATUS_CODES } from "../../constants/HttpStatusCode";
 
 export class AdminController {

@@ -10,6 +10,14 @@ import { IResendOTP } from "../../application/use_cases/Interfaces/IResendOTP";
 import { ResendOTP } from "../../application/use_cases/ResendOTP";
 import { Login } from "../../application/use_cases/Login";
 import { ILogin } from "../../application/use_cases/Interfaces/ILogin";
+import { IAddVehicleUseCase } from "../../application/use_cases/Interfaces/IAddvehicle";
+import { AddVehicle } from "../../application/use_cases/User/AddVehicle";
+import { IEditVehicleUseCase } from "../../application/use_cases/User/interfaces/IEditVehicleUseCase";
+import { EditVehicle } from "../../application/use_cases/User/EditVehicle";
+import { IGetVehiclesByUserUseCase } from "../../application/use_cases/User/interfaces/IGetVehiclesByUserUseCase";
+import { GetVehiclesByUser } from "../../application/use_cases/User/GetVehiclesByUser";
+import { IUpdateUserData } from "../../application/use_cases/User/interfaces/IUpdateUserData";
+import { UpdateUserData } from "../../application/use_cases/User/UpdateUserData";
 
 container.registerSingleton<IRegisterUser>(
   TOKENS.REGISTER_USER_USECASE,
@@ -27,3 +35,15 @@ VerifyOTP
 )
 container.registerSingleton<IResendOTP>(TOKENS.RESEND_OTP_USECASE, ResendOTP);
 container.registerSingleton<ILogin>(TOKENS.LOGIN_USECASE, Login);
+container.registerSingleton<IAddVehicleUseCase>(TOKENS.ADD_VEHICLE_USECASE,
+  AddVehicle
+);
+container.registerSingleton<IEditVehicleUseCase>(TOKENS.EDIT_VEHICLE_USECASE, 
+ EditVehicle,
+);
+container.register<IGetVehiclesByUserUseCase>(TOKENS.GET_VEHICLES_BY_USER_USECASE,
+   GetVehiclesByUser,
+);
+container.registerSingleton<IUpdateUserData>(TOKENS.UPDATE_USER_USECASE,
+  UpdateUserData,
+);

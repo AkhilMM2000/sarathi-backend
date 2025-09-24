@@ -6,13 +6,13 @@ import { ResendOTP } from "../../application/use_cases/ResendOTP";
 import { Login } from "../../application/use_cases/Login";
 
 import { AddVehicle } from "../../application/use_cases/User/AddVehicle";
-import { EditVehicle } from "../../application/use_cases/EditVehicle";
+import { EditVehicle } from "../../application/use_cases/User/EditVehicle";
 import { AuthError } from "../../domain/errors/Autherror";
 import { AuthenticatedRequest } from "../../middleware/authMiddleware";
 import { GetAllVehicle } from "../../application/use_cases/GetAllVehicle";
 import { GetUserData } from "../../application/use_cases/User/GetUserData";
 import { UpdateUserData } from "../../application/use_cases/User/UpdateUserData";
-import { GetVehiclesByUser } from "../../application/use_cases/Admin/GetVehiclesByUser";
+import { GetVehiclesByUser } from "../../application/use_cases/User/GetVehiclesByUser";
 import { FindNearbyDrivers } from "../../application/use_cases/User/FindNearbyDrivers";
 import { BookDriver } from "../../application/use_cases/User/BookDriver";
 import { CreatePaymentIntent } from "../../application/use_cases/User/CreatePaymentIntent";
@@ -28,6 +28,10 @@ import { IGetUserData } from "../../application/use_cases/User/interfaces/IGetUs
 import { IVerifyOtp } from "../../application/use_cases/Interfaces/IVerifyOtp";
 import { IResendOTP } from "../../application/use_cases/Interfaces/IResendOTP";
 import { ILogin } from "../../application/use_cases/Interfaces/ILogin";
+import { IAddVehicleUseCase } from "../../application/use_cases/Interfaces/IAddvehicle";
+import { IEditVehicleUseCase } from "../../application/use_cases/User/interfaces/IEditVehicleUseCase";
+import { IGetVehiclesByUserUseCase } from "../../application/use_cases/User/interfaces/IGetVehiclesByUserUseCase";
+import { IUpdateUserData } from "../../application/use_cases/User/interfaces/IUpdateUserData";
 
 export class UserController {
   constructor(
@@ -40,7 +44,15 @@ export class UserController {
     @inject(TOKENS.RESEND_OTP_USECASE)
     private resendOtpUsecase:IResendOTP,
     @inject(TOKENS.LOGIN_USECASE)
-    private loginUsecase:ILogin
+    private loginUsecase:ILogin,
+    @inject(TOKENS.ADD_VEHICLE_USECASE)
+    private addVehicleUsecase:IAddVehicleUseCase,
+    @inject (TOKENS.EDIT_VEHICLE_USECASE)
+    private editVehicleUsecase:IEditVehicleUseCase,
+    @inject(TOKENS.GET_VEHICLES_BY_USER_USECASE)
+    private getVehiclebyUserUsecase:IGetVehiclesByUserUseCase,
+    @inject(TOKENS.UPDATE_USER_USECASE)
+    private updateuserUsecase:IUpdateUserData
   ) {}
 
   async register(req: Request, res: Response, next: NextFunction) {
@@ -123,7 +135,7 @@ export class UserController {
     }
   }
 
-  static async addVehicle(
+   async addVehicle(
     req: AuthenticatedRequest,
     res: Response,
     next:NextFunction
@@ -131,8 +143,8 @@ export class UserController {
     try {
       const vehicleData = req.body;
 
-      const addVehicleUseCase = container.resolve(AddVehicle);
-      const vehicle = await addVehicleUseCase.execute({
+    
+      const vehicle = await this.addVehicleUsecase.execute({
         ...vehicleData,
         userId: req.user?.id,
       });
@@ -143,14 +155,14 @@ export class UserController {
     }
   }
 
-  static async editVehicle(req: Request, res: Response,next:NextFunction) {
+   async editVehicle(req: Request, res: Response,next:NextFunction) {
     try {
       const { vehicleId } = req.params;
       const updateData = req.body;
       console.log(updateData);
 
-      const editVehicleUseCase = container.resolve(EditVehicle);
-      const updatedVehicle = await editVehicleUseCase.execute(
+      
+      const updatedVehicle = await this.editVehicleUsecase.execute(
         vehicleId,
         updateData
       );
@@ -161,31 +173,16 @@ export class UserController {
     }
   }
 
-  static async getAllVehicle(req: AuthenticatedRequest, res: Response) {
+  async getAllVehicle(req: AuthenticatedRequest, res: Response,next:NextFunction) {
     try {
       const userId = req.user?.id;
 
-      // Check if userId is missing or not a string
-      if (!userId || typeof userId !== "string") {
-        res
-          .status(400)
-          .json({ success: false, message: "Invalid or missing user ID" });
-        return;
-      }
+    
+      const vehicles = await this.getVehiclebyUserUsecase.execute(userId!);
 
-      const getVehiclesByUser = container.resolve(GetVehiclesByUser);
-      const vehicles = await getVehiclesByUser.execute(userId);
-
-      res.status(200).json({ success: true, data: vehicles });
+      res.status(HTTP_STATUS_CODES.OK).json({ success: true, data: vehicles });
     } catch (error) {
-      if (error instanceof AuthError) {
-        res
-          .status(error.statusCode)
-          .json({ success: false, message: error.message });
-      }
-      res
-        .status(500)
-        .json({ success: false, message: "Internal Server Error" });
+      next(error)
     }
   }
 
@@ -211,37 +208,28 @@ export class UserController {
     }
   }
 
-  static async updateUser(req: Request, res: Response) {
+ async updateUser(req: Request, res: Response,next:NextFunction) {
     try {
       const userId = req.params.id;
       const updateData = req.body;
-
       if (!userId) {
-        res
-          .status(400)
-          .json({ success: false, message: "User ID is required" });
-        return;
+       throw new AuthError(ERROR_MESSAGES.USER_ID_NOT_FOUND,HTTP_STATUS_CODES.BAD_REQUEST)
       }
+      const updatedUser = await this.updateuserUsecase.execute(userId, updateData);
 
-      const updateUserData = container.resolve(UpdateUserData);
-      const updatedUser = await updateUserData.execute(userId, updateData);
-
-      res.status(200).json({ success: true, user: updatedUser });
-    } catch (error: any) {
-      res
-        .status(error.statusCode || 500)
-        .json({ success: false, message: error.message });
-      return;
+      res.status(HTTP_STATUS_CODES.OK).json({ success: true, user: updatedUser });
+    } catch (error:any) {
+      next(error)
     }
   }
 
-  static async fetchDrivers(req: AuthenticatedRequest, res: Response) {
+  static async fetchDrivers(req: AuthenticatedRequest, res: Response,next:NextFunction) {
     try {
       const userId = req.user?.id;
 
       if (!userId) {
-        res.status(400).json({ message: ERROR_MESSAGES.USER_ID_NOT_FOUND });
-        return;
+        
+        throw new AuthError(ERROR_MESSAGES.USER_ID_NOT_FOUND,HTTP_STATUS_CODES.BAD_REQUEST)
       }
 
       // Resolve the use case
@@ -250,19 +238,9 @@ export class UserController {
       // Execute the use case and fetch drivers
       const drivers = await findNearbyDrivers.execute(userId);
       console.log(drivers, "got it ");
-      res.status(200).json({ success: true, drivers });
+      res.status(HTTP_STATUS_CODES.OK).json({ success: true, drivers });
     } catch (error) {
-      if (error instanceof AuthError) {
-        res
-          .status(error.statusCode)
-          .json({ success: false, error: error.message });
-        return;
-      }
-
-      console.error("Error fetching user data:", error);
-      res
-        .status(500)
-        .json({ success: false, error: ERROR_MESSAGES.INTERNAL_SERVER_ERROR });
+      next(error)
     }
   }
 
