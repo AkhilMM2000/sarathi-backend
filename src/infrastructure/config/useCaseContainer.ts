@@ -18,6 +18,7 @@ import { IGetVehiclesByUserUseCase } from "../../application/use_cases/User/inte
 import { GetVehiclesByUser } from "../../application/use_cases/User/GetVehiclesByUser";
 import { IUpdateUserData } from "../../application/use_cases/User/interfaces/IUpdateUserData";
 import { UpdateUserData } from "../../application/use_cases/User/UpdateUserData";
+import { FindNearbyDrivers } from "../../application/use_cases/User/FindNearbyDrivers";
 
 container.registerSingleton<IRegisterUser>(
   TOKENS.REGISTER_USER_USECASE,
@@ -46,4 +47,8 @@ container.register<IGetVehiclesByUserUseCase>(TOKENS.GET_VEHICLES_BY_USER_USECAS
 );
 container.registerSingleton<IUpdateUserData>(TOKENS.UPDATE_USER_USECASE,
   UpdateUserData,
+);
+container.registerSingleton<FindNearbyDrivers>(
+  TOKENS.FIND_NEARBY_DRIVERS_USECASE,
+  FindNearbyDrivers
 );

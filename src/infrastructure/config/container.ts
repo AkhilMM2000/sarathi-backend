@@ -61,7 +61,7 @@ container.registerSingleton<IRedisrepository>(
          TOKENS.USER_REGISTERSTORE,
     RedisUserRegistrationStore
   );
-  container.registerSingleton<GoogleDistanceService>("GoogleDistanceService", GoogleDistanceService);
+  container.registerSingleton<GoogleDistanceService>(TOKENS.GOOGLE_DISTANCE_SERVICE, GoogleDistanceService);
   container.register<SMSService>("SMSService", { useClass: TwilioSMSService });
 
 
@@ -72,9 +72,9 @@ container.registerSingleton<IRedisrepository>(
   container.register<IStripeAccountService>('StripeService', {
     useClass: StripeService,
   });
-  container.register<IStripeService>('StripePaymentService', {
-    useClass:PaymentService
-  });
+  container.registerSingleton<IStripeService>(TOKENS.PAYMENT_SERVICE,
+   PaymentService
+  );
   container.register<IChatRepository>("IChatRepository", {
     useClass: MongoChatRepository,
   });

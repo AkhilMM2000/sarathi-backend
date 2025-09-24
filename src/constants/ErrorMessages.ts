@@ -21,7 +21,7 @@ export const ERROR_MESSAGES = {
     MOBILE_ALREADY_REGISTERED: "Mobile number is already registered.",
     OTP_EXPIRED: "OTP has expired.",
     OTP_INVALID: "Invalid OTP provided.",
-    
+    LOCATION_NOTFOUND:"User location not found",
     ACCOUNT_NOT_VERIFIED: "Account not verified. Please verify first.",
     EMAIL_OR_MOBILE_EXIST:"User already exists with this email or mobile",
     // Driver

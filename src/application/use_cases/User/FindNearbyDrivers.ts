@@ -4,13 +4,15 @@ import { IUserRepository } from "../../../domain/repositories/IUserepository";
 import { GoogleDistanceService } from "../../services/GoogleDistanceService"; 
 import { AuthError } from "../../../domain/errors/Autherror";
 import { TOKENS } from "../../../constants/Tokens";
+import { ERROR_MESSAGES } from "../../../constants/ErrorMessages";
+import { HTTP_STATUS_CODES } from "../../../constants/HttpStatusCode";
 
 @injectable()
-export class FindNearbyDrivers {
+export class FindNearbyDrivers  {
   constructor(
     @inject(TOKENS.IDRIVER_REPO) private driverRepository: IDriverRepository,
     @inject(TOKENS.IUSER_REPO) private userRepository: IUserRepository,
-    @inject("GoogleDistanceService") private distanceService: GoogleDistanceService
+    @inject(TOKENS.GOOGLE_DISTANCE_SERVICE) private distanceService: GoogleDistanceService
   ) {}
 
    async execute(userId: string, page: number = 1, limit: number = 2, placeKey?: string) {
@@ -18,11 +20,11 @@ export class FindNearbyDrivers {
     const user = await this.userRepository.getUserById(userId);
     
     if (!user) {
-      throw new AuthError("User not found", 404);
+      throw new AuthError(ERROR_MESSAGES.USER_NOT_FOUND, HTTP_STATUS_CODES.NOT_FOUND);
     }
 
     if (!user.location) {
-      throw new AuthError("User location not found", 400);
+      throw new AuthError(ERROR_MESSAGES.LOCATION_NOTFOUND, HTTP_STATUS_CODES.BAD_REQUEST);
     }
  const { latitude, longitude } = user.location;
     // 2️⃣ Use paginated driver fetching from repository

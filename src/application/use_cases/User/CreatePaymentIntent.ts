@@ -1,8 +1,6 @@
 
-
 import { inject, injectable } from 'tsyringe';
 import { IStripeService } from '../../../domain/services/IStripeService'; 
-import { am } from '@upstash/redis/zmscore-BdNsMd17';
 import { IDriverRepository } from '../../../domain/repositories/IDriverepository';
 import { AuthError } from '../../../domain/errors/Autherror';
 import { HTTP_STATUS_CODES } from '../../../constants/HttpStatusCode';
@@ -16,7 +14,7 @@ interface CreatePaymentIntentRequest {
 @injectable()
 export class CreatePaymentIntent {
   constructor(
-    @inject('StripePaymentService')
+    @inject(TOKENS.PAYMENT_SERVICE)
     private stripeService: IStripeService,
      @inject(TOKENS.IDRIVER_REPO) private driverRepository: IDriverRepository,
   ) {}
@@ -27,7 +25,7 @@ export class CreatePaymentIntent {
   }: CreatePaymentIntentRequest): Promise<{ clientSecret: string,paymentIntentId:string }> {
     const platformFee = Math.floor(amount * 0.1); // 10% platform fee
 const driver = await this.driverRepository.findDriverById(driverId);
-console.log(driver,'driver')
+
 console.log(driver?.stripeAccountId)
 if(driver){
   if(!driver.stripeAccountId){

@@ -2,6 +2,7 @@
 export const TOKENS = {
    EMAIL_SERVICE:Symbol.for("EmailService"),
   WALLET_SERVICE:Symbol.for("WalletService"),
+  PAYMENT_SERVICE:Symbol.for('StripePaymentService'),
   GOOGLE_DISTANCE_SERVICE:Symbol.for("GoogleDistanceService"),
    HASH_SERVICE:Symbol.for("HashService"),
   REFERAL_CODE_SERVICE:Symbol.for("ReferralCodeService"),
@@ -19,4 +20,5 @@ export const TOKENS = {
   EDIT_VEHICLE_USECASE:Symbol.for('EDIT_VEHICLE_USECASE'),
   GET_VEHICLES_BY_USER_USECASE:Symbol.for('GET_VEHICLES_BY_USER_USECASE'),
     UPDATE_USER_USECASE: Symbol.for("UPDATE_USER_USECASE"),
+     FIND_NEARBY_DRIVERS_USECASE: Symbol.for("FIND_NEARBY_DRIVERS_USECASE"),
 }

@@ -52,7 +52,9 @@ export class UserController {
     @inject(TOKENS.GET_VEHICLES_BY_USER_USECASE)
     private getVehiclebyUserUsecase:IGetVehiclesByUserUseCase,
     @inject(TOKENS.UPDATE_USER_USECASE)
-    private updateuserUsecase:IUpdateUserData
+    private updateuserUsecase:IUpdateUserData,
+      @inject(TOKENS.FIND_NEARBY_DRIVERS_USECASE)
+    private findNearbyDrivers: FindNearbyDrivers
   ) {}
 
   async register(req: Request, res: Response, next: NextFunction) {
@@ -223,7 +225,7 @@ export class UserController {
     }
   }
 
-  static async fetchDrivers(req: AuthenticatedRequest, res: Response,next:NextFunction) {
+   async fetchDrivers(req: AuthenticatedRequest, res: Response,next:NextFunction) {
     try {
       const userId = req.user?.id;
 
@@ -232,11 +234,10 @@ export class UserController {
         throw new AuthError(ERROR_MESSAGES.USER_ID_NOT_FOUND,HTTP_STATUS_CODES.BAD_REQUEST)
       }
 
-      // Resolve the use case
-      const findNearbyDrivers = container.resolve(FindNearbyDrivers);
+   
 
       // Execute the use case and fetch drivers
-      const drivers = await findNearbyDrivers.execute(userId);
+      const drivers = await this.findNearbyDrivers.execute(userId);
       console.log(drivers, "got it ");
       res.status(HTTP_STATUS_CODES.OK).json({ success: true, drivers });
     } catch (error) {
