@@ -81,9 +81,9 @@ container.registerSingleton<IRedisrepository>(
   container.registerSingleton<ChatService>(ChatService);
 
   //wallet service
-  container.register<IWalletRepository>("IWalletRepository", {
-    useClass: MongoWalletRepository,  
-  });
+  container.registerSingleton<IWalletRepository>(TOKENS.WALLET_REPO,
+    MongoWalletRepository,  
+  );
 
   container.register<INotificationService>("INotificationService", {
     useClass: SocketNotificationService,
@@ -91,9 +91,10 @@ container.registerSingleton<IRedisrepository>(
 
   //user rate Driver
   container.registerSingleton<IDriverReviewRepository>(
-  'DriverReviewRepository',
+  TOKENS.DRIVER_REVIEW_REPO,
   MongoDriverReviewRepository
 );
+ 
 container.registerSingleton<IRideAssignmentQueue>('IRideAssignmentQueue', RideAssignmentQueue);
 
 container.register<IGoogleMapService>('IGoogleMapService', {

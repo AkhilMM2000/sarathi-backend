@@ -1,26 +1,10 @@
 import { NextFunction, Request, Response } from "express";
-import { container, inject } from "tsyringe";
-import { RegisterUser } from "../../application/use_cases/User/RegisterUser";
-import { VerifyOTP } from "../../application/use_cases/VerifyOTP";
-import { ResendOTP } from "../../application/use_cases/ResendOTP";
-import { Login } from "../../application/use_cases/Login";
-
-import { AddVehicle } from "../../application/use_cases/User/AddVehicle";
-import { EditVehicle } from "../../application/use_cases/User/EditVehicle";
+import { inject } from "tsyringe";
 import { AuthError } from "../../domain/errors/Autherror";
 import { AuthenticatedRequest } from "../../middleware/authMiddleware";
-import { GetAllVehicle } from "../../application/use_cases/GetAllVehicle";
-import { GetUserData } from "../../application/use_cases/User/GetUserData";
-import { UpdateUserData } from "../../application/use_cases/User/UpdateUserData";
-import { GetVehiclesByUser } from "../../application/use_cases/User/GetVehiclesByUser";
 import { FindNearbyDrivers } from "../../application/use_cases/User/FindNearbyDrivers";
-import { BookDriver } from "../../application/use_cases/User/BookDriver";
-import { CreatePaymentIntent } from "../../application/use_cases/User/CreatePaymentIntent";
-import { GetDriverProfile } from "../../application/use_cases/Driver/Getdriverprofile";
 import { ERROR_MESSAGES } from "../../constants/ErrorMessages";
-import { walletTransaction } from "../../application/use_cases/User/walletTransaction";
 import { HTTP_STATUS_CODES } from "../../constants/HttpStatusCode";
-import { SubmitDriverReview } from "../../application/use_cases/User/SubmitRating";
 import { IRegisterUser } from "../../application/use_cases/User/interfaces/IRegisterUser";
 import { TOKENS } from "../../constants/Tokens";
 import { INFO_MESSAGES } from "../../constants/Info_Messages";
@@ -34,6 +18,8 @@ import { IGetVehiclesByUserUseCase } from "../../application/use_cases/User/inte
 import { IUpdateUserData } from "../../application/use_cases/User/interfaces/IUpdateUserData";
 import { ICreatePaymentIntent } from "../../application/use_cases/User/interfaces/ICreatePaymentIntent";
 import { IGetDriverProfile } from "../../application/use_cases/Driver/interfaces/IGetDriverProfile";
+import { IWalletTransaction } from "../../application/use_cases/User/interfaces/IWalletTransaction";
+import { ISubmitDriverReview } from "../../application/use_cases/User/interfaces/ISubmitDriverReview";
 
 export class UserController {
   constructor(
@@ -44,23 +30,27 @@ export class UserController {
     @inject(TOKENS.VERIFY_OTP_USECAE)
     private verifyOtpUsecase: IVerifyOtp,
     @inject(TOKENS.RESEND_OTP_USECASE)
-    private resendOtpUsecase:IResendOTP,
+    private resendOtpUsecase: IResendOTP,
     @inject(TOKENS.LOGIN_USECASE)
-    private loginUsecase:ILogin,
+    private loginUsecase: ILogin,
     @inject(TOKENS.ADD_VEHICLE_USECASE)
-    private addVehicleUsecase:IAddVehicleUseCase,
-    @inject (TOKENS.EDIT_VEHICLE_USECASE)
-    private editVehicleUsecase:IEditVehicleUseCase,
+    private addVehicleUsecase: IAddVehicleUseCase,
+    @inject(TOKENS.EDIT_VEHICLE_USECASE)
+    private editVehicleUsecase: IEditVehicleUseCase,
     @inject(TOKENS.GET_VEHICLES_BY_USER_USECASE)
-    private getVehiclebyUserUsecase:IGetVehiclesByUserUseCase,
+    private getVehiclebyUserUsecase: IGetVehiclesByUserUseCase,
     @inject(TOKENS.UPDATE_USER_USECASE)
-    private updateuserUsecase:IUpdateUserData,
+    private updateuserUsecase: IUpdateUserData,
     @inject(TOKENS.FIND_NEARBY_DRIVERS_USECASE)
     private findNearbyDrivers: FindNearbyDrivers,
     @inject(TOKENS.CREATE_PAYMENT_INTENT_USECASE)
-    private createPaymentUsecase:ICreatePaymentIntent,
+    private createPaymentUsecase: ICreatePaymentIntent,
     @inject(TOKENS.GET_DRIVER_PROFILE_USECASE)
-    private getDriverProfileUsecase:IGetDriverProfile
+    private getDriverProfileUsecase: IGetDriverProfile,
+    @inject(TOKENS.WALLET_TRANSACTION_USECASE)
+    private walletTransactionUsecase: IWalletTransaction,
+    @inject(TOKENS.SUBMIT_REVIEW_USECASE)
+    private submitReviewUsecase: ISubmitDriverReview
   ) {}
 
   async register(req: Request, res: Response, next: NextFunction) {
@@ -100,22 +90,22 @@ export class UserController {
       next(error);
     }
   }
-   async resendOTP(req: Request, res: Response,next:NextFunction) {
+  async resendOTP(req: Request, res: Response, next: NextFunction) {
     try {
       const { email, role } = req.body;
       console.log(email, role);
 
-      
       const result = await this.resendOtpUsecase.execute(email, role);
-      res.status(HTTP_STATUS_CODES.OK).json({ success: true, message: result.message });
+      res
+        .status(HTTP_STATUS_CODES.OK)
+        .json({ success: true, message: result.message });
     } catch (error) {
-      next(error)
+      next(error);
     }
   }
 
- async login(req: Request, res: Response,next:NextFunction) {
+  async login(req: Request, res: Response, next: NextFunction) {
     try {
-    
       const { email, password, role } = req.body;
 
       console.log(req.body);
@@ -139,19 +129,18 @@ export class UserController {
         role,
       });
     } catch (error) {
-      next(error)
+      next(error);
     }
   }
 
-   async addVehicle(
+  async addVehicle(
     req: AuthenticatedRequest,
     res: Response,
-    next:NextFunction
+    next: NextFunction
   ): Promise<void> {
     try {
       const vehicleData = req.body;
 
-    
       const vehicle = await this.addVehicleUsecase.execute({
         ...vehicleData,
         userId: req.user?.id,
@@ -159,38 +148,42 @@ export class UserController {
 
       res.status(HTTP_STATUS_CODES.OK).json({ success: true, data: vehicle });
     } catch (error) {
-     next(error)
+      next(error);
     }
   }
 
-   async editVehicle(req: Request, res: Response,next:NextFunction) {
+  async editVehicle(req: Request, res: Response, next: NextFunction) {
     try {
       const { vehicleId } = req.params;
       const updateData = req.body;
       console.log(updateData);
 
-      
       const updatedVehicle = await this.editVehicleUsecase.execute(
         vehicleId,
         updateData
       );
 
-      res.status(HTTP_STATUS_CODES.OK).json({ success: true, data: updatedVehicle });
+      res
+        .status(HTTP_STATUS_CODES.OK)
+        .json({ success: true, data: updatedVehicle });
     } catch (error) {
-      next(error)
+      next(error);
     }
   }
 
-  async getAllVehicle(req: AuthenticatedRequest, res: Response,next:NextFunction) {
+  async getAllVehicle(
+    req: AuthenticatedRequest,
+    res: Response,
+    next: NextFunction
+  ) {
     try {
       const userId = req.user?.id;
 
-    
       const vehicles = await this.getVehiclebyUserUsecase.execute(userId!);
 
       res.status(HTTP_STATUS_CODES.OK).json({ success: true, data: vehicles });
     } catch (error) {
-      next(error)
+      next(error);
     }
   }
 
@@ -216,52 +209,64 @@ export class UserController {
     }
   }
 
- async updateUser(req: Request, res: Response,next:NextFunction) {
+  async updateUser(req: Request, res: Response, next: NextFunction) {
     try {
       const userId = req.params.id;
       const updateData = req.body;
       if (!userId) {
-       throw new AuthError(ERROR_MESSAGES.USER_ID_NOT_FOUND,HTTP_STATUS_CODES.BAD_REQUEST)
+        throw new AuthError(
+          ERROR_MESSAGES.USER_ID_NOT_FOUND,
+          HTTP_STATUS_CODES.BAD_REQUEST
+        );
       }
-      const updatedUser = await this.updateuserUsecase.execute(userId, updateData);
+      const updatedUser = await this.updateuserUsecase.execute(
+        userId,
+        updateData
+      );
 
-      res.status(HTTP_STATUS_CODES.OK).json({ success: true, user: updatedUser });
-    } catch (error:any) {
-      next(error)
+      res
+        .status(HTTP_STATUS_CODES.OK)
+        .json({ success: true, user: updatedUser });
+    } catch (error: any) {
+      next(error);
     }
   }
 
-   async fetchDrivers(req: AuthenticatedRequest, res: Response,next:NextFunction) {
+  async fetchDrivers(
+    req: AuthenticatedRequest,
+    res: Response,
+    next: NextFunction
+  ) {
     try {
       const userId = req.user?.id;
 
       if (!userId) {
-        
-        throw new AuthError(ERROR_MESSAGES.USER_ID_NOT_FOUND,HTTP_STATUS_CODES.BAD_REQUEST)
+        throw new AuthError(
+          ERROR_MESSAGES.USER_ID_NOT_FOUND,
+          HTTP_STATUS_CODES.BAD_REQUEST
+        );
       }
-
-   
 
       // Execute the use case and fetch drivers
       const drivers = await this.findNearbyDrivers.execute(userId);
       console.log(drivers, "got it ");
       res.status(HTTP_STATUS_CODES.OK).json({ success: true, drivers });
     } catch (error) {
-      next(error)
+      next(error);
     }
   }
 
-   async createPaymentIntent(req: Request, res: Response,next:NextFunction) {
+  async createPaymentIntent(req: Request, res: Response, next: NextFunction) {
     const { amount, driverId } = req.body;
     console.log(req.body);
     if (!amount || !driverId) {
-    
-      throw new AuthError("missing amount or driverinfo",HTTP_STATUS_CODES.BAD_REQUEST)
+      throw new AuthError(
+        "missing amount or driverinfo",
+        HTTP_STATUS_CODES.BAD_REQUEST
+      );
     }
 
     try {
-   
-
       const result = await this.createPaymentUsecase.execute({
         amount,
         driverId,
@@ -272,10 +277,10 @@ export class UserController {
         paymentIntentId: result.paymentIntentId,
       });
     } catch (error: any) {
-     next(error)
+      next(error);
     }
   }
- async getDriverById(req: Request, res: Response,next:NextFunction) {
+  async getDriverById(req: Request, res: Response, next: NextFunction) {
     try {
       const driverId = req.params.id;
       if (!driverId) {
@@ -289,38 +294,48 @@ export class UserController {
 
       res.status(HTTP_STATUS_CODES.OK).json({ success: true, driver });
     } catch (error) {
-      next(error)
+      next(error);
     }
   }
 
-  async WalletTransaction(req: AuthenticatedRequest, res: Response,next:NextFunction) {
+  async WalletTransaction(
+    req: AuthenticatedRequest,
+    res: Response,
+    next: NextFunction
+  ) {
     try {
       const { page, limit } = req.query;
       const userId = req.user?.id;
 
       if (!userId) {
-  
-        throw new AuthError(ERROR_MESSAGES.USER_ID_NOT_FOUND,HTTP_STATUS_CODES.BAD_REQUEST)
+        throw new AuthError(
+          ERROR_MESSAGES.USER_ID_NOT_FOUND,
+          HTTP_STATUS_CODES.BAD_REQUEST
+        );
       }
 
-      const getWalletTransaction = container.resolve(walletTransaction);
-
       const transactionHistory =
-        await getWalletTransaction.getTransactionHistory(
+        await this.walletTransactionUsecase.getTransactionHistory(
           userId,
           Number(page),
           Number(limit)
         );
-      const ballence = await getWalletTransaction.getWalletBallence(userId);
+      const ballence = await this.walletTransactionUsecase.getWalletBalance(
+        userId
+      );
       res
         .status(HTTP_STATUS_CODES.OK)
         .json({ success: true, transactionHistory, ballence });
     } catch (error) {
-        next(error)
+      next(error);
     }
   }
 
-  static async submitReview(req: AuthenticatedRequest, res: Response) {
+  async submitReview(
+    req: AuthenticatedRequest,
+    res: Response,
+    next: NextFunction
+  ) {
     try {
       const { driverId, rideId, rating, review } = req.body;
       const userId = req.user?.id;
@@ -331,13 +346,13 @@ export class UserController {
         );
       }
       if (!userId) {
-        res.status(401).json({ message: "Unauthorized" });
-        return;
+        throw new AuthError(
+          ERROR_MESSAGES.USER_ID_NOT_FOUND,
+          HTTP_STATUS_CODES.UNAUTHORIZED
+        );
       }
 
-      const useCase = container.resolve(SubmitDriverReview);
-
-      const createdReview = await useCase.execute({
+      const createdReview = await this.submitReviewUsecase.execute({
         driverId,
         userId,
         rideId,
@@ -345,21 +360,10 @@ export class UserController {
         review,
       });
       res
-        .status(201)
+        .status(HTTP_STATUS_CODES.CREATED)
         .json({ message: "Review submitted", review: createdReview });
     } catch (error: any) {
-      console.log(error);
-      if (error instanceof AuthError) {
-        res.status(error.statusCode).json({
-          success: false,
-          error: error.message,
-        });
-        return;
-      }
-      res
-        .status(HTTP_STATUS_CODES.INTERNAL_SERVER_ERROR)
-        .json({ success: false, error: "Something went wrong" });
-      return;
+      next(error);
     }
   }
 }

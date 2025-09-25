@@ -14,7 +14,7 @@ export class AttachPaymentIntentIdToBooking {
   constructor(
     @inject("IBookingRepository")
     private bookingRepo: IBookingRepository,
-        @inject("IWalletRepository") private walletRepository: IWalletRepository,
+        @inject(TOKENS.WALLET_REPO) private walletRepository: IWalletRepository,
            @inject(TOKENS.IUSER_REPO) private userRepository: IUserRepository,
       @inject(TOKENS.PAYMENT_SERVICE)
         private stripeService: IStripeService,

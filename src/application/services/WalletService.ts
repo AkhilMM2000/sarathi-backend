@@ -3,11 +3,12 @@ import { AuthError } from "../../domain/errors/Autherror";
 import { Wallet } from "../../domain/models/Wallet"; 
 import { inject, injectable } from "tsyringe";
 import { HTTP_STATUS_CODES } from "../../constants/HttpStatusCode";
+import { TOKENS } from "../../constants/Tokens";
 
 
 @injectable()
 export class WalletService {
-  constructor( @inject("IWalletRepository") private walletRepository: IWalletRepository) {}
+  constructor( @inject(TOKENS.WALLET_REPO) private walletRepository: IWalletRepository) {}
 
   async createWallet(userId: string): Promise<Wallet> {
     try {

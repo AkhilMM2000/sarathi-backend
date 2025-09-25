@@ -23,6 +23,10 @@ import { ICreatePaymentIntent } from "../../application/use_cases/User/interface
 import { CreatePaymentIntent } from "../../application/use_cases/User/CreatePaymentIntent";
 import { IGetDriverProfile } from "../../application/use_cases/Driver/interfaces/IGetDriverProfile";
 import { GetDriverProfile } from "../../application/use_cases/Driver/Getdriverprofile";
+import { IWalletTransaction } from "../../application/use_cases/User/interfaces/IWalletTransaction";
+import { WalletTransactionUseCase } from "../../application/use_cases/User/walletTransaction";
+import { ISubmitDriverReview } from "../../application/use_cases/User/interfaces/ISubmitDriverReview";
+import { SubmitDriverReview } from "../../application/use_cases/User/SubmitRating";
 
 container.registerSingleton<IRegisterUser>(
   TOKENS.REGISTER_USER_USECASE,
@@ -64,3 +68,12 @@ container.registerSingleton<IGetDriverProfile>(
   TOKENS.GET_DRIVER_PROFILE_USECASE,
   GetDriverProfile
 );
+container.registerSingleton<IWalletTransaction>(
+  TOKENS.WALLET_TRANSACTION_USECASE,
+  WalletTransactionUseCase
+);
+
+container.registerSingleton<ISubmitDriverReview>(
+TOKENS.SUBMIT_REVIEW_USECASE,
+SubmitDriverReview 
+)

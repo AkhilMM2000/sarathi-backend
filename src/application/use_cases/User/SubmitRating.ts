@@ -5,22 +5,15 @@ import { DriverReview } from "../../../domain/models/DriverReview";
 import { AuthError } from "../../../domain/errors/Autherror";
 import { HTTP_STATUS_CODES } from "../../../constants/HttpStatusCode";
 import { TOKENS } from "../../../constants/Tokens";
-
-interface SubmitDriverReviewInput {
-  driverId: string;
-  userId: string;
-  rideId: string;
-  rating: number;
-  review?: string;
-}
+import { SubmitDriverReviewInput } from "./userDTO/CreateReviewInput";
+import { ISubmitDriverReview } from "./interfaces/ISubmitDriverReview";
 
 @injectable()
-export class SubmitDriverReview {
+export class SubmitDriverReview implements ISubmitDriverReview{
   constructor(
-    @inject("DriverReviewRepository")
+    @inject(TOKENS.DRIVER_REVIEW_REPO)
     private reviewRepo: IDriverReviewRepository,
-
-     @inject(TOKENS.IDRIVER_REPO)
+    @inject(TOKENS.IDRIVER_REPO)
     private driverRepo: IDriverRepository
   ) {}
 

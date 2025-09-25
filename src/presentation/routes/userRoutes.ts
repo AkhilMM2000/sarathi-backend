@@ -42,7 +42,7 @@ router
    
 
 
-router.get("/nearby",protectRoute(['user']),checkBlockedMiddleware.handle.bind(checkBlockedMiddleware),UserController.fetchDrivers);
+router.get("/nearby",protectRoute(['user']),checkBlockedMiddleware.handle.bind(checkBlockedMiddleware),userController.fetchDrivers.bind(userController));
 
 router.patch('/auth/change-password',protectRoute(['user']),checkBlockedMiddleware.handle.bind(checkBlockedMiddleware),AuthController.ChangePassword)
 
@@ -113,11 +113,11 @@ router
   ).get('/driver/:id',
     protectRoute(["user"]), 
     checkBlockedMiddleware.handle.bind(checkBlockedMiddleware),
-     UserController.getDriverById 
+   userController.getDriverById.bind(userController)
   ).get('/wallet',
     protectRoute(["user"]), 
     checkBlockedMiddleware.handle.bind(checkBlockedMiddleware),
-     UserController.WalletTransaction 
+     userController.WalletTransaction.bind(userController) 
   ).get('/wallet/ballence',
     protectRoute(["user"]), 
     checkBlockedMiddleware.handle.bind(checkBlockedMiddleware),
@@ -129,7 +129,7 @@ router
   ).post('/review',
     protectRoute(["user"]), 
     checkBlockedMiddleware.handle.bind(checkBlockedMiddleware),
-     UserController.submitReview
+    userController.submitReview.bind(userController)
   ).get('/review/:id',
     protectRoute(['user']),checkBlockedMiddleware.handle.bind(checkBlockedMiddleware),
       BookingController.ReviewDriver )

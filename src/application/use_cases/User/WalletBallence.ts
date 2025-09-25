@@ -2,12 +2,13 @@
 import { IWalletRepository } from "../../../domain/repositories/IWalletRepository";
 import { AuthError } from "../../../domain/errors/Autherror";
 import { HTTP_STATUS_CODES } from "../../../constants/HttpStatusCode";
+import { TOKENS } from "../../../constants/Tokens";
 
 
 @injectable()
 export class WalletBallence {
 
-   constructor( @inject("IWalletRepository") private walletRepository: IWalletRepository) {
+   constructor( @inject(TOKENS.WALLET_REPO) private walletRepository: IWalletRepository) {
 
    }
 
