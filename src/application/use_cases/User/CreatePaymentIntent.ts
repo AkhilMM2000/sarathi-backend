@@ -5,24 +5,24 @@ import { IDriverRepository } from '../../../domain/repositories/IDriverepository
 import { AuthError } from '../../../domain/errors/Autherror';
 import { HTTP_STATUS_CODES } from '../../../constants/HttpStatusCode';
 import { TOKENS } from '../../../constants/Tokens';
+import { CreatePaymentIntentRequestDTO, CreatePaymentIntentResponseDTO } from './userDTO/CreatePaymentIntentDTO';
+import { ICreatePaymentIntent } from './interfaces/ICreatePaymentIntent';
 
-interface CreatePaymentIntentRequest {
-  amount: number;
-  driverId: string;
-}
 
 @injectable()
-export class CreatePaymentIntent {
+export class CreatePaymentIntent implements ICreatePaymentIntent {
   constructor(
     @inject(TOKENS.PAYMENT_SERVICE)
     private stripeService: IStripeService,
-     @inject(TOKENS.IDRIVER_REPO) private driverRepository: IDriverRepository,
+
+    @inject(TOKENS.IDRIVER_REPO) 
+    private driverRepository: IDriverRepository,
   ) {}
 
   async execute({
     amount,
     driverId,
-  }: CreatePaymentIntentRequest): Promise<{ clientSecret: string,paymentIntentId:string }> {
+  }: CreatePaymentIntentRequestDTO): Promise<CreatePaymentIntentResponseDTO>{
     const platformFee = Math.floor(amount * 0.1); // 10% platform fee
 const driver = await this.driverRepository.findDriverById(driverId);
 

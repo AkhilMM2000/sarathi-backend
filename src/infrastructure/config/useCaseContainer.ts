@@ -19,6 +19,10 @@ import { GetVehiclesByUser } from "../../application/use_cases/User/GetVehiclesB
 import { IUpdateUserData } from "../../application/use_cases/User/interfaces/IUpdateUserData";
 import { UpdateUserData } from "../../application/use_cases/User/UpdateUserData";
 import { FindNearbyDrivers } from "../../application/use_cases/User/FindNearbyDrivers";
+import { ICreatePaymentIntent } from "../../application/use_cases/User/interfaces/ICreatePaymentIntent";
+import { CreatePaymentIntent } from "../../application/use_cases/User/CreatePaymentIntent";
+import { IGetDriverProfile } from "../../application/use_cases/Driver/interfaces/IGetDriverProfile";
+import { GetDriverProfile } from "../../application/use_cases/Driver/Getdriverprofile";
 
 container.registerSingleton<IRegisterUser>(
   TOKENS.REGISTER_USER_USECASE,
@@ -51,4 +55,12 @@ container.registerSingleton<IUpdateUserData>(TOKENS.UPDATE_USER_USECASE,
 container.registerSingleton<FindNearbyDrivers>(
   TOKENS.FIND_NEARBY_DRIVERS_USECASE,
   FindNearbyDrivers
+);
+container.registerSingleton<ICreatePaymentIntent>(
+  TOKENS.CREATE_PAYMENT_INTENT_USECASE,
+  CreatePaymentIntent
+);
+container.registerSingleton<IGetDriverProfile>(
+  TOKENS.GET_DRIVER_PROFILE_USECASE,
+  GetDriverProfile
 );

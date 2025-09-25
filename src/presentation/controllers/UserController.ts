@@ -32,6 +32,8 @@ import { IAddVehicleUseCase } from "../../application/use_cases/Interfaces/IAddv
 import { IEditVehicleUseCase } from "../../application/use_cases/User/interfaces/IEditVehicleUseCase";
 import { IGetVehiclesByUserUseCase } from "../../application/use_cases/User/interfaces/IGetVehiclesByUserUseCase";
 import { IUpdateUserData } from "../../application/use_cases/User/interfaces/IUpdateUserData";
+import { ICreatePaymentIntent } from "../../application/use_cases/User/interfaces/ICreatePaymentIntent";
+import { IGetDriverProfile } from "../../application/use_cases/Driver/interfaces/IGetDriverProfile";
 
 export class UserController {
   constructor(
@@ -53,8 +55,12 @@ export class UserController {
     private getVehiclebyUserUsecase:IGetVehiclesByUserUseCase,
     @inject(TOKENS.UPDATE_USER_USECASE)
     private updateuserUsecase:IUpdateUserData,
-      @inject(TOKENS.FIND_NEARBY_DRIVERS_USECASE)
-    private findNearbyDrivers: FindNearbyDrivers
+    @inject(TOKENS.FIND_NEARBY_DRIVERS_USECASE)
+    private findNearbyDrivers: FindNearbyDrivers,
+    @inject(TOKENS.CREATE_PAYMENT_INTENT_USECASE)
+    private createPaymentUsecase:ICreatePaymentIntent,
+    @inject(TOKENS.GET_DRIVER_PROFILE_USECASE)
+    private getDriverProfileUsecase:IGetDriverProfile
   ) {}
 
   async register(req: Request, res: Response, next: NextFunction) {
@@ -245,18 +251,18 @@ export class UserController {
     }
   }
 
-  static async createPaymentIntent(req: Request, res: Response) {
+   async createPaymentIntent(req: Request, res: Response,next:NextFunction) {
     const { amount, driverId } = req.body;
     console.log(req.body);
     if (!amount || !driverId) {
-      res.status(400).json({ message: "Missing required fields" });
-      return;
+    
+      throw new AuthError("missing amount or driverinfo",HTTP_STATUS_CODES.BAD_REQUEST)
     }
 
     try {
-      const createPaymentIntent = container.resolve(CreatePaymentIntent);
+   
 
-      const result = await createPaymentIntent.execute({
+      const result = await this.createPaymentUsecase.execute({
         amount,
         driverId,
       });
@@ -266,20 +272,10 @@ export class UserController {
         paymentIntentId: result.paymentIntentId,
       });
     } catch (error: any) {
-      if (error instanceof AuthError) {
-        res
-          .status(error.statusCode)
-          .json({ success: false, error: error.message });
-        return;
-      }
-
-      console.error("Error fetching user data:", error);
-      res
-        .status(500)
-        .json({ success: false, error: ERROR_MESSAGES.INTERNAL_SERVER_ERROR });
+     next(error)
     }
   }
-  static async getDriverById(req: Request, res: Response) {
+ async getDriverById(req: Request, res: Response,next:NextFunction) {
     try {
       const driverId = req.params.id;
       if (!driverId) {
@@ -289,31 +285,22 @@ export class UserController {
         return;
       }
 
-      const getDriverProfile = container.resolve(GetDriverProfile);
-      const driver = await getDriverProfile.execute(driverId);
+      const driver = await this.getDriverProfileUsecase.execute(driverId);
 
-      res.status(200).json({ success: true, driver });
+      res.status(HTTP_STATUS_CODES.OK).json({ success: true, driver });
     } catch (error) {
-      if (error instanceof AuthError) {
-        res.status(error.statusCode).json({
-          success: false,
-          error: error.message,
-        });
-        return;
-      }
+      next(error)
     }
   }
 
-  static async WalletTransaction(req: AuthenticatedRequest, res: Response) {
+  async WalletTransaction(req: AuthenticatedRequest, res: Response,next:NextFunction) {
     try {
       const { page, limit } = req.query;
       const userId = req.user?.id;
 
       if (!userId) {
-        res
-          .status(HTTP_STATUS_CODES.BAD_REQUEST)
-          .json({ success: false, error: ERROR_MESSAGES.USER_ID_NOT_FOUND });
-        return;
+  
+        throw new AuthError(ERROR_MESSAGES.USER_ID_NOT_FOUND,HTTP_STATUS_CODES.BAD_REQUEST)
       }
 
       const getWalletTransaction = container.resolve(walletTransaction);
@@ -329,17 +316,7 @@ export class UserController {
         .status(HTTP_STATUS_CODES.OK)
         .json({ success: true, transactionHistory, ballence });
     } catch (error) {
-      if (error instanceof AuthError) {
-        res.status(error.statusCode).json({
-          success: false,
-          error: error.message,
-        });
-        return;
-      }
-      res
-        .status(HTTP_STATUS_CODES.INTERNAL_SERVER_ERROR)
-        .json({ success: false, error: "Something went wrong" });
-      return;
+        next(error)
     }
   }
 

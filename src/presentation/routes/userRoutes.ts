@@ -89,7 +89,7 @@ router
   .post("/payment-intent", 
     protectRoute(["user"]), 
     checkBlockedMiddleware.handle.bind(checkBlockedMiddleware), 
-    UserController.createPaymentIntent
+    userController.createPaymentIntent.bind(userController)
   )
   .patch("/booking/cancel", 
     protectRoute(["user"]), 
