@@ -16,7 +16,7 @@ import { HTTP_STATUS_CODES } from "../../constants/HttpStatusCode";
 import { GetRideHistory } from "../../application/use_cases/GetRideHistory";
 import { GenerateChatSignedUrl } from "../../application/use_cases/chatGetSignedUrl";
 import { WalletBallence } from "../../application/use_cases/User/WalletBallence";
-import { walletTransaction } from "../../application/use_cases/User/walletTransaction";
+
 import { WalletPayment } from "../../application/use_cases/User/WalletRidePayment";
 import { GetDriverReviews } from "../../application/use_cases/DriverReview";
 import { DeleteMessageUseCase } from "../../application/use_cases/deleteMessage";

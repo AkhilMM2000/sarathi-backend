@@ -1,5 +1,6 @@
 import { container } from "tsyringe";
 import './useCaseContainer'
+import './controllerContainer'
 import { IUserRepository } from "../../domain/repositories/IUserepository"; 
 import { MongoUserRepository } from "../database/MongoUserRepository";
 import { IHashService} from "../../application/services/HashService";

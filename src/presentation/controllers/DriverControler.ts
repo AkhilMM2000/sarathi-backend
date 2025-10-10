@@ -5,7 +5,7 @@ import { VerifyOTP } from "../../application/use_cases/VerifyOTP";
 import { ResendOTP } from "../../application/use_cases/ResendOTP";
 import { Login } from "../../application/use_cases/Login";
 
-import { RegisterDriver } from "../../application/use_cases/RegisterDriver";
+import { RegisterDriver } from "../../application/use_cases/Driver/RegisterDriver";
 import { AuthError } from "../../domain/errors/Autherror";
 import { GetDriverProfile } from "../../application/use_cases/Driver/Getdriverprofile";
 import { EditDriverProfile } from "../../application/use_cases/Driver/EditDriverProfile";
@@ -39,7 +39,7 @@ export class DriverController {
       console.log(req.body);
 
       const verifyOTP = container.resolve(VerifyOTP);
-      const result = await verifyOTP.execute(req, res, email, otp, "driver");
+      const result = await verifyOTP.execute(email, otp, "driver");
       res.status(200).json({ success: true, ...result });
     } catch (error) {
       res

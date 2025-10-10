@@ -1,10 +1,11 @@
 import { inject, injectable } from "tsyringe";
-import { EmailService } from "../services/Emailservice"; 
-
-import { IRedisrepository } from "../../domain/repositories/IRedisrepository"; 
+import { EmailService } from "../../services/Emailservice"; 
+import { IRedisrepository } from "../../../domain/repositories/IRedisrepository"; 
 import { randomInt } from "crypto";
-import { Driver } from "../../domain/models/Driver";
-import { TOKENS } from "../../constants/Tokens";
+import { Driver } from "../../../domain/models/Driver";
+import { TOKENS } from "../../../constants/Tokens";
+import { AuthError } from "../../../domain/errors/Autherror";
+import { HTTP_STATUS_CODES } from "../../../constants/HttpStatusCode";
 @injectable()
 export class RegisterDriver {
   constructor(
@@ -17,7 +18,7 @@ export class RegisterDriver {
 
    console.log(driverData);
    
-    // if (await this.store.getUser(email)) throw new Error("OTP already sent to this email");
+    if (await this.store.getUser(email)) throw new AuthError("OTP already sent to this email",HTTP_STATUS_CODES.CONFLICT);
  
     const otp = randomInt(100000, 999999).toString();
     const otpExpires = new Date(Date.now() + 10 * 60 * 1000); 

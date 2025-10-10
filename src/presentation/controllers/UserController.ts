@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from "express";
-import { inject } from "tsyringe";
+import { inject, injectable } from "tsyringe";
 import { AuthError } from "../../domain/errors/Autherror";
 import { AuthenticatedRequest } from "../../middleware/authMiddleware";
 import { FindNearbyDrivers } from "../../application/use_cases/User/FindNearbyDrivers";
@@ -20,7 +20,7 @@ import { ICreatePaymentIntent } from "../../application/use_cases/User/interface
 import { IGetDriverProfile } from "../../application/use_cases/Driver/interfaces/IGetDriverProfile";
 import { IWalletTransaction } from "../../application/use_cases/User/interfaces/IWalletTransaction";
 import { ISubmitDriverReview } from "../../application/use_cases/User/interfaces/ISubmitDriverReview";
-
+@injectable()
 export class UserController {
   constructor(
     @inject(TOKENS.REGISTER_USER_USECASE)
@@ -55,7 +55,9 @@ export class UserController {
 
   async register(req: Request, res: Response, next: NextFunction) {
     try {
+       console.log(req.body)
       const user = await this.registerUsecase.execute(req.body);
+     
       res
         .status(HTTP_STATUS_CODES.CREATED)
         .json({ success: true, message: INFO_MESSAGES.USER.REGISTERED, user });
@@ -186,6 +188,7 @@ export class UserController {
       next(error);
     }
   }
+
 
   async getUserData(
     req: AuthenticatedRequest,
