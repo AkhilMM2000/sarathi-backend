@@ -1,0 +1,6 @@
+export const USECASE_TOKENS = {
+REGISTER_DRIVER_USECASE: Symbol.for("REGISTER_DRIVER_USECASE"),
+
+//controller tokens
+DRIVER_CONTROLLER:Symbol.for('DRIVER_CONTROLLER')
+}

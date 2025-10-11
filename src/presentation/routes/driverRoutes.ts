@@ -5,10 +5,11 @@ import { CheckBlockedUserOrDriver } from "../../middleware/checkBlocked";
 import { container } from "tsyringe";
 import { AuthController } from "../controllers/AuthController";
 import { BookingController } from "../controllers/BookingController";
+import { driverController } from "../../config/controllerResolve";
 const router = express.Router();
 const checkBlockedMiddleware = container.resolve(CheckBlockedUserOrDriver);
 router
-  .post("/register", DriverController.registerDriver)
+  .post("/register", driverController.registerDriver.bind(driverController))
   .post("/verify-otp", DriverController.verifyOTPDriver)
   .post("/login", DriverController.login);
 
@@ -22,6 +23,7 @@ router
   .all(protectRoute(["driver"]), checkBlockedMiddleware.handle.bind(checkBlockedMiddleware)) // Apply to all methods
   .put(DriverController.editDriverProfile)
  
+
   router
     .get("/ridehistory", 
       protectRoute(["driver"]), 

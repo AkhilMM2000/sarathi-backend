@@ -1,11 +1,10 @@
-import { Request, Response } from "express";
-import { container } from "tsyringe";
+import { NextFunction, Request, Response } from "express";
+import { container, inject, injectable } from "tsyringe";
 import { RegisterUser } from "../../application/use_cases/User/RegisterUser";
 import { VerifyOTP } from "../../application/use_cases/VerifyOTP";
 import { ResendOTP } from "../../application/use_cases/ResendOTP";
 import { Login } from "../../application/use_cases/Login";
 
-import { RegisterDriver } from "../../application/use_cases/Driver/RegisterDriver";
 import { AuthError } from "../../domain/errors/Autherror";
 import { GetDriverProfile } from "../../application/use_cases/Driver/Getdriverprofile";
 import { EditDriverProfile } from "../../application/use_cases/Driver/EditDriverProfile";
@@ -16,20 +15,24 @@ import { BookingWithUsername, PaginatedResult, rideHistory } from "../../domain/
 import { VerifyDriverPaymentAccount } from "../../application/use_cases/Driver/VerifyAccountStatus";
 import { GetUserData } from "../../application/use_cases/User/GetUserData";
 import { ERROR_MESSAGES } from "../../constants/ErrorMessages";
-
+import { IRegisterDriverUseCase } from "../../application/use_cases/Driver/interfaces/IRegisterDriverUseCase";
+import { USECASE_TOKENS } from "../../constants/UseCaseTokens";
+import { HTTP_STATUS_CODES } from "../../constants/HttpStatusCode";
+@injectable()
 export class DriverController {
-  static async registerDriver(req: Request, res: Response) {
+
+ constructor(
+    @inject(USECASE_TOKENS.REGISTER_DRIVER_USECASE)
+    private registerDriverUseCase: IRegisterDriverUseCase
+  ) {}
+
+   async registerDriver(req: Request, res: Response, next: NextFunction) {
     try {
-      const DriverRegister = container.resolve(RegisterDriver);
-      const response = await DriverRegister.execute(req.body);
-      res.status(201).json({ success: true, ...response });
+     
+      const response = await await this.registerDriverUseCase.execute(req.body);
+      res.status(HTTP_STATUS_CODES.OK).json({ success: true, ...response });
     } catch (error) {
-      res
-        .status(400)
-        .json({
-          success: false,
-          error: error instanceof Error ? error.message : "Registration failed",
-        });
+    next(error)
     }
   }
   static async verifyOTPDriver(req: Request, res: Response) {

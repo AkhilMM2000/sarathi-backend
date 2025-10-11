@@ -6,8 +6,9 @@ import { Driver } from "../../../domain/models/Driver";
 import { TOKENS } from "../../../constants/Tokens";
 import { AuthError } from "../../../domain/errors/Autherror";
 import { HTTP_STATUS_CODES } from "../../../constants/HttpStatusCode";
+import { IRegisterDriverUseCase } from "./interfaces/IRegisterDriverUseCase";
 @injectable()
-export class RegisterDriver {
+export class RegisterDriver  implements IRegisterDriverUseCase {
   constructor(
     @inject(TOKENS.EMAIL_SERVICE) private emailService: EmailService,
     @inject(TOKENS.USER_REGISTERSTORE) private store: IRedisrepository

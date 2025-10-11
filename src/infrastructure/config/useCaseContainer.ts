@@ -27,6 +27,9 @@ import { IWalletTransaction } from "../../application/use_cases/User/interfaces/
 import { WalletTransactionUseCase } from "../../application/use_cases/User/walletTransaction";
 import { ISubmitDriverReview } from "../../application/use_cases/User/interfaces/ISubmitDriverReview";
 import { SubmitDriverReview } from "../../application/use_cases/User/SubmitRating";
+import { USECASE_TOKENS } from "../../constants/UseCaseTokens";
+import { IRegisterDriverUseCase } from "../../application/use_cases/Driver/interfaces/IRegisterDriverUseCase";
+import { RegisterDriver } from "../../application/use_cases/Driver/RegisterDriver";
 
 container.registerSingleton<IRegisterUser>(
   TOKENS.REGISTER_USER_USECASE,
@@ -76,4 +79,10 @@ container.registerSingleton<IWalletTransaction>(
 container.registerSingleton<ISubmitDriverReview>(
 TOKENS.SUBMIT_REVIEW_USECASE,
 SubmitDriverReview 
+)
+
+container.registerSingleton<IRegisterDriverUseCase>(
+  USECASE_TOKENS.REGISTER_DRIVER_USECASE,
+  RegisterDriver
+
 )
