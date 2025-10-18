@@ -35,7 +35,7 @@ app.use("/api/users", userRoutes);
 app.use('/api/drivers',driverRoute)
 app.use('/api/admin',adminRoutes)
 app.use("/api/files", fileroute); 
-app.use('/api', Bookroute)
+app.use('/api', Bookroute);
 app.use('/api/auth', AuthRoute);
 app.use('/api/auth/google', googleRoute )
 app.use(errorHandler)

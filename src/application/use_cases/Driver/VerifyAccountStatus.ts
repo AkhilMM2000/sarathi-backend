@@ -8,7 +8,7 @@ import { TOKENS } from '../../../constants/Tokens';
 @injectable()
 export class VerifyDriverPaymentAccount {
   constructor(
-    @inject('StripeService') private stripeService: IStripeAccountService,
+    @inject(TOKENS.STRIPE_SERVICE) private stripeService: IStripeAccountService,
     @inject(TOKENS.IDRIVER_REPO) private driverRepository: IDriverRepository
   ) {}
 

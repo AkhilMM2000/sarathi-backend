@@ -1,10 +1,11 @@
 
 export const TOKENS = {
-   EMAIL_SERVICE:Symbol.for("EmailService"),
+  EMAIL_SERVICE:Symbol.for("EmailService"),
   WALLET_SERVICE:Symbol.for("WalletService"),
   PAYMENT_SERVICE:Symbol.for('StripePaymentService'),
   GOOGLE_DISTANCE_SERVICE:Symbol.for("GoogleDistanceService"),
-   HASH_SERVICE:Symbol.for("HashService"),
+  HASH_SERVICE:Symbol.for("HashService"),
+ STRIPE_SERVICE:Symbol.for('StripeService'),
   REFERAL_CODE_SERVICE:Symbol.for("ReferralCodeService"),
   USER_REGISTERSTORE:Symbol.for("UserRegistrationStore"),
  

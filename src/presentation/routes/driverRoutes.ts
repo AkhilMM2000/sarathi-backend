@@ -10,18 +10,18 @@ const router = express.Router();
 const checkBlockedMiddleware = container.resolve(CheckBlockedUserOrDriver);
 router
   .post("/register", driverController.registerDriver.bind(driverController))
-  .post("/verify-otp", DriverController.verifyOTPDriver)
-  .post("/login", DriverController.login);
+  .post("/verify-otp", driverController.verifyOTPDriver.bind(driverController))
+  .post("/login", driverController.login.bind(driverController));
 
   router
   .route("/driver")
   .all(protectRoute(["driver"]), checkBlockedMiddleware.handle.bind(checkBlockedMiddleware)) // Apply to all methods
-  .get(DriverController.getDriverProfile);
+  .get(driverController.getDriverProfile.bind(driverController));
 
 router
   .route("/driver/:id")
   .all(protectRoute(["driver"]), checkBlockedMiddleware.handle.bind(checkBlockedMiddleware)) // Apply to all methods
-  .put(DriverController.editDriverProfile)
+  .put(driverController.editDriverProfile.bind(driverController))
  
 
   router
@@ -35,7 +35,7 @@ router
 
       .post('/onboard',
         protectRoute(['driver']),checkBlockedMiddleware.handle.bind(checkBlockedMiddleware),
-        DriverController.onboardDriver
+        driverController.onboardDriver.bind(driverController)
       )
        .get('/bookings',protectRoute(['driver']),checkBlockedMiddleware.handle.bind(checkBlockedMiddleware),
        
@@ -56,7 +56,7 @@ router
         post('/chat/signature',protectRoute(['driver']),checkBlockedMiddleware.handle.bind(checkBlockedMiddleware),
         BookingController.getChatSignature
         ).get('/user/:id',protectRoute(['driver']),checkBlockedMiddleware.handle.bind(checkBlockedMiddleware),
-        DriverController.getUserById
+       driverController.getUserById.bind(driverController)
         ).get('/review/:id',protectRoute(['driver']),checkBlockedMiddleware.handle.bind(checkBlockedMiddleware),
         BookingController.ReviewDriver
         )

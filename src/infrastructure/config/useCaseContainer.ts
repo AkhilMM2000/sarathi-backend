@@ -30,6 +30,10 @@ import { SubmitDriverReview } from "../../application/use_cases/User/SubmitRatin
 import { USECASE_TOKENS } from "../../constants/UseCaseTokens";
 import { IRegisterDriverUseCase } from "../../application/use_cases/Driver/interfaces/IRegisterDriverUseCase";
 import { RegisterDriver } from "../../application/use_cases/Driver/RegisterDriver";
+import { EditDriverProfile } from "../../application/use_cases/Driver/EditDriverProfile";
+import { IEditDriverProfile } from "../../application/use_cases/Driver/interfaces/IEditDriverProfile";
+import { IOnboardDriverUseCase } from "../../application/use_cases/Driver/interfaces/IOnboardDriverUseCase";
+import { OnboardDriverUseCase } from "../../application/use_cases/Driver/DriverOnboarding";
 
 container.registerSingleton<IRegisterUser>(
   TOKENS.REGISTER_USER_USECASE,
@@ -86,3 +90,9 @@ container.registerSingleton<IRegisterDriverUseCase>(
   RegisterDriver
 
 )
+container.registerSingleton<IEditDriverProfile>(USECASE_TOKENS.EDIT_DRIVER_PROFILE,
+ EditDriverProfile);
+ container.registerSingleton<IOnboardDriverUseCase>(
+  USECASE_TOKENS.ONBOARD_DRIVER_USECASE,
+   OnboardDriverUseCase 
+);

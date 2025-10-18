@@ -70,7 +70,7 @@ container.registerSingleton<IRedisrepository>(
     useClass: FareCalculatorService,
   });
 
-  container.register<IStripeAccountService>('StripeService', {
+  container.register<IStripeAccountService>(TOKENS.STRIPE_SERVICE, {
     useClass: StripeService,
   });
   container.registerSingleton<IStripeService>(TOKENS.PAYMENT_SERVICE,

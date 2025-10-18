@@ -18,12 +18,31 @@ import { ERROR_MESSAGES } from "../../constants/ErrorMessages";
 import { IRegisterDriverUseCase } from "../../application/use_cases/Driver/interfaces/IRegisterDriverUseCase";
 import { USECASE_TOKENS } from "../../constants/UseCaseTokens";
 import { HTTP_STATUS_CODES } from "../../constants/HttpStatusCode";
+import { IVerifyOtp } from "../../application/use_cases/Interfaces/IVerifyOtp";
+import { TOKENS } from "../../constants/Tokens";
+import { ILogin } from "../../application/use_cases/Interfaces/ILogin";
+import { IGetDriverProfile } from "../../application/use_cases/Driver/interfaces/IGetDriverProfile";
+import { IGetUserData } from "../../application/use_cases/User/interfaces/IGetUserData";
+import { IEditDriverProfile } from "../../application/use_cases/Driver/interfaces/IEditDriverProfile";
+import { IOnboardDriverUseCase } from "../../application/use_cases/Driver/interfaces/IOnboardDriverUseCase";
 @injectable()
 export class DriverController {
 
  constructor(
     @inject(USECASE_TOKENS.REGISTER_DRIVER_USECASE)
-    private registerDriverUseCase: IRegisterDriverUseCase
+    private registerDriverUseCase: IRegisterDriverUseCase,
+    @inject(TOKENS.VERIFY_OTP_USECAE)
+    private verifyOtpUsecase: IVerifyOtp,
+    @inject(TOKENS.LOGIN_USECASE)
+    private loginUsecase: ILogin,
+    @inject(TOKENS.GET_DRIVER_PROFILE_USECASE)
+    private getDriverProfileUsecase: IGetDriverProfile,
+    @inject(TOKENS.GET_USER_DATA_USECASE)
+    private getUserDataUsecase: IGetUserData,
+     @inject(USECASE_TOKENS.EDIT_DRIVER_PROFILE)
+    private editDriverProfileUseCase: IEditDriverProfile,
+      @inject(USECASE_TOKENS.ONBOARD_DRIVER_USECASE)
+    private onboardDriverUseCase: IOnboardDriverUseCase
   ) {}
 
    async registerDriver(req: Request, res: Response, next: NextFunction) {
@@ -35,156 +54,123 @@ export class DriverController {
     next(error)
     }
   }
-  static async verifyOTPDriver(req: Request, res: Response) {
+   async verifyOTPDriver(req: Request, res: Response,next:NextFunction) {
     try {
       const { email, otp } = req.body;
 
-      console.log(req.body);
+      if (otp.length < 6) {
+        throw new AuthError(
+          ERROR_MESSAGES.OTP_INVALID,
+          HTTP_STATUS_CODES.BAD_REQUEST
+        );
+      }
 
-      const verifyOTP = container.resolve(VerifyOTP);
-      const result = await verifyOTP.execute(email, otp, "driver");
-      res.status(200).json({ success: true, ...result });
-    } catch (error) {
+      
+
+      const { accessToken, refreshToken, user } =
+        await this.verifyOtpUsecase.execute(email, otp, "driver");
+      res.cookie(`driverRefreshToken`, refreshToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        maxAge: 7 * 24 * 60 * 60 * 1000,
+      });
       res
-        .status(400)
-        .json({
-          success: false,
-          error:
-            error instanceof Error ? error.message : "Unknown error occurred",
-        });
+        .status(HTTP_STATUS_CODES.OK)
+        .json({ success: true, accessToken, user });
+    } catch (error) {
+      next(error);
     }
   }
 
-  static async login(req: Request, res: Response) {
+  async login(req: Request, res: Response,next:NextFunction) {
     try {
       const { email, password, role } = req.body;
+
       console.log(req.body);
 
-      const loginUseCase = container.resolve(Login);
-      const { accessToken, refreshToken } = await loginUseCase.execute(
+      const { accessToken, refreshToken } = await this.loginUsecase.execute(
         email,
         password,
         role
       );
 
-      // Set refresh token cookie
       const refreshTokenKey = `${role}RefreshToken`;
+
       res.cookie(refreshTokenKey, refreshToken, {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
-        sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
+        sameSite: "none",
         maxAge: 7 * 24 * 60 * 60 * 1000,
       });
-
-      res.json({ accessToken, role });
+      res.status(HTTP_STATUS_CODES.OK).json({
+        accessToken,
+        role,
+      });
     } catch (error) {
-      if (error instanceof AuthError) {
-        res.status(error.statusCode).json({
-          success: false,
-          error: error.message,
-        });
-        return;
-      }
-
-      res.status(500).json({ success: false, error: "Something went wrong" });
+      next(error);
     }
   }
-  static async getDriverProfile(req: AuthenticatedRequest, res: Response) {
+   async getDriverProfile(req:AuthenticatedRequest, res: Response,next:NextFunction) {
     try {
-      const driverId =req.user?.id;
+      const driverId =req.user?.id
       if (!driverId) {
-        res.status(400).json({ success: false, error: "Driver ID is required" });
-        return 
+       throw new AuthError(ERROR_MESSAGES.DRIVER_ID_NOT_FOUND,HTTP_STATUS_CODES.BAD_REQUEST)
     }
-      
-      const getDriverProfile = container.resolve(GetDriverProfile);
-      const driver = await getDriverProfile.execute(driverId);
+      const driver = await this.getDriverProfileUsecase.execute(driverId);
 
-      res.status(200).json({ success: true, driver });
+      res.status(HTTP_STATUS_CODES.OK).json({ success: true, driver });
     } catch (error) {
-      if (error instanceof AuthError) {
-        res.status(error.statusCode).json({
-          success: false,
-          error: error.message,
-        });
-        return;
-      }
+      next(error)
     }
   }
-static async getUserById(req: Request, res: Response) {
+
+ async getUserById(req: AuthenticatedRequest, res: Response,next:NextFunction) {
     try {
       const userId = req.params.id; 
-console.log(' useridfor chat',userId)
+
       if (!userId) {
-        res.status(400).json({ success: false, error: "User ID is required" });
-        return
+        throw new AuthError(ERROR_MESSAGES.USER_ID_NOT_FOUND,HTTP_STATUS_CODES.BAD_REQUEST) 
       }
-     
-      
-      const getUserData = container.resolve(GetUserData);
-      const user = await getUserData.execute(userId);
-
-
-      res.status(200).json({ success: true, user });
+      const user = await this.getUserDataUsecase.execute(userId);
+      res.status(HTTP_STATUS_CODES.OK).json({ success: true, user });
     } catch (error) {
-      if (error instanceof AuthError) {
-        res.status(error.statusCode).json({ success: false, error: error.message });
-        return
-      }
-
-      console.error("Error fetching user data:", error);
-      res.status(500).json({ success: false, error: "Internal server error" });
+       next(error)
     }
   }
 
-  static async editDriverProfile(req: Request, res: Response) {
+ async editDriverProfile(req:AuthenticatedRequest, res: Response,next:NextFunction) {
     try {
       const driverId = req.params.id; 
       const updateData = req.body; 
  
-      const editDriverProfileUseCase = container.resolve(EditDriverProfile);
-      const updatedDriver = await editDriverProfileUseCase.execute(
+      const updatedDriver = await this.editDriverProfileUseCase.execute(
         driverId,
         updateData
       );
         
-      res.status(200).json({success: true, driver: updatedDriver });
+      res.status(HTTP_STATUS_CODES.OK).json({success: true, driver: updatedDriver });
     } catch (error) {
-      if (error instanceof AuthError) {
-        res.status(error.statusCode).json({
-          success: false,
-          error: error.message,
-        });
-        return;
-      }
+     next(error)
     }
   }
   
-  static async onboardDriver(req: AuthenticatedRequest, res: Response) {
+ async onboardDriver(req: AuthenticatedRequest, res: Response,next:NextFunction) {
     try {
       let{ email, driverId } = req.body;
-      console.log('onboard driver',req.body)
+      
 if(!driverId){
   driverId=req.user?.id
 }
       if (!email || !driverId) {
-        res.status(400).json({ message: 'Email and driverId are required' });
-        return
+        throw new AuthError( 'Email and driverId are required',HTTP_STATUS_CODES.BAD_REQUEST
+        )
       }
 
-      const onboardDriverUseCase = container.resolve(OnboardDriverUseCase);
-      const onboardingUrl = await onboardDriverUseCase.execute(email, driverId);
+      const onboardingUrl = await this.onboardDriverUseCase.execute(email, driverId);
 
-      res.status(200).json({ url: onboardingUrl });
-    } catch (error: any) {
-      console.error('Stripe onboarding error:', error);
-      if (error instanceof AuthError) {
-        res.status(error.statusCode).json({
-          success: false,
-          error: error.message,
-        });
-        return;
-      }
+      res.status(HTTP_STATUS_CODES.OK).json({ url: onboardingUrl });
+    } catch (error) {
+     next(error)
     }
   }
   static async getBookingsForDriver(req: AuthenticatedRequest, res: Response){
