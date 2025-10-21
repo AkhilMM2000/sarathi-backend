@@ -12,7 +12,7 @@ import { TOKENS } from "../../../constants/Tokens";
 @injectable()
 export class AttachPaymentIntentIdToBooking {
   constructor(
-    @inject("IBookingRepository")
+    @inject(TOKENS.IBOOKING_REPO)
     private bookingRepo: IBookingRepository,
         @inject(TOKENS.WALLET_REPO) private walletRepository: IWalletRepository,
            @inject(TOKENS.IUSER_REPO) private userRepository: IUserRepository,

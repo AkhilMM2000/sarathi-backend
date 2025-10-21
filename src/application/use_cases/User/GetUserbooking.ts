@@ -1,11 +1,12 @@
 import { inject, injectable } from "tsyringe";
 import { BookingWithUsername, IBookingRepository, PaginatedResult } from "../../../domain/repositories/IBookingrepository"; 
 import { Booking } from "../../../domain/models/Booking"; 
+import { TOKENS } from "../../../constants/Tokens";
 
 @injectable()
 export class GetUserBookings {
   constructor(
-    @inject("IBookingRepository")
+    @inject(TOKENS.IBOOKING_REPO)
     private bookingRepo: IBookingRepository
   ) {}
 

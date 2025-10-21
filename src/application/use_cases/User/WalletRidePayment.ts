@@ -13,7 +13,7 @@ import { TOKENS } from "../../../constants/Tokens";
 export class WalletPayment {
   constructor(
     @inject("IWalletRepository") private walletRepository: IWalletRepository,
-    @inject("IBookingRepository")
+    @inject(TOKENS.IBOOKING_REPO)
     private bookingRepo: IBookingRepository,
     @inject("StripePaymentService")
     private stripeService: IStripeService,

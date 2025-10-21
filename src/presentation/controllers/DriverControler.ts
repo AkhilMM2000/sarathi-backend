@@ -25,6 +25,8 @@ import { IGetDriverProfile } from "../../application/use_cases/Driver/interfaces
 import { IGetUserData } from "../../application/use_cases/User/interfaces/IGetUserData";
 import { IEditDriverProfile } from "../../application/use_cases/Driver/interfaces/IEditDriverProfile";
 import { IOnboardDriverUseCase } from "../../application/use_cases/Driver/interfaces/IOnboardDriverUseCase";
+import { IGetBooking } from "../../application/use_cases/Driver/interfaces/IGetUserBooking";
+import { IVerifyDriverPaymentAccount } from "../../application/use_cases/Driver/interfaces/IVerifyDriverPaymentAccount";
 @injectable()
 export class DriverController {
 
@@ -42,7 +44,11 @@ export class DriverController {
      @inject(USECASE_TOKENS.EDIT_DRIVER_PROFILE)
     private editDriverProfileUseCase: IEditDriverProfile,
       @inject(USECASE_TOKENS.ONBOARD_DRIVER_USECASE)
-    private onboardDriverUseCase: IOnboardDriverUseCase
+    private onboardDriverUseCase: IOnboardDriverUseCase,
+    @inject(USECASE_TOKENS.GET_USERBOOKINGS_USECASE)
+    private getUserBookingsUsecase:IGetBooking,
+    @inject(USECASE_TOKENS.VERIFY_DRIVER_PAYMENT_ACCOUNT_USECASE)
+private verifyDriverPaymentAccount: IVerifyDriverPaymentAccount
   ) {}
 
    async registerDriver(req: Request, res: Response, next: NextFunction) {
@@ -173,19 +179,19 @@ if(!driverId){
      next(error)
     }
   }
-  static async getBookingsForDriver(req: AuthenticatedRequest, res: Response){
+ async getBookingsForDriver(req: AuthenticatedRequest, res: Response,next:NextFunction){
    const driverId=req.user?.id;
    if(!driverId){
-    res.status(400).json({ message: ERROR_MESSAGES.DRIVER_ID_NOT_FOUND });
-    return 
+    throw new AuthError(ERROR_MESSAGES.DRIVER_ID_NOT_FOUND,HTTP_STATUS_CODES.BAD_REQUEST)
+   
    }
     const { page = 1, limit = 2 } = req.query;
 
     try {
-      const getUserBookings = container.resolve(GetUserBookings);
+   
 
       const paginatedBookings: PaginatedResult<rideHistory> =
-        await getUserBookings.execute(driverId, Number(page), Number(limit));
+        await this.getUserBookingsUsecase.execute(driverId, Number(page), Number(limit));
 
       res.status(200).json({
         data: paginatedBookings.data,
@@ -194,32 +200,19 @@ if(!driverId){
         currentPage: paginatedBookings.page,
       });
     } catch (error: any) {
-      console.error('Stripe onboarding error:', error);
-      if (error instanceof AuthError) {
-        res.status(error.statusCode).json({
-          success: false,
-          error: error.message,
-        });
-        return;
-      }
+      next(error)
     }
   }
 
-  static async verifyAccount(req: Request, res: Response) {
+async verifyAccount(req: Request, res: Response,next:NextFunction) {
     try {
       const { driverId } = req.body;
-      const useCase = container.resolve(VerifyDriverPaymentAccount);
-      await useCase.execute(driverId);
+    
+      await this.verifyDriverPaymentAccount.execute(driverId);
       res.json({ success: true, message: 'Payment activated for driver' });
     } catch (error: any) {
-      console.error('Stripe onboarding error:', error);
-      if (error instanceof AuthError) {
-        res.status(error.statusCode).json({
-          success: false,
-          error: error.message,
-        });
-        return;
-      }
+     next(error)
+     
     }
   }
   

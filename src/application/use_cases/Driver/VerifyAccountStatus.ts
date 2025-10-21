@@ -4,9 +4,11 @@ import { IStripeAccountService } from '../../services/Accountservice';
 import { IDriverRepository } from '../../../domain/repositories/IDriverepository'; 
 import { AuthError } from '../../../domain/errors/Autherror'; 
 import { TOKENS } from '../../../constants/Tokens';
+import { HTTP_STATUS_CODES } from '../../../constants/HttpStatusCode';
+import { IVerifyDriverPaymentAccount } from './interfaces/IVerifyDriverPaymentAccount';
 
 @injectable()
-export class VerifyDriverPaymentAccount {
+export class VerifyDriverPaymentAccount  implements IVerifyDriverPaymentAccount {
   constructor(
     @inject(TOKENS.STRIPE_SERVICE) private stripeService: IStripeAccountService,
     @inject(TOKENS.IDRIVER_REPO) private driverRepository: IDriverRepository
@@ -15,7 +17,7 @@ export class VerifyDriverPaymentAccount {
   async execute(driverId: string): Promise<void> {
     const driver=await this.driverRepository.findDriverById(driverId);
     if(!driver||!driver.stripeAccountId){
-      throw new AuthError('Driver not found or Stripe account ID missing', 404); 
+      throw new AuthError('Driver not found or Stripe account ID missing', HTTP_STATUS_CODES.NOT_FOUND); 
       
     }
     const account = await this.stripeService.retrieveAccount(driver.stripeAccountId);
@@ -26,7 +28,7 @@ console.log(account.charges_enabled, account.payouts_enabled);
       await this.driverRepository.update(driverId,{activePayment:true});
     } else {
         await this.driverRepository.update(driverId,{stripeAccountId:''});
-      throw new AuthError('Stripe account not yet fully activated', 400);
+      throw new AuthError('Stripe account not yet fully activated',HTTP_STATUS_CODES.BAD_REQUEST);
     }
 
   }

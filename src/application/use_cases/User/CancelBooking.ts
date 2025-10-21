@@ -3,6 +3,7 @@ import { IBookingRepository } from "../../../domain/repositories/IBookingreposit
 import { BookingStatus } from "../../../domain/models/Booking";
 import { AuthError } from "../../../domain/errors/Autherror";
 import { INotificationService } from "../../services/NotificationService";
+import { TOKENS } from "../../../constants/Tokens";
 
 interface CancelBookingInput {
   bookingId: string;
@@ -15,7 +16,7 @@ export class CancelBookingInputUseCase {
   constructor(
      @inject("INotificationService")
         private notificationService: INotificationService,
-    @inject("IBookingRepository")
+    @inject(TOKENS.IBOOKING_REPO)
     private bookingRepo: IBookingRepository
   ) {}
 

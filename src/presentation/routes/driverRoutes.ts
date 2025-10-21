@@ -39,13 +39,13 @@ router
       )
        .get('/bookings',protectRoute(['driver']),checkBlockedMiddleware.handle.bind(checkBlockedMiddleware),
        
-        DriverController.getBookingsForDriver)
+        driverController.getBookingsForDriver.bind(driverController))
        .patch('/booking-status/:bookingId',protectRoute(['driver']),checkBlockedMiddleware.handle.bind(checkBlockedMiddleware),
         BookingController.updateStatus)
 
         .post('/verify-account',
           protectRoute(['driver']),checkBlockedMiddleware.handle.bind(checkBlockedMiddleware),
-          DriverController.verifyAccount
+          driverController.verifyAccount.bind(driverController)
         ).get('/chat/:roomId',protectRoute(['driver']),checkBlockedMiddleware.handle.bind(checkBlockedMiddleware),
         BookingController.getChatByBookingId
         ).delete('/chat/:roomId/message/:messageId',

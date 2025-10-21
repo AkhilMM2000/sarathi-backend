@@ -46,7 +46,7 @@ import { BcryptHashService } from "../services/Hashservice";
 container.registerSingleton<IUserRepository>(TOKENS.IUSER_REPO,  MongoUserRepository );
 container.registerSingleton<IDriverRepository>(TOKENS.IDRIVER_REPO,MongoDriverRepository )
 container.registerSingleton<IVehicleRepository>(TOKENS.VEHICLE_REPO,MongoVehicleRepository)
-container.register<IBookingRepository>("IBookingRepository",{ useClass: MongoBookingRepository });
+container.registerSingleton<IBookingRepository>(TOKENS.IBOOKING_REPO, MongoBookingRepository);
 // Register servicesimplements 
 container.registerSingleton<IHashService>(TOKENS.HASH_SERVICE,BcryptHashService );
 container.registerSingleton<EmailService>(TOKENS.EMAIL_SERVICE,  EmailService );

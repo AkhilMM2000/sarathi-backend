@@ -5,6 +5,7 @@ import { IFareCalculatorService } from "../../services/FareCalculatorService";
 import { Types } from "mongoose";
 import { AuthError } from "../../../domain/errors/Autherror";
 import { INotificationService } from "../../services/NotificationService";
+import { TOKENS } from "../../../constants/Tokens";
 
 export interface BookDriverInput {
   userId: string;
@@ -20,7 +21,7 @@ export interface BookDriverInput {
 @injectable()
 export class BookDriver {
   constructor(
-    @inject("IBookingRepository") private bookingRepo: IBookingRepository,
+    @inject(TOKENS.IBOOKING_REPO) private bookingRepo: IBookingRepository,
     @inject("IFareCalculatorService") private fareCalculator: IFareCalculatorService,
     @inject("INotificationService")
     private notificationService: INotificationService

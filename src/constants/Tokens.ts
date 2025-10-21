@@ -13,6 +13,7 @@ export const TOKENS = {
   VEHICLE_REPO:Symbol.for("IVehicleRepository"),
   WALLET_REPO:Symbol.for("IWalletRepository"),
   IDRIVER_REPO:Symbol.for("IDriverRepository"),
+  IBOOKING_REPO:Symbol.for("IBookingRepository"),
   DRIVER_REVIEW_REPO:Symbol.for('DriverReviewRepository'),
   REGISTER_USER_USECASE:Symbol.for("RegisterUseCase"),
   GET_USER_DATA_USECASE:Symbol.for('GET_USER_DATA_USECASE'),

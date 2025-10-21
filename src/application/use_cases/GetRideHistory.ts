@@ -1,9 +1,10 @@
 import { inject, injectable } from "tsyringe";
 import { IBookingRepository } from "../../domain/repositories/IBookingrepository"; 
+import { TOKENS } from "../../constants/Tokens";
 @injectable()
 export class GetRideHistory {
   constructor(
-     @inject("IBookingRepository")
+     @inject(TOKENS.IBOOKING_REPO)
     private bookingRepo: IBookingRepository
 
   ) {}

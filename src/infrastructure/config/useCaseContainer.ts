@@ -34,6 +34,10 @@ import { EditDriverProfile } from "../../application/use_cases/Driver/EditDriver
 import { IEditDriverProfile } from "../../application/use_cases/Driver/interfaces/IEditDriverProfile";
 import { IOnboardDriverUseCase } from "../../application/use_cases/Driver/interfaces/IOnboardDriverUseCase";
 import { OnboardDriverUseCase } from "../../application/use_cases/Driver/DriverOnboarding";
+import { IGetBooking } from "../../application/use_cases/Driver/interfaces/IGetUserBooking";
+import { GetUserBookings } from "../../application/use_cases/Driver/Getdriverbooking";
+import { IVerifyDriverPaymentAccount } from "../../application/use_cases/Driver/interfaces/IVerifyDriverPaymentAccount";
+import { VerifyDriverPaymentAccount } from "../../application/use_cases/Driver/VerifyAccountStatus";
 
 container.registerSingleton<IRegisterUser>(
   TOKENS.REGISTER_USER_USECASE,
@@ -95,4 +99,10 @@ container.registerSingleton<IEditDriverProfile>(USECASE_TOKENS.EDIT_DRIVER_PROFI
  container.registerSingleton<IOnboardDriverUseCase>(
   USECASE_TOKENS.ONBOARD_DRIVER_USECASE,
    OnboardDriverUseCase 
+);
+
+container.registerSingleton<IGetBooking>(USECASE_TOKENS.GET_USERBOOKINGS_USECASE,GetUserBookings )
+container.registerSingleton<IVerifyDriverPaymentAccount>(
+  USECASE_TOKENS.VERIFY_DRIVER_PAYMENT_ACCOUNT_USECASE,
+   VerifyDriverPaymentAccount
 );

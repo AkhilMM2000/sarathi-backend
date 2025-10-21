@@ -3,6 +3,7 @@ import { IBookingRepository } from "../../../domain/repositories/IBookingreposit
 import { BookingStatus } from "../../../domain/models/Booking";
 import { AuthError } from "../../../domain/errors/Autherror";
 import { INotificationService } from "../../services/NotificationService";
+import { TOKENS } from "../../../constants/Tokens";
 
 interface UpdateBookingStatusInput {
   bookingId: string;
@@ -12,7 +13,7 @@ interface UpdateBookingStatusInput {
 }
 @injectable()
 export class UpdateBookingStatus {
-  constructor(  @inject("IBookingRepository")
+  constructor(  @inject(TOKENS.IBOOKING_REPO)
   private bookingRepo: IBookingRepository,
  @inject("INotificationService")
     private notificationService: INotificationService
