@@ -14,7 +14,7 @@ interface CancelBookingInput {
 @injectable()
 export class CancelBookingInputUseCase {
   constructor(
-     @inject("INotificationService")
+     @inject(TOKENS.NOTIFICATION_SERVICE)
         private notificationService: INotificationService,
     @inject(TOKENS.IBOOKING_REPO)
     private bookingRepo: IBookingRepository

@@ -1,6 +1,7 @@
 import { inject, injectable } from "tsyringe";
 import { IFareCalculatorService } from "../../services/FareCalculatorService"; 
 import { BookingType } from "../../../domain/models/Booking"; 
+import { TOKENS } from "../../../constants/Tokens";
 
 interface GetEstimatedFareParams {
   bookingType: BookingType;
@@ -12,13 +13,13 @@ interface GetEstimatedFareParams {
 @injectable()
 export class GetEstimatedFare {
   constructor(
-    @inject("IFareCalculatorService")
+    @inject(TOKENS.IFARE_CALCULATE_SERVICE)
     private fareCalculatorService: IFareCalculatorService
   ) {}
 
 
   async execute(params: GetEstimatedFareParams): Promise<number> {
-    console.log('worked');
+ 
     return this.fareCalculatorService.calculate(params);
   }
 }

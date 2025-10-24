@@ -9,7 +9,7 @@ import { TOKENS } from "../../../constants/Tokens";
 export class AdminChangeDriverStatus {
   constructor(
     @inject(TOKENS.IDRIVER_REPO) private driverRepository: IDriverRepository,
-    @inject("INotificationService")
+    @inject(TOKENS.NOTIFICATION_SERVICE)
     private notificationService: INotificationService
   ) {}
 

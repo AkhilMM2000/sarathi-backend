@@ -15,7 +15,7 @@ interface UpdateBookingStatusInput {
 export class UpdateBookingStatus {
   constructor(  @inject(TOKENS.IBOOKING_REPO)
   private bookingRepo: IBookingRepository,
- @inject("INotificationService")
+ @inject(TOKENS.NOTIFICATION_SERVICE)
     private notificationService: INotificationService
 ) {}
 

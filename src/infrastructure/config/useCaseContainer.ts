@@ -38,6 +38,8 @@ import { IGetBooking } from "../../application/use_cases/Driver/interfaces/IGetU
 import { GetUserBookings } from "../../application/use_cases/Driver/Getdriverbooking";
 import { IVerifyDriverPaymentAccount } from "../../application/use_cases/Driver/interfaces/IVerifyDriverPaymentAccount";
 import { VerifyDriverPaymentAccount } from "../../application/use_cases/Driver/VerifyAccountStatus";
+import { IBookDriverUseCase } from "../../application/use_cases/User/interfaces/IBookDriverUseCase";
+import { BookDriver } from "../../application/use_cases/User/BookDriver";
 
 container.registerSingleton<IRegisterUser>(
   TOKENS.REGISTER_USER_USECASE,
@@ -105,4 +107,8 @@ container.registerSingleton<IGetBooking>(USECASE_TOKENS.GET_USERBOOKINGS_USECASE
 container.registerSingleton<IVerifyDriverPaymentAccount>(
   USECASE_TOKENS.VERIFY_DRIVER_PAYMENT_ACCOUNT_USECASE,
    VerifyDriverPaymentAccount
+);
+container.registerSingleton<IBookDriverUseCase>(
+ USECASE_TOKENS.BOOK_DRIVER_USECASE,
+  BookDriver
 );

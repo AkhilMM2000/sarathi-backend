@@ -18,7 +18,7 @@ export class AttachPaymentIntentIdToBooking {
            @inject(TOKENS.IUSER_REPO) private userRepository: IUserRepository,
       @inject(TOKENS.PAYMENT_SERVICE)
         private stripeService: IStripeService,
-           @inject("INotificationService")
+           @inject(TOKENS.NOTIFICATION_SERVICE)
             private notificationService: INotificationService
   ) {}
 

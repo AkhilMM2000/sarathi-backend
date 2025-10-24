@@ -1,19 +1,10 @@
 import { NextFunction, Request, Response } from "express";
-import { container, inject, injectable } from "tsyringe";
-import { RegisterUser } from "../../application/use_cases/User/RegisterUser";
-import { VerifyOTP } from "../../application/use_cases/VerifyOTP";
-import { ResendOTP } from "../../application/use_cases/ResendOTP";
-import { Login } from "../../application/use_cases/Login";
-
+import {  inject, injectable } from "tsyringe";
 import { AuthError } from "../../domain/errors/Autherror";
-import { GetDriverProfile } from "../../application/use_cases/Driver/Getdriverprofile";
-import { EditDriverProfile } from "../../application/use_cases/Driver/EditDriverProfile";
 import { AuthenticatedRequest } from "../../middleware/authMiddleware";
-import { OnboardDriverUseCase } from "../../application/use_cases/Driver/DriverOnboarding";
-import { GetUserBookings } from "../../application/use_cases/Driver/Getdriverbooking";
-import { BookingWithUsername, PaginatedResult, rideHistory } from "../../domain/repositories/IBookingrepository";
-import { VerifyDriverPaymentAccount } from "../../application/use_cases/Driver/VerifyAccountStatus";
-import { GetUserData } from "../../application/use_cases/User/GetUserData";
+
+import { PaginatedResult, rideHistory } from "../../domain/repositories/IBookingrepository";
+
 import { ERROR_MESSAGES } from "../../constants/ErrorMessages";
 import { IRegisterDriverUseCase } from "../../application/use_cases/Driver/interfaces/IRegisterDriverUseCase";
 import { USECASE_TOKENS } from "../../constants/UseCaseTokens";

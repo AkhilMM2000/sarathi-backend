@@ -66,9 +66,9 @@ container.registerSingleton<IRedisrepository>(
   container.register<SMSService>("SMSService", { useClass: TwilioSMSService });
 
 
-  container.register<IFareCalculatorService>("IFareCalculatorService", {
-    useClass: FareCalculatorService,
-  });
+  container.registerSingleton<IFareCalculatorService>(TOKENS.IFARE_CALCULATE_SERVICE,
+   FareCalculatorService,
+  );
 
   container.register<IStripeAccountService>(TOKENS.STRIPE_SERVICE, {
     useClass: StripeService,
@@ -86,9 +86,9 @@ container.registerSingleton<IRedisrepository>(
     MongoWalletRepository,  
   );
 
-  container.register<INotificationService>("INotificationService", {
-    useClass: SocketNotificationService,
-  });
+  container.registerSingleton<INotificationService>(TOKENS.NOTIFICATION_SERVICE,
+    SocketNotificationService,
+  );
 
   //user rate Driver
   container.registerSingleton<IDriverReviewRepository>(

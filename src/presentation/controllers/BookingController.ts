@@ -1,5 +1,5 @@
-import { Request, Response } from "express";
-import { container } from "tsyringe";
+import { NextFunction, Request, Response } from "express";
+import { container, inject, injectable } from "tsyringe";
 import { BookDriver, BookDriverInput } from "../../application/use_cases/User/BookDriver";
 import { AuthError } from "../../domain/errors/Autherror";
 import { GetEstimatedFare } from "../../application/use_cases/User/GetEstimatedFare";
@@ -23,17 +23,25 @@ import { DeleteMessageUseCase } from "../../application/use_cases/deleteMessage"
 
 import { GetBookingStatusSummary } from "../../application/use_cases/Driver/GetBookingStatusSummary";
 import { GetDriverEarningsSummary } from "../../application/use_cases/Driver/GetMonthlyEarningsReport";
-
+import { USECASE_TOKENS } from "../../constants/UseCaseTokens";
+import { IBookDriverUseCase } from "../../application/use_cases/User/interfaces/IBookDriverUseCase";
+@injectable()
 export class BookingController {
-  static async bookDriver(req: AuthenticatedRequest, res: Response) {
+
+   constructor(
+ @inject(USECASE_TOKENS.BOOK_DRIVER_USECASE)
+private bookDriverUseCase: IBookDriverUseCase
+
+
+   ){}
+   async bookDriver(req: AuthenticatedRequest, res: Response,next:NextFunction) {
     try {
       const userId = req.user?.id;
 
       if (!userId) {
-        res
-          .status(401)
-          .json({ success: false, error: "Unauthorized: User ID is missing." });
-        return;
+       
+    
+        throw new AuthError(ERROR_MESSAGES.USER_ID_NOT_FOUND,HTTP_STATUS_CODES.UNAUTHORIZED)
       }
 
       const {
@@ -46,9 +54,9 @@ export class BookingController {
         bookingType,
       }: BookDriverInput = req.body;
 
-      const bookDriver = container.resolve(BookDriver);
+     
 
-      const booking = await bookDriver.execute({
+      const booking = await this.bookDriverUseCase.execute({
         userId,
         driverId,
         fromLocation,
@@ -59,24 +67,16 @@ export class BookingController {
         bookingType,
       });
 
-      res.status(201).json({ success: true, data: booking });
+      res.status(HTTP_STATUS_CODES.CREATED).json({ success: true, data: booking });
     } catch (error: any) {
-      if (error instanceof AuthError) {
-        res.status(error.statusCode).json({
-          success: false,
-          error: error.message,
-        });
-        return;
-      }
-
-      res.status(500).json({ success: false, error: "Something went wrong" });
-      return;
+       next(error)
+       
     }
   }
-  static async getEstimatedFare(req: Request, res: Response) {
+  async getEstimatedFare(req: Request, res: Response,next:NextFunction) {
     try {
       const { bookingType, estimatedKm, startDate, endDate } = req.body;
-      console.log("ja");
+      
 
       const useCase = container.resolve(GetEstimatedFare);
       const fare = await useCase.execute({
@@ -86,18 +86,9 @@ export class BookingController {
         endDate: endDate ? new Date(endDate) : undefined,
       });
 
-      res.status(200).json({ estimatedFare: fare });
+      res.status(HTTP_STATUS_CODES.OK).json({ estimatedFare: fare });
     } catch (error: any) {
-      if (error instanceof AuthError) {
-        res.status(error.statusCode).json({
-          success: false,
-          error: error.message,
-        });
-        return;
-      }
-
-      res.status(500).json({ success: false, error: "Something went wrong" });
-      return;
+       next(error)
     }
   }
 
