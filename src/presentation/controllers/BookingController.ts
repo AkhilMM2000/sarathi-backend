@@ -2,9 +2,9 @@ import { NextFunction, Request, Response } from "express";
 import { container, inject, injectable } from "tsyringe";
 import { BookDriver, BookDriverInput } from "../../application/use_cases/User/BookDriver";
 import { AuthError } from "../../domain/errors/Autherror";
-import { GetEstimatedFare } from "../../application/use_cases/User/GetEstimatedFare";
+
 import { AuthenticatedRequest } from "../../middleware/authMiddleware";
-import { GetUserBookings } from "../../application/use_cases/User/GetUserbooking";
+
 import { AttachPaymentIntentIdToBooking } from "../../application/use_cases/User/AttachPaymentIntentIdToBooking";
 import { UpdateBookingStatus } from "../../application/use_cases/Driver/UpdateBookingstatus";
 import { GetAllBookings } from "../../application/use_cases/Admin/GetAllRides";
@@ -25,14 +25,18 @@ import { GetBookingStatusSummary } from "../../application/use_cases/Driver/GetB
 import { GetDriverEarningsSummary } from "../../application/use_cases/Driver/GetMonthlyEarningsReport";
 import { USECASE_TOKENS } from "../../constants/UseCaseTokens";
 import { IBookDriverUseCase } from "../../application/use_cases/User/interfaces/IBookDriverUseCase";
+import { IGetEstimatedFare } from "../../application/use_cases/User/interfaces/IGetEstimatedFare";
+import { IGetUserBookingsUseCase } from "../../application/use_cases/User/interfaces/IGetUserBookingsUseCase";
 @injectable()
 export class BookingController {
 
    constructor(
  @inject(USECASE_TOKENS.BOOK_DRIVER_USECASE)
-private bookDriverUseCase: IBookDriverUseCase
-
-
+private bookDriverUseCase: IBookDriverUseCase,
+  @inject(USECASE_TOKENS.GET_ESTIMATED_FARE_USECASE)
+    private getEstimatedFareUseCase: IGetEstimatedFare,
+  @inject(USECASE_TOKENS.IGET_USER_BOOKINGS_USECASE)
+    private getUserBookingsUseCase: IGetUserBookingsUseCase
    ){}
    async bookDriver(req: AuthenticatedRequest, res: Response,next:NextFunction) {
     try {
@@ -77,9 +81,7 @@ private bookDriverUseCase: IBookDriverUseCase
     try {
       const { bookingType, estimatedKm, startDate, endDate } = req.body;
       
-
-      const useCase = container.resolve(GetEstimatedFare);
-      const fare = await useCase.execute({
+      const fare = await this.getEstimatedFareUseCase.execute({
         bookingType,
         estimatedKm,
         startDate: new Date(startDate),
@@ -92,34 +94,26 @@ private bookDriverUseCase: IBookDriverUseCase
     }
   }
 
-  static async getUserBookings(req: AuthenticatedRequest, res: Response) {
+   async getUserBookings(req: AuthenticatedRequest, res: Response,next:NextFunction) {
     try {
       const userId = req.user?.id;
       if (!userId) {
-        res.status(400).json({ message: "User ID is required" });
-        return;
+      
+      throw new AuthError(ERROR_MESSAGES.USER_ID_NOT_FOUND,HTTP_STATUS_CODES.BAD_REQUEST)
       }
       const page = parseInt(req.query.page as string) || 1;
       const limit = parseInt(req.query.limit as string) || 2;
 
-      const useCase = container.resolve(GetUserBookings);
-      const { data, total, totalPages } = await useCase.execute(
+     ;
+      const { data, total, totalPages } = await this.getUserBookingsUseCase.execute(
         userId,
         page,
         limit
       );
 
-      res.status(200).json({ data, total, totalPages });
+      res.status(HTTP_STATUS_CODES.OK).json({ data, total, totalPages });
     } catch (error: any) {
-      if (error instanceof AuthError) {
-        res
-          .status(error.statusCode)
-          .json({ success: false, error: error.message });
-        return;
-      }
-
-      console.error("Error fetching user data:", error);
-      res.status(500).json({ success: false, error: "Internal server error" });
+      next(error)
     }
   }
 
