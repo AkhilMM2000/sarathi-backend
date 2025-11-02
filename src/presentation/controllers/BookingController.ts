@@ -28,6 +28,7 @@ import { IBookDriverUseCase } from "../../application/use_cases/User/interfaces/
 import { IGetEstimatedFare } from "../../application/use_cases/User/interfaces/IGetEstimatedFare";
 import { IGetUserBookingsUseCase } from "../../application/use_cases/User/interfaces/IGetUserBookingsUseCase";
 import { IAttachPaymentIntentIdToBookingUseCase } from "../../application/use_cases/User/interfaces/IAttachPaymentIntentIdToBookingUseCase";
+import { IUpdateBookingStatusUseCase } from "../../application/use_cases/Driver/interfaces/IUpdateBookingStatusUseCase";
 @injectable()
 export class BookingController {
 
@@ -39,7 +40,9 @@ private bookDriverUseCase: IBookDriverUseCase,
   @inject(USECASE_TOKENS.IGET_USER_BOOKINGS_USECASE)
     private getUserBookingsUseCase: IGetUserBookingsUseCase,
     @inject(USECASE_TOKENS.ATTACH_PAYMENT_INTENT_USECASE)
-  private attachPaymentIntentUseCase: IAttachPaymentIntentIdToBookingUseCase
+  private attachPaymentIntentUseCase: IAttachPaymentIntentIdToBookingUseCase,
+     @inject(USECASE_TOKENS.UPDATE_BOOKING_STATUS_USECASE)
+    private updateBookingStatusUseCase: IUpdateBookingStatusUseCase
    ){}
    async bookDriver(req: AuthenticatedRequest, res: Response,next:NextFunction) {
     try {
@@ -146,7 +149,7 @@ await this.attachPaymentIntentUseCase.execute(rideId,walletDeduction, paymentInt
   }
 
   
-  static async updateStatus(req: Request, res: Response,next:NextFunction) {
+ async updateStatus(req: Request, res: Response,next:NextFunction) {
     try {
       const { bookingId } = req.params;
       const { status, reason, finalKm } = req.body;
@@ -168,8 +171,8 @@ await this.attachPaymentIntentUseCase.execute(rideId,walletDeduction, paymentInt
          throw new AuthError( "finalKm is required when completing a booking.",HTTP_STATUS_CODES.BAD_REQUEST)
       }
 
-      const useCase = container.resolve(UpdateBookingStatus);
-      await useCase.execute({ bookingId, status, reason, finalKm });
+ 
+      await this.updateBookingStatusUseCase.execute({ bookingId, status, reason, finalKm });
 
       res.status(HTTP_STATUS_CODES.OK).json({ message: "Booking status updated successfully" });
     } catch (error: any) {
@@ -177,7 +180,7 @@ await this.attachPaymentIntentUseCase.execute(rideId,walletDeduction, paymentInt
     }
   }
 
-  static async getAllBookings(req: Request, res: Response) {
+   async getAllBookings(req: Request, res: Response,next:NextFunction) {
     try {
       const page = parseInt(req.query.page as string) || 1;
       const limit = parseInt(req.query.limit as string) || 2;
@@ -185,17 +188,9 @@ await this.attachPaymentIntentUseCase.execute(rideId,walletDeduction, paymentInt
       const useCase = container.resolve(GetAllBookings);
       const bookings = await useCase.execute(page, limit);
 
-      res.status(200).json({ bookings });
+      res.status(HTTP_STATUS_CODES.OK).json({ bookings });
     } catch (error: any) {
-      if (error instanceof AuthError) {
-        res
-          .status(error.statusCode)
-          .json({ success: false, error: error.message });
-        return;
-      }
-
-      console.error("Error fetching user data:", error);
-      res.status(500).json({ success: false, error: "Internal server error" });
+        next(error)
     }
   }
 

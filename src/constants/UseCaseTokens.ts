@@ -10,7 +10,7 @@ export const USECASE_TOKENS = {
   GET_ESTIMATED_FARE_USECASE: Symbol.for("GET_ESTIMATED_FARE_USECASE"),
   IGET_USER_BOOKINGS_USECASE: Symbol("IGetUserBookingsUseCase"),
 ATTACH_PAYMENT_INTENT_USECASE: Symbol.for("IAttachPaymentIntentIdToBookingUseCase"),
-
+  UPDATE_BOOKING_STATUS_USECASE: Symbol.for("UPDATE_BOOKING_STATUS_USECASE"),
 
   //controller tokens
   DRIVER_CONTROLLER: Symbol.for("DRIVER_CONTROLLER"),

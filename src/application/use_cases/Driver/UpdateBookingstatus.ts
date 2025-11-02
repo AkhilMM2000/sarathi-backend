@@ -4,6 +4,10 @@ import { BookingStatus } from "../../../domain/models/Booking";
 import { AuthError } from "../../../domain/errors/Autherror";
 import { INotificationService } from "../../services/NotificationService";
 import { TOKENS } from "../../../constants/Tokens";
+import { HTTP_STATUS_CODES } from "../../../constants/HttpStatusCode";
+import { ERROR_MESSAGES } from "../../../constants/ErrorMessages";
+import { IUpdateBookingStatusUseCase } from "./interfaces/IUpdateBookingStatusUseCase";
+
 
 interface UpdateBookingStatusInput {
   bookingId: string;
@@ -12,7 +16,7 @@ interface UpdateBookingStatusInput {
   finalKm?: number;
 }
 @injectable()
-export class UpdateBookingStatus {
+export class UpdateBookingStatus implements IUpdateBookingStatusUseCase {
   constructor(  @inject(TOKENS.IBOOKING_REPO)
   private bookingRepo: IBookingRepository,
  @inject(TOKENS.NOTIFICATION_SERVICE)
@@ -26,21 +30,21 @@ export class UpdateBookingStatus {
     const booking = await this.bookingRepo.findBookingById(bookingId);
     
     if (!booking) {
-      throw new AuthError("Booking not found", 404);
+      throw new AuthError(ERROR_MESSAGES.BOOKING_NOT_FOUND, HTTP_STATUS_CODES.NOT_FOUND);
     }
 
     if (status === "REJECTED" && !reason) {
       throw new AuthError(
         "Reason is required when rejecting a booking.",
-        400
+        HTTP_STATUS_CODES.BAD_REQUEST
       );
     }
 
     // If ride is completed and finalKm is provided, calculate final fare
     if (status === "COMPLETED") {
       if (finalKm === undefined || finalKm === null) {
-        console.log(0)
-        throw new AuthError("Final KM is required to complete the ride", 400);
+        
+        throw new AuthError("Final KM is required to complete the ride", HTTP_STATUS_CODES.BAD_REQUEST);
       }
 
       const estimated = booking.estimatedFare || 0;

@@ -46,6 +46,8 @@ import { IGetUserBookingsUseCase } from "../../application/use_cases/User/interf
 import { GetUserBookingsUseCase } from "../../application/use_cases/User/GetUserbooking";
 import { IAttachPaymentIntentIdToBookingUseCase } from "../../application/use_cases/User/interfaces/IAttachPaymentIntentIdToBookingUseCase";
 import { AttachPaymentIntentIdToBooking } from "../../application/use_cases/User/AttachPaymentIntentIdToBooking";
+import { IUpdateBookingStatusUseCase } from "../../application/use_cases/Driver/interfaces/IUpdateBookingStatusUseCase";
+import { UpdateBookingStatus } from "../../application/use_cases/Driver/UpdateBookingstatus";
 
 container.registerSingleton<IRegisterUser>(
   TOKENS.REGISTER_USER_USECASE,
@@ -129,4 +131,8 @@ container.registerSingleton<IGetUserBookingsUseCase>(USECASE_TOKENS.IGET_USER_BO
 container.registerSingleton<IAttachPaymentIntentIdToBookingUseCase>(
   USECASE_TOKENS.ATTACH_PAYMENT_INTENT_USECASE,
   AttachPaymentIntentIdToBooking
+);
+container.registerSingleton<IUpdateBookingStatusUseCase>(
+ USECASE_TOKENS.UPDATE_BOOKING_STATUS_USECASE,
+  UpdateBookingStatus
 );
