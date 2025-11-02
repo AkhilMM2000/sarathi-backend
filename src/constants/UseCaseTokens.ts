@@ -9,6 +9,9 @@ export const USECASE_TOKENS = {
   BOOK_DRIVER_USECASE: Symbol.for("BOOK_DRIVER_USECASE"),
   GET_ESTIMATED_FARE_USECASE: Symbol.for("GET_ESTIMATED_FARE_USECASE"),
   IGET_USER_BOOKINGS_USECASE: Symbol("IGetUserBookingsUseCase"),
+ATTACH_PAYMENT_INTENT_USECASE: Symbol.for("IAttachPaymentIntentIdToBookingUseCase"),
+
+
   //controller tokens
   DRIVER_CONTROLLER: Symbol.for("DRIVER_CONTROLLER"),
 };

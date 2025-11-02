@@ -1,32 +1,35 @@
 import { inject, injectable } from "tsyringe";
 import { IBookingRepository } from "../../../domain/repositories/IBookingrepository"; 
-import { Booking, paymentStatus } from "../../../domain/models/Booking"; 
+import { paymentStatus } from "../../../domain/models/Booking"; 
 import { AuthError } from "../../../domain/errors/Autherror";
 import { IStripeService } from "../../../domain/services/IStripeService";
-import { WalletService } from "../../services/WalletService";
+
 import { IUserRepository } from "../../../domain/repositories/IUserepository";
 import { INotificationService } from "../../services/NotificationService";
 import { IWalletRepository } from "../../../domain/repositories/IWalletRepository";
 import { TOKENS } from "../../../constants/Tokens";
+import { HTTP_STATUS_CODES } from "../../../constants/HttpStatusCode";
+import { ERROR_MESSAGES } from "../../../constants/ErrorMessages";
+import { IAttachPaymentIntentIdToBookingUseCase } from "./interfaces/IAttachPaymentIntentIdToBookingUseCase";
 
 @injectable()
-export class AttachPaymentIntentIdToBooking {
+export class AttachPaymentIntentIdToBooking implements IAttachPaymentIntentIdToBookingUseCase {
   constructor(
     @inject(TOKENS.IBOOKING_REPO)
     private bookingRepo: IBookingRepository,
-        @inject(TOKENS.WALLET_REPO) private walletRepository: IWalletRepository,
-           @inject(TOKENS.IUSER_REPO) private userRepository: IUserRepository,
-      @inject(TOKENS.PAYMENT_SERVICE)
-        private stripeService: IStripeService,
-           @inject(TOKENS.NOTIFICATION_SERVICE)
-            private notificationService: INotificationService
+    @inject(TOKENS.WALLET_REPO) private walletRepository: IWalletRepository,
+    @inject(TOKENS.IUSER_REPO) private userRepository: IUserRepository,
+    @inject(TOKENS.PAYMENT_SERVICE)
+    private stripeService: IStripeService,
+    @inject(TOKENS.NOTIFICATION_SERVICE)
+    private notificationService: INotificationService
   ) {}
 
   async execute(bookingId: string,walletDeduction:number, paymentIntentId?: string,paymentstatus?:paymentStatus,userId?:string): Promise<void> {
     const booking = await this.bookingRepo.findBookingById(bookingId);
     console.log(walletDeduction,'walletDeduction')
     if (!booking) {
-      throw new AuthError('Booking not found', 404);
+      throw new AuthError(ERROR_MESSAGES.BOOKING_NOT_FOUND, HTTP_STATUS_CODES.NOT_FOUND);
     }
 if(walletDeduction&&walletDeduction>0){
 await this.walletRepository.debitAmount(
@@ -55,7 +58,7 @@ booking.walletDeduction=walletDeduction;
   const user = await this.userRepository.getUserById(userId);
 
   if (!user) {
-    throw new AuthError('User not found', 404); 
+    throw new AuthError(ERROR_MESSAGES.USER_NOT_FOUND, HTTP_STATUS_CODES.NOT_FOUND); 
     }
   }
 

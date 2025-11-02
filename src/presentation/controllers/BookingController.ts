@@ -27,6 +27,7 @@ import { USECASE_TOKENS } from "../../constants/UseCaseTokens";
 import { IBookDriverUseCase } from "../../application/use_cases/User/interfaces/IBookDriverUseCase";
 import { IGetEstimatedFare } from "../../application/use_cases/User/interfaces/IGetEstimatedFare";
 import { IGetUserBookingsUseCase } from "../../application/use_cases/User/interfaces/IGetUserBookingsUseCase";
+import { IAttachPaymentIntentIdToBookingUseCase } from "../../application/use_cases/User/interfaces/IAttachPaymentIntentIdToBookingUseCase";
 @injectable()
 export class BookingController {
 
@@ -36,7 +37,9 @@ private bookDriverUseCase: IBookDriverUseCase,
   @inject(USECASE_TOKENS.GET_ESTIMATED_FARE_USECASE)
     private getEstimatedFareUseCase: IGetEstimatedFare,
   @inject(USECASE_TOKENS.IGET_USER_BOOKINGS_USECASE)
-    private getUserBookingsUseCase: IGetUserBookingsUseCase
+    private getUserBookingsUseCase: IGetUserBookingsUseCase,
+    @inject(USECASE_TOKENS.ATTACH_PAYMENT_INTENT_USECASE)
+  private attachPaymentIntentUseCase: IAttachPaymentIntentIdToBookingUseCase
    ){}
    async bookDriver(req: AuthenticatedRequest, res: Response,next:NextFunction) {
     try {
@@ -117,77 +120,60 @@ private bookDriverUseCase: IBookDriverUseCase,
     }
   }
 
-  static async attachPaymentIntent(req: Request, res: Response) {
+   async attachPaymentIntent(req: AuthenticatedRequest, res: Response,next:NextFunction) {
     try {
       const { paymentIntentId, paymentStatus, walletDeduction } = req.body;
       const { rideId } = req.params;
-      console.log(req.body, "req.body for attach payment intent");
-
-      const useCase = container.resolve(AttachPaymentIntentIdToBooking);
-      await useCase.execute(rideId,walletDeduction, paymentIntentId, paymentStatus);
+     
+ const userId = req.user?.id;
+      if (!userId) {
+      
+      throw new AuthError(ERROR_MESSAGES.USER_ID_NOT_FOUND,HTTP_STATUS_CODES.BAD_REQUEST)
+      }
+    
+      
+await this.attachPaymentIntentUseCase.execute(rideId,walletDeduction, paymentIntentId, paymentStatus,userId);
 
       res
-        .status(200)
+        .status(HTTP_STATUS_CODES.OK)
         .json({
           success: true,
           message: "PaymentIntent attached successfully",
         });
     } catch (error) {
-      if (error instanceof AuthError) {
-        res
-          .status(error.statusCode)
-          .json({ success: false, error: error.message });
-        return;
-      }
-
-      console.error("Error fetching user data:", error);
-      res
-        .status(HTTP_STATUS_CODES.INTERNAL_SERVER_ERROR)
-        .json({ success: false, error: ERROR_MESSAGES.INTERNAL_SERVER_ERROR });
+     next(error)
     }
   }
-  static async updateStatus(req: Request, res: Response) {
+
+  
+  static async updateStatus(req: Request, res: Response,next:NextFunction) {
     try {
       const { bookingId } = req.params;
       const { status, reason, finalKm } = req.body;
       console.log(req.body);
       if (!status) {
-        res
-          .status(400)
-          .json({ message: "status required for updating status" });
-        return;
+      
+       throw new AuthError("status required for updating status" ,HTTP_STATUS_CODES.BAD_REQUEST)
       }
 
       if (status === "REJECTED" && !reason) {
-        res
-          .status(400)
-          .json({ message: "Reason is required when rejecting a booking." });
-        return;
+    
+     throw new AuthError( "Reason is required when rejecting a booking.",HTTP_STATUS_CODES.BAD_REQUEST)
       }
       if (
         (status === "COMPLETED" && finalKm === undefined) ||
         finalKm === null
       ) {
-        res
-          .status(400)
-          .json({ message: "finalKm is required when completing a booking." });
-        return;
+    
+         throw new AuthError( "finalKm is required when completing a booking.",HTTP_STATUS_CODES.BAD_REQUEST)
       }
 
       const useCase = container.resolve(UpdateBookingStatus);
       await useCase.execute({ bookingId, status, reason, finalKm });
 
-      res.status(200).json({ message: "Booking status updated successfully" });
+      res.status(HTTP_STATUS_CODES.OK).json({ message: "Booking status updated successfully" });
     } catch (error: any) {
-      if (error instanceof AuthError) {
-        res
-          .status(error.statusCode)
-          .json({ success: false, error: error.message });
-        return;
-      }
-
-      console.error("Error fetching user data:", error);
-      res.status(500).json({ success: false, error: "Internal server error" });
+      next(error)
     }
   }
 

@@ -44,6 +44,8 @@ import { IGetEstimatedFare } from "../../application/use_cases/User/interfaces/I
 import { GetEstimatedFare } from "../../application/use_cases/User/GetEstimatedFare";
 import { IGetUserBookingsUseCase } from "../../application/use_cases/User/interfaces/IGetUserBookingsUseCase";
 import { GetUserBookingsUseCase } from "../../application/use_cases/User/GetUserbooking";
+import { IAttachPaymentIntentIdToBookingUseCase } from "../../application/use_cases/User/interfaces/IAttachPaymentIntentIdToBookingUseCase";
+import { AttachPaymentIntentIdToBooking } from "../../application/use_cases/User/AttachPaymentIntentIdToBooking";
 
 container.registerSingleton<IRegisterUser>(
   TOKENS.REGISTER_USER_USECASE,
@@ -123,4 +125,8 @@ container.registerSingleton<IGetEstimatedFare>(
 
 container.registerSingleton<IGetUserBookingsUseCase>(USECASE_TOKENS.IGET_USER_BOOKINGS_USECASE, 
    GetUserBookingsUseCase
+);
+container.registerSingleton<IAttachPaymentIntentIdToBookingUseCase>(
+  USECASE_TOKENS.ATTACH_PAYMENT_INTENT_USECASE,
+  AttachPaymentIntentIdToBooking
 );
