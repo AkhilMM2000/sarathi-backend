@@ -3,6 +3,7 @@ import { Types } from 'mongoose';
 import { Role } from '../../domain/models/Chat'; // Import Role type
 import { inject, injectable } from 'tsyringe';
 import { ChatService } from '../services/chatService';
+import { TOKENS } from '../../constants/Tokens';
 
 interface SaveMessageDTO {
   bookingId: string;
@@ -15,7 +16,7 @@ interface SaveMessageDTO {
 @injectable()
 export class SaveMessageUseCase {
   constructor(
-    @inject('IChatRepository') private chatRepository: IChatRepository,
+    @inject(TOKENS.CHAT_REPO) private chatRepository: IChatRepository,
     private chatService: ChatService
   ) {}
 

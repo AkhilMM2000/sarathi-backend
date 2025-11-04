@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import { container, inject, injectable } from "tsyringe";
-import { BookDriver, BookDriverInput } from "../../application/use_cases/User/BookDriver";
+import {BookDriverInput } from "../../application/use_cases/User/BookDriver";
 import { AuthError } from "../../domain/errors/Autherror";
 
 import { AuthenticatedRequest } from "../../middleware/authMiddleware";
@@ -29,6 +29,9 @@ import { IGetEstimatedFare } from "../../application/use_cases/User/interfaces/I
 import { IGetUserBookingsUseCase } from "../../application/use_cases/User/interfaces/IGetUserBookingsUseCase";
 import { IAttachPaymentIntentIdToBookingUseCase } from "../../application/use_cases/User/interfaces/IAttachPaymentIntentIdToBookingUseCase";
 import { IUpdateBookingStatusUseCase } from "../../application/use_cases/Driver/interfaces/IUpdateBookingStatusUseCase";
+import { IGetAllBookingsUseCase } from "../../application/use_cases/Admin/Interfaces/IGetAllBookingsUseCase";
+import { ICancelBookingUseCase } from "../../application/use_cases/User/interfaces/ICancelBookingUseCase";
+import { IGetMessagesByBookingIdUseCase } from "../../application/use_cases/Interfaces/IGetMessage";
 @injectable()
 export class BookingController {
 
@@ -42,7 +45,13 @@ private bookDriverUseCase: IBookDriverUseCase,
     @inject(USECASE_TOKENS.ATTACH_PAYMENT_INTENT_USECASE)
   private attachPaymentIntentUseCase: IAttachPaymentIntentIdToBookingUseCase,
      @inject(USECASE_TOKENS.UPDATE_BOOKING_STATUS_USECASE)
-    private updateBookingStatusUseCase: IUpdateBookingStatusUseCase
+    private updateBookingStatusUseCase: IUpdateBookingStatusUseCase,
+      @inject(USECASE_TOKENS.GET_ALL_BOOKINGS_USECASE)
+    private getAllBookingsUseCase: IGetAllBookingsUseCase,
+        @inject(USECASE_TOKENS.CANCEL_BOOKING_USECASE)
+    private cancelBookingUseCase: ICancelBookingUseCase,
+      @inject(USECASE_TOKENS.GET_MESSAGES_BY_BOOKING_USECASE)
+    private getMessagesByBookingIdUseCase: IGetMessagesByBookingIdUseCase
    ){}
    async bookDriver(req: AuthenticatedRequest, res: Response,next:NextFunction) {
     try {
@@ -185,8 +194,8 @@ await this.attachPaymentIntentUseCase.execute(rideId,walletDeduction, paymentInt
       const page = parseInt(req.query.page as string) || 1;
       const limit = parseInt(req.query.limit as string) || 2;
 
-      const useCase = container.resolve(GetAllBookings);
-      const bookings = await useCase.execute(page, limit);
+   
+      const bookings = await this.getAllBookingsUseCase.execute(page, limit);
 
       res.status(HTTP_STATUS_CODES.OK).json({ bookings });
     } catch (error: any) {
@@ -194,7 +203,7 @@ await this.attachPaymentIntentUseCase.execute(rideId,walletDeduction, paymentInt
     }
   }
 
-  static async cancelBooking(req: Request, res: Response) {
+   async cancelBooking(req: Request, res: Response,next:NextFunction) {
     try {
       const { bookingId, reason } = req.body;
 
@@ -203,60 +212,44 @@ await this.attachPaymentIntentUseCase.execute(rideId,walletDeduction, paymentInt
         return;
       }
 
-      const updateBookingStatus = container.resolve(CancelBookingInputUseCase);
+     
 
-      await updateBookingStatus.execute({
+      await this.cancelBookingUseCase.execute({
         bookingId,
         reason,
         status: BookingStatus.CANCELLED,
       });
 
-      res.status(200).json({ message: "Booking cancelled successfully" });
+      res.status(HTTP_STATUS_CODES.OK).json({ message: "Booking cancelled successfully" });
     } catch (error: any) {
-      if (error instanceof AuthError) {
-        res
-          .status(error.statusCode)
-          .json({ success: false, error: error.message });
-        return;
-      }
-
-      console.error("Error fetching user data:", error);
-      res.status(500).json({ success: false, error: "Internal server error" });
+      next(error)
     }
   }
 
-  static async getChatByBookingId(req: Request, res: Response) {
+   async getChatByBookingId(req: Request, res: Response,next:NextFunction) {
     try {
       const { roomId } = req.params;
 
       if (!roomId) {
-        res.status(400).json({ message: "Booking ID is required" });
-        return;
+     
+        throw new AuthError( "Booking ID is required" ,HTTP_STATUS_CODES.BAD_REQUEST)
       }
 
-      const getChatByBookingId = container.resolve(GetMessagesByBookingId);
-      const chat = await getChatByBookingId.execute({ bookingId: roomId });
+    
+      const chat = await this.getMessagesByBookingIdUseCase.execute({ bookingId: roomId });
 
       if (!chat) {
-        res.status(404).json({ message: "Chat not found" });
-        return;
+      
+        throw new AuthError( "Chat not found" ,HTTP_STATUS_CODES.NOT_FOUND)
       }
 
-      res.status(200).json(chat);
+      res.status(HTTP_STATUS_CODES.OK).json(chat);
     } catch (error: any) {
-      if (error instanceof AuthError) {
-        res
-          .status(error.statusCode)
-          .json({ success: false, error: error.message });
-        return;
-      }
-
-      console.error("Error fetching user data:", error);
-      res.status(500).json({ success: false, error: "Internal server error" });
+      next(error)
     }
   }
 
-  static async deleteMessage(req: Request, res: Response): Promise<void> {
+  async deleteMessage(req: Request, res: Response,next:NextFunction): Promise<void> {
     try {
       const { roomId, messageId } = req.params;
 
@@ -265,15 +258,7 @@ await this.attachPaymentIntentUseCase.execute(rideId,walletDeduction, paymentInt
 
       res.status(HTTP_STATUS_CODES.OK).json({ message: 'Message deleted successfully' });
     } catch (error) {
-      if (error instanceof AuthError) {
-        res
-          .status(error.statusCode)
-          .json({ success: false, error: error.message });
-        return;
-      }
-
-      console.error("Error fetching user data:", error);
-      res.status(HTTP_STATUS_CODES.INTERNAL_SERVER_ERROR).json({ success: false, error:ERROR_MESSAGES.INTERNAL_SERVER_ERROR });
+      next(error)
     }
     }
   

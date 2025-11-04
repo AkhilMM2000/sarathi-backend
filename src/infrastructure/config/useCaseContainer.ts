@@ -48,6 +48,12 @@ import { IAttachPaymentIntentIdToBookingUseCase } from "../../application/use_ca
 import { AttachPaymentIntentIdToBooking } from "../../application/use_cases/User/AttachPaymentIntentIdToBooking";
 import { IUpdateBookingStatusUseCase } from "../../application/use_cases/Driver/interfaces/IUpdateBookingStatusUseCase";
 import { UpdateBookingStatus } from "../../application/use_cases/Driver/UpdateBookingstatus";
+import { IGetAllBookingsUseCase } from "../../application/use_cases/Admin/Interfaces/IGetAllBookingsUseCase";
+import { GetAllBookings } from "../../application/use_cases/Admin/GetAllRides";
+import { ICancelBookingUseCase } from "../../application/use_cases/User/interfaces/ICancelBookingUseCase";
+import { CancelBookingInputUseCase } from "../../application/use_cases/User/CancelBooking";
+import { IGetMessagesByBookingIdUseCase } from "../../application/use_cases/Interfaces/IGetMessage";
+import { GetMessagesByBookingId } from "../../application/use_cases/GetRidechat";
 
 container.registerSingleton<IRegisterUser>(
   TOKENS.REGISTER_USER_USECASE,
@@ -135,4 +141,16 @@ container.registerSingleton<IAttachPaymentIntentIdToBookingUseCase>(
 container.registerSingleton<IUpdateBookingStatusUseCase>(
  USECASE_TOKENS.UPDATE_BOOKING_STATUS_USECASE,
   UpdateBookingStatus
+);
+container.registerSingleton<IGetAllBookingsUseCase>(
+  USECASE_TOKENS.GET_ALL_BOOKINGS_USECASE,
+  GetAllBookings
+);
+container.registerSingleton<ICancelBookingUseCase>(
+  USECASE_TOKENS.CANCEL_BOOKING_USECASE,
+  CancelBookingInputUseCase
+);
+container.registerSingleton<IGetMessagesByBookingIdUseCase>(
+  USECASE_TOKENS.GET_MESSAGES_BY_BOOKING_USECASE,
+  GetMessagesByBookingId
 );
