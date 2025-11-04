@@ -32,6 +32,7 @@ import { IUpdateBookingStatusUseCase } from "../../application/use_cases/Driver/
 import { IGetAllBookingsUseCase } from "../../application/use_cases/Admin/Interfaces/IGetAllBookingsUseCase";
 import { ICancelBookingUseCase } from "../../application/use_cases/User/interfaces/ICancelBookingUseCase";
 import { IGetMessagesByBookingIdUseCase } from "../../application/use_cases/Interfaces/IGetMessage";
+import { IDeleteMessageUseCase } from "../../application/use_cases/Interfaces/IDeleteMessageUseCase";
 @injectable()
 export class BookingController {
 
@@ -51,7 +52,10 @@ private bookDriverUseCase: IBookDriverUseCase,
         @inject(USECASE_TOKENS.CANCEL_BOOKING_USECASE)
     private cancelBookingUseCase: ICancelBookingUseCase,
       @inject(USECASE_TOKENS.GET_MESSAGES_BY_BOOKING_USECASE)
-    private getMessagesByBookingIdUseCase: IGetMessagesByBookingIdUseCase
+    private getMessagesByBookingIdUseCase: IGetMessagesByBookingIdUseCase,
+        @inject(USECASE_TOKENS.DELETE_MESSAGE_USECASE)
+    private deleteMessageUseCase: IDeleteMessageUseCase
+
    ){}
    async bookDriver(req: AuthenticatedRequest, res: Response,next:NextFunction) {
     try {
@@ -253,8 +257,8 @@ await this.attachPaymentIntentUseCase.execute(rideId,walletDeduction, paymentInt
     try {
       const { roomId, messageId } = req.params;
 
-      const deleteMessageUseCase = container.resolve(DeleteMessageUseCase);
-      await deleteMessageUseCase.execute(roomId, messageId);
+ 
+      await this.deleteMessageUseCase.execute(roomId, messageId);
 
       res.status(HTTP_STATUS_CODES.OK).json({ message: 'Message deleted successfully' });
     } catch (error) {

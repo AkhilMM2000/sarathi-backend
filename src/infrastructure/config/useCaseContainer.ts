@@ -54,6 +54,8 @@ import { ICancelBookingUseCase } from "../../application/use_cases/User/interfac
 import { CancelBookingInputUseCase } from "../../application/use_cases/User/CancelBooking";
 import { IGetMessagesByBookingIdUseCase } from "../../application/use_cases/Interfaces/IGetMessage";
 import { GetMessagesByBookingId } from "../../application/use_cases/GetRidechat";
+import { IDeleteMessageUseCase } from "../../application/use_cases/Interfaces/IDeleteMessageUseCase";
+import { DeleteMessageUseCase } from "../../application/use_cases/deleteMessage";
 
 container.registerSingleton<IRegisterUser>(
   TOKENS.REGISTER_USER_USECASE,
@@ -153,4 +155,8 @@ container.registerSingleton<ICancelBookingUseCase>(
 container.registerSingleton<IGetMessagesByBookingIdUseCase>(
   USECASE_TOKENS.GET_MESSAGES_BY_BOOKING_USECASE,
   GetMessagesByBookingId
+);
+container.registerSingleton<IDeleteMessageUseCase>(
+  USECASE_TOKENS.DELETE_MESSAGE_USECASE,
+  DeleteMessageUseCase
 );

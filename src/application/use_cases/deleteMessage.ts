@@ -1,9 +1,10 @@
 import { IChatRepository } from '../../domain/repositories/IChatRepository'; 
 import { injectable, inject } from 'tsyringe';
 import { TOKENS } from '../../constants/Tokens';
+import { IDeleteMessageUseCase } from './Interfaces/IDeleteMessageUseCase';
 
 @injectable()
-export class DeleteMessageUseCase {
+export class DeleteMessageUseCase implements IDeleteMessageUseCase {
   constructor(
     @inject(TOKENS.CHAT_REPO) private chatRepository: IChatRepository
   ) {}
