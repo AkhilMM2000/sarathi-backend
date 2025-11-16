@@ -8,14 +8,15 @@ import { paymentStatus } from "../../../domain/models/Booking";
 import { IStripeService } from "../../../domain/services/IStripeService";
 import { IDriverRepository } from "../../../domain/repositories/IDriverepository";
 import { TOKENS } from "../../../constants/Tokens";
+import { IWalletPaymentUseCase } from "./interfaces/IWalletPaymentUseCase";
 
 @injectable()
-export class WalletPayment {
+export class WalletPayment  implements IWalletPaymentUseCase {
   constructor(
-    @inject("IWalletRepository") private walletRepository: IWalletRepository,
+    @inject(TOKENS.WALLET_REPO) private walletRepository: IWalletRepository,
     @inject(TOKENS.IBOOKING_REPO)
     private bookingRepo: IBookingRepository,
-    @inject("StripePaymentService")
+    @inject(TOKENS.STRIPE_PAYMENT_SERVICE)
     private stripeService: IStripeService,
     @inject(TOKENS.IDRIVER_REPO) private driverRepository: IDriverRepository
   ) {}
@@ -38,11 +39,11 @@ export class WalletPayment {
           HTTP_STATUS_CODES.NOT_FOUND
         );
       }
-//  await this.stripeService.transferToDriverFromWallet(
-//         Ride?.driverId.toString(),
-//         amount,
-//         driver?.stripeAccountId
-//       );
+ await this.stripeService.transferToDriverFromWallet(
+        Ride?.driverId.toString(),
+        amount,
+        driver?.stripeAccountId
+      );
       await this.bookingRepo.updateBooking(rideId, {...Payment,walletDeduction:amount,driver_fee:Math.floor(amount*0.9)});
       await this.walletRepository.debitAmount(
         userId,

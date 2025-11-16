@@ -56,7 +56,7 @@ container.register(TOKENS.REFERAL_CODE_SERVICE, {
 });
 
 
-container.registerSingleton<IFileStorageService>("IFileStorageService",  CloudinaryFileStorageService)
+container.registerSingleton<IFileStorageService>(TOKENS.FILE_SERVICE,  CloudinaryFileStorageService)
 
 container.registerSingleton<IRedisrepository>(
          TOKENS.USER_REGISTERSTORE,

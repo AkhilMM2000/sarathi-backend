@@ -56,6 +56,12 @@ import { IGetMessagesByBookingIdUseCase } from "../../application/use_cases/Inte
 import { GetMessagesByBookingId } from "../../application/use_cases/GetRidechat";
 import { IDeleteMessageUseCase } from "../../application/use_cases/Interfaces/IDeleteMessageUseCase";
 import { DeleteMessageUseCase } from "../../application/use_cases/deleteMessage";
+import { IGenerateSignedUrlUseCase } from "../../application/use_cases/Interfaces/IGenerateSignedUrlUseCase";
+import { GenerateSignedUrl } from "../../application/use_cases/GenerateSignedUrl";
+import { IWalletBalanceUseCase } from "../../application/use_cases/User/interfaces/IWalletBalanceUseCase";
+import { WalletBallence } from "../../application/use_cases/User/WalletBallence";
+import { IWalletPaymentUseCase } from "../../application/use_cases/User/interfaces/IWalletPaymentUseCase";
+import { WalletPayment } from "../../application/use_cases/User/WalletRidePayment";
 
 container.registerSingleton<IRegisterUser>(
   TOKENS.REGISTER_USER_USECASE,
@@ -159,4 +165,16 @@ container.registerSingleton<IGetMessagesByBookingIdUseCase>(
 container.registerSingleton<IDeleteMessageUseCase>(
   USECASE_TOKENS.DELETE_MESSAGE_USECASE,
   DeleteMessageUseCase
+);
+container.registerSingleton<IGenerateSignedUrlUseCase>(
+  USECASE_TOKENS.GENERATE_SIGNED_URL_USECASE,
+  GenerateSignedUrl
+);
+container.registerSingleton<IWalletBalanceUseCase>(
+  USECASE_TOKENS.WALLET_BALANCE_USECASE,
+  WalletBallence
+);
+container.registerSingleton<IWalletPaymentUseCase>(
+  USECASE_TOKENS.WALLET_PAYMENT_USECASE,
+  WalletPayment
 );

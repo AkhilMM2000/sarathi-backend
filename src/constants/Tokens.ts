@@ -10,6 +10,8 @@ export const TOKENS = {
   IFARE_CALCULATE_SERVICE:Symbol.for("IFareCalculatorService"),
   USER_REGISTERSTORE:Symbol.for("UserRegistrationStore"),
  NOTIFICATION_SERVICE:Symbol.for("INotificationService"),
+ FILE_SERVICE:Symbol.for("IFileStorageService"),
+ STRIPE_PAYMENT_SERVICE:Symbol.for("StripePaymentService"),
   IUSER_REPO:Symbol.for("IUserRepository"),
   VEHICLE_REPO:Symbol.for("IVehicleRepository"),
   WALLET_REPO:Symbol.for("IWalletRepository"),
@@ -31,6 +33,7 @@ export const TOKENS = {
   SUBMIT_REVIEW_USECASE:Symbol.for('SUBMIT_REVIEW_USECASE'),
   GET_DRIVER_PROFILE_USECASE:Symbol.for("GET_DRIVER_PROFILE"),
   WALLET_TRANSACTION_USECASE:Symbol.for('WALLET_TRANSACTION_USECASE'),
+  
   USER_CONTROLLER:Symbol.for('USER_CONTROLLER'),
   BOOKING_CONTROLLER:Symbol.for("BOOKING_CONTROLLER")
 

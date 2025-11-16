@@ -2,11 +2,12 @@ import { injectable, inject } from "tsyringe";
 import { IFileStorageService } from "../../domain/services/IFileStorageService";
 import { AuthError } from "../../domain/errors/Autherror";
 import { HTTP_STATUS_CODES } from "../../constants/HttpStatusCode";
+import { TOKENS } from "../../constants/Tokens";
 
 @injectable()
 export class GenerateChatSignedUrl {
   constructor(
-    @inject("IFileStorageService") private fileStorageService: IFileStorageService
+    @inject(TOKENS.FILE_SERVICE) private fileStorageService: IFileStorageService
   ) {}
 
   async execute(fileType: string,userId:string) {

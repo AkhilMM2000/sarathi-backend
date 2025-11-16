@@ -1,13 +1,16 @@
 import { injectable, inject } from "tsyringe";
 import { IFileStorageService } from "../../domain/services/IFileStorageService";
+import { TOKENS } from "../../constants/Tokens";
+import { IGenerateSignedUrlUseCase } from "./Interfaces/IGenerateSignedUrlUseCase";
+import { SignedUrlResponse } from "../../infrastructure/services/cloudstorageservice";
 
 @injectable()
-export class GenerateSignedUrl {
+export class GenerateSignedUrl implements IGenerateSignedUrlUseCase  {
   constructor(
-    @inject("IFileStorageService") private fileStorageService: IFileStorageService
+    @inject(TOKENS.FILE_SERVICE) private fileStorageService: IFileStorageService
   ) {}
 
-  async execute(fileType: string, fileName: string) {
+  async execute(fileType: string, fileName: string):Promise<SignedUrlResponse>{
     if (!fileType || !fileName) {
       throw new Error("File type and file name are required");
     }

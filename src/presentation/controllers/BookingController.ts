@@ -33,6 +33,9 @@ import { IGetAllBookingsUseCase } from "../../application/use_cases/Admin/Interf
 import { ICancelBookingUseCase } from "../../application/use_cases/User/interfaces/ICancelBookingUseCase";
 import { IGetMessagesByBookingIdUseCase } from "../../application/use_cases/Interfaces/IGetMessage";
 import { IDeleteMessageUseCase } from "../../application/use_cases/Interfaces/IDeleteMessageUseCase";
+import { IGenerateSignedUrlUseCase } from "../../application/use_cases/Interfaces/IGenerateSignedUrlUseCase";
+import { IWalletBalanceUseCase } from "../../application/use_cases/User/interfaces/IWalletBalanceUseCase";
+import { IWalletPaymentUseCase } from "../../application/use_cases/User/interfaces/IWalletPaymentUseCase";
 @injectable()
 export class BookingController {
 
@@ -54,7 +57,13 @@ private bookDriverUseCase: IBookDriverUseCase,
       @inject(USECASE_TOKENS.GET_MESSAGES_BY_BOOKING_USECASE)
     private getMessagesByBookingIdUseCase: IGetMessagesByBookingIdUseCase,
         @inject(USECASE_TOKENS.DELETE_MESSAGE_USECASE)
-    private deleteMessageUseCase: IDeleteMessageUseCase
+    private deleteMessageUseCase: IDeleteMessageUseCase,
+       @inject(USECASE_TOKENS.GENERATE_SIGNED_URL_USECASE)
+    private generateSignedUrlUseCase: IGenerateSignedUrlUseCase,
+    @inject(USECASE_TOKENS.WALLET_BALANCE_USECASE)
+    private walletBalanceUseCase: IWalletBalanceUseCase,
+      @inject(USECASE_TOKENS.WALLET_PAYMENT_USECASE)
+  private walletPaymentUseCase: IWalletPaymentUseCase
 
    ){}
    async bookDriver(req: AuthenticatedRequest, res: Response,next:NextFunction) {
@@ -269,7 +278,7 @@ await this.attachPaymentIntentUseCase.execute(rideId,walletDeduction, paymentInt
 
 
 
-  static async getRideHistory(req: AuthenticatedRequest, res: Response) {
+  static async getRideHistory(req: AuthenticatedRequest, res: Response,next:NextFunction) {
     try {
       const id = req.user?.id!;
       const role = req.user?.role! as "user" | "driver";
@@ -277,83 +286,48 @@ await this.attachPaymentIntentUseCase.execute(rideId,walletDeduction, paymentInt
       const limit = parseInt(req.query.limit as string) || 2;
       const BookingHistory = container.resolve(GetRideHistory);
       const ridehistory = await BookingHistory.execute(role, id, page, limit);
-      res.status(200).json(ridehistory);
+      res.status(HTTP_STATUS_CODES.OK).json(ridehistory);
     } catch (error: any) {
-      if (error instanceof AuthError) {
-        res
-          .status(error.statusCode)
-          .json({ success: false, error: error.message });
-        return;
-      }
-
-      console.error("Error fetching user data:", error);
-      res.status(500).json({ success: false, error: ERROR_MESSAGES.INTERNAL_SERVER_ERROR });
+      next(error)
     }
   }
 
-  static async getChatSignature(req: AuthenticatedRequest, res: Response) {
+  async getChatSignature(req: AuthenticatedRequest, res: Response,next:NextFunction) {
     try {
       const id = req.user?.id!;
       const { fileType } = req.body;
-      console.log(req.body)
-      const chatMediaSignature = container.resolve(GenerateChatSignedUrl);
-      const chatUploadMedia = await chatMediaSignature.execute(fileType, id);
+     
+      const chatUploadMedia = await this.generateSignedUrlUseCase.execute(fileType, id);
       console.log(chatUploadMedia,'media signurl reach');
       res.status(HTTP_STATUS_CODES.OK).json(chatUploadMedia);
     } catch (error: any) {
-      if (error instanceof AuthError) {
-        res
-          .status(error.statusCode)
-          .json({ success: false, error: error.message });
-        return;
-      }
-
-      console.error("Error fetching user data:", error);
-      res.status(500).json({ success: false, error:ERROR_MESSAGES.INTERNAL_SERVER_ERROR});
+       next(error)
     }
   }
- static async Walletballence(req: AuthenticatedRequest, res: Response) {
+async Walletballence(req: AuthenticatedRequest, res: Response,next:NextFunction) {
    try {
-const userId = req.user?.id;
-const walletBallence=container.resolve(WalletBallence);
-const ballence=await walletBallence.execute(userId!);
+const userId = req.user?.id!;
+
+const ballence=await this.walletBalanceUseCase.execute(userId);
 res.status(HTTP_STATUS_CODES.OK).json({ballence})
    } catch (error: any) {
-     if (error instanceof AuthError) {
-       res
-         .status(error.statusCode)
-         .json({ success: false, error: error.message });
-       return;
-     }
-
-     console.error("Error fetching user data:", error);
-     res.status(500).json({ success: false, error:ERROR_MESSAGES.INTERNAL_SERVER_ERROR})
     
+
+next(error)
+
    }
-
-
-
-
 }
 
-static async WalletPayment(req: AuthenticatedRequest, res: Response) {
+ async WalletPayment(req: AuthenticatedRequest, res: Response,next:NextFunction) {
    try {
 const userId = req.user?.id;
 const { rideId, amount } = req.body;
         
-const walletPay=container.resolve(WalletPayment );
-await walletPay.WalletRidePayment(rideId,userId!,amount)
+
+await this.walletPaymentUseCase.WalletRidePayment(rideId, userId!, amount);
 res.status(HTTP_STATUS_CODES.OK).json({message:"payment successfull"})
    } catch (error: any) {
-     if (error instanceof AuthError) {
-       res
-         .status(error.statusCode)
-         .json({ success: false, error: error.message });
-       return;
-     }
-
-     console.error("Error fetching user data:", error);
-     res.status(500).json({ success: false, error:ERROR_MESSAGES.INTERNAL_SERVER_ERROR})
+     next(error)
     
    }
 
