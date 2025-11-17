@@ -18,7 +18,7 @@ import { GenerateChatSignedUrl } from "../../application/use_cases/chatGetSigned
 import { WalletBallence } from "../../application/use_cases/User/WalletBallence";
 
 import { WalletPayment } from "../../application/use_cases/User/WalletRidePayment";
-import { GetDriverReviews } from "../../application/use_cases/DriverReview";
+import { GetDriverReviews } from "../../application/use_cases/Driver/DriverReview";
 import { DeleteMessageUseCase } from "../../application/use_cases/deleteMessage";
 
 import { GetBookingStatusSummary } from "../../application/use_cases/Driver/GetBookingStatusSummary";
@@ -36,6 +36,7 @@ import { IDeleteMessageUseCase } from "../../application/use_cases/Interfaces/ID
 import { IGenerateSignedUrlUseCase } from "../../application/use_cases/Interfaces/IGenerateSignedUrlUseCase";
 import { IWalletBalanceUseCase } from "../../application/use_cases/User/interfaces/IWalletBalanceUseCase";
 import { IWalletPaymentUseCase } from "../../application/use_cases/User/interfaces/IWalletPaymentUseCase";
+import { IGetDriverReviewsUseCase } from "../../application/use_cases/Driver/interfaces/IGetDriverReviewsUseCase";
 @injectable()
 export class BookingController {
 
@@ -63,7 +64,9 @@ private bookDriverUseCase: IBookDriverUseCase,
     @inject(USECASE_TOKENS.WALLET_BALANCE_USECASE)
     private walletBalanceUseCase: IWalletBalanceUseCase,
       @inject(USECASE_TOKENS.WALLET_PAYMENT_USECASE)
-  private walletPaymentUseCase: IWalletPaymentUseCase
+  private walletPaymentUseCase: IWalletPaymentUseCase,
+    @inject(USECASE_TOKENS.GET_DRIVER_REVIEWS_USECASE)
+  private getDriverReviewsUseCase: IGetDriverReviewsUseCase
 
    ){}
    async bookDriver(req: AuthenticatedRequest, res: Response,next:NextFunction) {
@@ -332,31 +335,21 @@ res.status(HTTP_STATUS_CODES.OK).json({message:"payment successfull"})
    }
 
  }
-static async ReviewDriver(req: AuthenticatedRequest, res: Response) {
+ async ReviewDriver(req: AuthenticatedRequest, res: Response,next:NextFunction) {
 try {
 const driverId = req.params.id;
 console.log(driverId, "driver id");
  const page = parseInt(req.query.page as string) || 1;
  const limit = parseInt(req.query.limit as string) || 2;
-  const ReviewDriver = container.resolve(GetDriverReviews );
-const reviews = await ReviewDriver.execute(driverId, page, limit);
+  
+const reviews = await this.getDriverReviewsUseCase.execute(driverId, page, limit);
 res.status(HTTP_STATUS_CODES.OK).json(reviews);
 } catch (error: any) {
-  if (error instanceof AuthError) {
-    res
-      .status(error.statusCode)
-      .json({ success: false, error: error.message });
-    return;
-  }
-
-  console.error("Error fetching user data:", error);
-  res.status(500).json({ success: false, error:ERROR_MESSAGES.INTERNAL_SERVER_ERROR})
   
+next(error)
 }
-
-
 }
-static async getDriverBookingStatusSummary (req:AuthenticatedRequest, res: Response) {
+ async getDriverBookingStatusSummary (req:AuthenticatedRequest, res: Response,next:NextFunction) {
   try {
  
    const driverId = req.user?.id;
@@ -367,15 +360,7 @@ static async getDriverBookingStatusSummary (req:AuthenticatedRequest, res: Respo
     const result = await useCase.execute(driverId!, year, month);
     res.status(HTTP_STATUS_CODES.OK).json(result);
   } catch (error: any) {
-   if (error instanceof AuthError) {
-    res
-      .status(error.statusCode)
-      .json({ success: false, error: error.message });
-    return;
-  }
-
-  console.error("Error fetching getDriverBookingStatusSummary", error);
-  res.status(500).json({ success: false, error:ERROR_MESSAGES.INTERNAL_SERVER_ERROR})
+     next(error)
   }
 };
 

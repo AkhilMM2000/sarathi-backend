@@ -62,6 +62,8 @@ import { IWalletBalanceUseCase } from "../../application/use_cases/User/interfac
 import { WalletBallence } from "../../application/use_cases/User/WalletBallence";
 import { IWalletPaymentUseCase } from "../../application/use_cases/User/interfaces/IWalletPaymentUseCase";
 import { WalletPayment } from "../../application/use_cases/User/WalletRidePayment";
+import { IGetDriverReviewsUseCase } from "../../application/use_cases/Driver/interfaces/IGetDriverReviewsUseCase";
+import { GetDriverReviews } from "../../application/use_cases/Driver/DriverReview";
 
 container.registerSingleton<IRegisterUser>(
   TOKENS.REGISTER_USER_USECASE,
@@ -177,4 +179,8 @@ container.registerSingleton<IWalletBalanceUseCase>(
 container.registerSingleton<IWalletPaymentUseCase>(
   USECASE_TOKENS.WALLET_PAYMENT_USECASE,
   WalletPayment
+);
+container.registerSingleton<IGetDriverReviewsUseCase>(
+  USECASE_TOKENS.GET_DRIVER_REVIEWS_USECASE,
+  GetDriverReviews
 );

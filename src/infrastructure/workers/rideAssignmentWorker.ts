@@ -8,13 +8,14 @@ import { IDriverRepository } from '../../domain/repositories/IDriverepository';
 import { INotificationService } from '../../application/services/NotificationService';
 import { BookingStatus } from '../../domain/models/Booking';
 import { ObjectId } from 'mongodb';
+import { TOKENS } from '../../constants/Tokens';
 
 @injectable()
 export class RideAssignmentWorker {
   private worker: Worker;
 
   constructor(
-    @inject('IBookingRepository')
+    @inject(TOKENS.IBOOKING_REPO)
     private bookingRepo: IBookingRepository,
 
     @inject('IDriverRepository')

@@ -3,11 +3,12 @@ import { IBookingRepository } from '../../../domain/repositories/IBookingreposit
 import { HTTP_STATUS_CODES } from '../../../constants/HttpStatusCode';
 import { AuthError } from '../../../domain/errors/Autherror';
 import { ERROR_MESSAGES } from '../../../constants/ErrorMessages';
+import { TOKENS } from '../../../constants/Tokens';
 
 @injectable()
 export class GetDriverEarningsSummary {
   constructor(
-    @inject('IBookingRepository')
+    @inject(TOKENS.IBOOKING_REPO)
     private bookingRepo: IBookingRepository
   ) {}
 
