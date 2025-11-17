@@ -66,6 +66,8 @@ import { IGetDriverReviewsUseCase } from "../../application/use_cases/Driver/int
 import { GetDriverReviews } from "../../application/use_cases/Driver/DriverReview";
 import { IGetBookingStatusSummaryUseCase } from "../../application/use_cases/Driver/interfaces/IGetBookingStatusSummaryUseCase";
 import { GetBookingStatusSummary } from "../../application/use_cases/Driver/GetBookingStatusSummary";
+import { IGetDriverEarningsSummaryUseCase } from "../../application/use_cases/Driver/interfaces/IGetDriverEarningsSummaryUseCase";
+import { GetDriverEarningsSummary } from "../../application/use_cases/Driver/GetMonthlyEarningsReport";
 
 container.registerSingleton<IRegisterUser>(
   TOKENS.REGISTER_USER_USECASE,
@@ -189,4 +191,8 @@ container.registerSingleton<IGetDriverReviewsUseCase>(
 container.registerSingleton<IGetBookingStatusSummaryUseCase>(
   USECASE_TOKENS.GET_BOOKING_STATUS_SUMMARY_USECASE,
   GetBookingStatusSummary
+);
+container.registerSingleton<IGetDriverEarningsSummaryUseCase>(
+  USECASE_TOKENS.GET_DRIVER_EARNINGS_SUMMARY_USECASE,
+  GetDriverEarningsSummary
 );

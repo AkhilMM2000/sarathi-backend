@@ -38,6 +38,7 @@ import { IWalletBalanceUseCase } from "../../application/use_cases/User/interfac
 import { IWalletPaymentUseCase } from "../../application/use_cases/User/interfaces/IWalletPaymentUseCase";
 import { IGetDriverReviewsUseCase } from "../../application/use_cases/Driver/interfaces/IGetDriverReviewsUseCase";
 import { IGetBookingStatusSummaryUseCase } from "../../application/use_cases/Driver/interfaces/IGetBookingStatusSummaryUseCase";
+import { IGetDriverEarningsSummaryUseCase } from "../../application/use_cases/Driver/interfaces/IGetDriverEarningsSummaryUseCase";
 @injectable()
 export class BookingController {
 
@@ -69,7 +70,9 @@ private bookDriverUseCase: IBookDriverUseCase,
     @inject(USECASE_TOKENS.GET_DRIVER_REVIEWS_USECASE)
   private getDriverReviewsUseCase: IGetDriverReviewsUseCase,
    @inject(USECASE_TOKENS.GET_BOOKING_STATUS_SUMMARY_USECASE)
-  private getBookingStatusSummary: IGetBookingStatusSummaryUseCase
+  private getBookingStatusSummary: IGetBookingStatusSummaryUseCase,
+    @inject(USECASE_TOKENS.GET_DRIVER_EARNINGS_SUMMARY_USECASE)
+  private earningsSummaryUseCase: IGetDriverEarningsSummaryUseCase
 
    ){}
    async bookDriver(req: AuthenticatedRequest, res: Response,next:NextFunction) {
@@ -367,26 +370,18 @@ next(error)
   }
 };
 
-static async  getDriverEarningsByMonth  (req:AuthenticatedRequest, res: Response){
+ async  getDriverEarningsByMonth  (req:AuthenticatedRequest, res: Response,next:NextFunction){
   try {
  
    const driverId = req.user?.id;
     const year = req.query.year ? parseInt(req.query.year as string) : new Date().getFullYear();
     const month = req.query.month ? parseInt(req.query.month as string) : undefined;
 
-    const useCase = container.resolve(GetDriverEarningsSummary);
-    const result = await useCase.execute(driverId!, year, month);
+   
+    const result = await this.earningsSummaryUseCase.execute(driverId!, year, month);
     res.status(HTTP_STATUS_CODES.OK).json(result);
   } catch (error: any) {
-   if (error instanceof AuthError) {
-    res
-      .status(error.statusCode)
-      .json({ success: false, error: error.message });
-    return;
-  }
-
-  console.error("Error fetching getDriverEarningsByMonth ", error);
-  res.status(HTTP_STATUS_CODES.INTERNAL_SERVER_ERROR).json({ success: false, error:ERROR_MESSAGES.INTERNAL_SERVER_ERROR})
+    next(error)
   }
 };
 
