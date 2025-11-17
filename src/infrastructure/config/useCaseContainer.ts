@@ -64,6 +64,8 @@ import { IWalletPaymentUseCase } from "../../application/use_cases/User/interfac
 import { WalletPayment } from "../../application/use_cases/User/WalletRidePayment";
 import { IGetDriverReviewsUseCase } from "../../application/use_cases/Driver/interfaces/IGetDriverReviewsUseCase";
 import { GetDriverReviews } from "../../application/use_cases/Driver/DriverReview";
+import { IGetBookingStatusSummaryUseCase } from "../../application/use_cases/Driver/interfaces/IGetBookingStatusSummaryUseCase";
+import { GetBookingStatusSummary } from "../../application/use_cases/Driver/GetBookingStatusSummary";
 
 container.registerSingleton<IRegisterUser>(
   TOKENS.REGISTER_USER_USECASE,
@@ -183,4 +185,8 @@ container.registerSingleton<IWalletPaymentUseCase>(
 container.registerSingleton<IGetDriverReviewsUseCase>(
   USECASE_TOKENS.GET_DRIVER_REVIEWS_USECASE,
   GetDriverReviews
+);
+container.registerSingleton<IGetBookingStatusSummaryUseCase>(
+  USECASE_TOKENS.GET_BOOKING_STATUS_SUMMARY_USECASE,
+  GetBookingStatusSummary
 );

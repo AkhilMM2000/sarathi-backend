@@ -37,6 +37,7 @@ import { IGenerateSignedUrlUseCase } from "../../application/use_cases/Interface
 import { IWalletBalanceUseCase } from "../../application/use_cases/User/interfaces/IWalletBalanceUseCase";
 import { IWalletPaymentUseCase } from "../../application/use_cases/User/interfaces/IWalletPaymentUseCase";
 import { IGetDriverReviewsUseCase } from "../../application/use_cases/Driver/interfaces/IGetDriverReviewsUseCase";
+import { IGetBookingStatusSummaryUseCase } from "../../application/use_cases/Driver/interfaces/IGetBookingStatusSummaryUseCase";
 @injectable()
 export class BookingController {
 
@@ -66,7 +67,9 @@ private bookDriverUseCase: IBookDriverUseCase,
       @inject(USECASE_TOKENS.WALLET_PAYMENT_USECASE)
   private walletPaymentUseCase: IWalletPaymentUseCase,
     @inject(USECASE_TOKENS.GET_DRIVER_REVIEWS_USECASE)
-  private getDriverReviewsUseCase: IGetDriverReviewsUseCase
+  private getDriverReviewsUseCase: IGetDriverReviewsUseCase,
+   @inject(USECASE_TOKENS.GET_BOOKING_STATUS_SUMMARY_USECASE)
+  private getBookingStatusSummary: IGetBookingStatusSummaryUseCase
 
    ){}
    async bookDriver(req: AuthenticatedRequest, res: Response,next:NextFunction) {
@@ -356,8 +359,8 @@ next(error)
     const year = req.query.year ? parseInt(req.query.year as string) : undefined;
     const month = req.query.month ? parseInt(req.query.month as string) : undefined;
 
-    const useCase = container.resolve(GetBookingStatusSummary);
-    const result = await useCase.execute(driverId!, year, month);
+   
+    const result = await this.getBookingStatusSummary.execute(driverId!, year, month);
     res.status(HTTP_STATUS_CODES.OK).json(result);
   } catch (error: any) {
      next(error)
