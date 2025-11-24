@@ -5,7 +5,7 @@ import { CheckBlockedUserOrDriver } from "../../middleware/checkBlocked";
 import { container } from "tsyringe";
 import { AuthController } from "../controllers/AuthController";
 import { BookingController } from "../controllers/BookingController";
-import { userController } from "../../config/controllerResolve";
+import { bookingController, userController } from "../../config/controllerResolve";
 
 const router= express.Router();
 const checkBlockedMiddleware = container.resolve(CheckBlockedUserOrDriver);
@@ -52,12 +52,12 @@ router
   .post(
     protectRoute(["user"]),
     checkBlockedMiddleware.handle.bind(checkBlockedMiddleware),
-    BookingController.bookDriver
+    bookingController.bookDriver.bind(bookingController)
   )
   .get(
     protectRoute(["user"]),
     checkBlockedMiddleware.handle.bind(checkBlockedMiddleware),
-    BookingController.getUserBookings
+     bookingController.getUserBookings.bind(bookingController)
   );
 
 
@@ -66,14 +66,14 @@ router
   .post(
     protectRoute(["user"]),
     checkBlockedMiddleware.handle.bind(checkBlockedMiddleware),
-    BookingController.getEstimatedFare
+    bookingController.getEstimatedFare.bind(bookingController)
   );
 router
   .route("/update-booking/:rideId")
   .patch(
     protectRoute(["user"]),
     checkBlockedMiddleware.handle.bind(checkBlockedMiddleware),
-    BookingController.attachPaymentIntent
+    bookingController.attachPaymentIntent.bind(bookingController)
   );
 router
   .route("/ridehistory")
@@ -94,22 +94,22 @@ router
   .patch("/booking/cancel", 
     protectRoute(["user"]), 
     checkBlockedMiddleware.handle.bind(checkBlockedMiddleware), 
-    BookingController.cancelBooking
+     bookingController.cancelBooking.bind(bookingController)
   )
   .get("/chat/:roomId", 
     protectRoute(["user"]), 
     checkBlockedMiddleware.handle.bind(checkBlockedMiddleware), 
-    BookingController.getChatByBookingId
+    bookingController.getChatByBookingId.bind(bookingController)
   )
   .delete('/chat/:roomId/message/:messageId',
     protectRoute(['user']),
     checkBlockedMiddleware.handle.bind(checkBlockedMiddleware),
-    BookingController.deleteMessage
+    bookingController.deleteMessage.bind(bookingController)
   )
   .post("/chat/signature", 
     protectRoute(["user"]), 
     checkBlockedMiddleware.handle.bind(checkBlockedMiddleware), 
-    BookingController.getChatSignature
+    bookingController.getChatSignature.bind(bookingController)
   ).get('/driver/:id',
     protectRoute(["user"]), 
     checkBlockedMiddleware.handle.bind(checkBlockedMiddleware),
@@ -121,18 +121,18 @@ router
   ).get('/wallet/ballence',
     protectRoute(["user"]), 
     checkBlockedMiddleware.handle.bind(checkBlockedMiddleware),
-     BookingController.Walletballence 
+      bookingController.Walletballence.bind(bookingController)
   ).post('/wallet/ridepayment',
     protectRoute(["user"]), 
     checkBlockedMiddleware.handle.bind(checkBlockedMiddleware),
-     BookingController.WalletPayment 
+      bookingController.WalletPayment.bind(bookingController) 
   ).post('/review',
     protectRoute(["user"]), 
     checkBlockedMiddleware.handle.bind(checkBlockedMiddleware),
     userController.submitReview.bind(userController)
   ).get('/review/:id',
     protectRoute(['user']),checkBlockedMiddleware.handle.bind(checkBlockedMiddleware),
-      BookingController.ReviewDriver )
+    bookingController.ReviewDriver.bind(bookingController) )
 
   
 export default router; 

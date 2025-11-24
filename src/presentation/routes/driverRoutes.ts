@@ -5,7 +5,7 @@ import { CheckBlockedUserOrDriver } from "../../middleware/checkBlocked";
 import { container } from "tsyringe";
 import { AuthController } from "../controllers/AuthController";
 import { BookingController } from "../controllers/BookingController";
-import { driverController } from "../../config/controllerResolve";
+import { bookingController, driverController } from "../../config/controllerResolve";
 const router = express.Router();
 const checkBlockedMiddleware = container.resolve(CheckBlockedUserOrDriver);
 router
@@ -41,27 +41,27 @@ router
        
         driverController.getBookingsForDriver.bind(driverController))
        .patch('/booking-status/:bookingId',protectRoute(['driver']),checkBlockedMiddleware.handle.bind(checkBlockedMiddleware),
-        BookingController.updateStatus)
+        bookingController.updateStatus.bind(bookingController))
 
         .post('/verify-account',
           protectRoute(['driver']),checkBlockedMiddleware.handle.bind(checkBlockedMiddleware),
           driverController.verifyAccount.bind(driverController)
         ).get('/chat/:roomId',protectRoute(['driver']),checkBlockedMiddleware.handle.bind(checkBlockedMiddleware),
-        BookingController.getChatByBookingId
+        bookingController.getChatByBookingId.bind(bookingController)
         ).delete('/chat/:roomId/message/:messageId',
         protectRoute(['driver']),
          checkBlockedMiddleware.handle.bind(checkBlockedMiddleware),
-        BookingController.deleteMessage
+       bookingController.deleteMessage.bind(bookingController)
          ).
         post('/chat/signature',protectRoute(['driver']),checkBlockedMiddleware.handle.bind(checkBlockedMiddleware),
-        BookingController.getChatSignature
+         bookingController.getChatSignature.bind(bookingController)
         ).get('/user/:id',protectRoute(['driver']),checkBlockedMiddleware.handle.bind(checkBlockedMiddleware),
        driverController.getUserById.bind(driverController)
         ).get('/review/:id',protectRoute(['driver']),checkBlockedMiddleware.handle.bind(checkBlockedMiddleware),
-        BookingController.ReviewDriver
+       bookingController.ReviewDriver.bind(bookingController)
         )
  
-.get('/dashboard/status-summary',protectRoute(['driver']),checkBlockedMiddleware.handle.bind(checkBlockedMiddleware), BookingController.getDriverBookingStatusSummary);
-router.get('/dashboard/earnings-summary',protectRoute(['driver']),checkBlockedMiddleware.handle.bind(checkBlockedMiddleware), BookingController.getDriverEarningsByMonth);
+.get('/dashboard/status-summary',protectRoute(['driver']),checkBlockedMiddleware.handle.bind(checkBlockedMiddleware), bookingController.getDriverBookingStatusSummary.bind(bookingController));
+router.get('/dashboard/earnings-summary',protectRoute(['driver']),checkBlockedMiddleware.handle.bind(checkBlockedMiddleware), bookingController.getDriverEarningsByMonth.bind(bookingController));
 
 export default router;
