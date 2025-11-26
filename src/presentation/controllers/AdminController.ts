@@ -1,6 +1,6 @@
-import { container } from "tsyringe";
+import { container, inject, injectable } from "tsyringe";
 
-import { Request, Response } from "express";
+import { NextFunction, Request, Response } from "express";
 import { AuthError } from "../../domain/errors/Autherror";
 import { Login } from "../../application/use_cases/Login";
 import { GetAllUsers } from "../../application/use_cases/Admin/GetAllusers";
@@ -10,16 +10,29 @@ import { AdminChangeDriverStatus } from "../../application/use_cases/Admin/Admin
 import { BlockOrUnblockDriver } from "../../application/use_cases/Admin/BlockOrUnblockDriver";
 import { GetVehiclesByUser } from "../../application/use_cases/User/GetVehiclesByUser";
 import { HTTP_STATUS_CODES } from "../../constants/HttpStatusCode";
+import { TOKENS } from "../../constants/Tokens";
+import { ILogin } from "../../application/use_cases/Interfaces/ILogin";
+import { USECASE_TOKENS } from "../../constants/UseCaseTokens";
+import { IGetAllUsersUseCase } from "../../application/use_cases/Admin/Interfaces/IGetAllUsersUseCase";
 
+@injectable()
 export class AdminController {
-  static async login(req: Request, res: Response) {
+  constructor(
+     @inject(TOKENS.LOGIN_USECASE)
+    private loginUsecase: ILogin,
+      @inject(USECASE_TOKENS.GET_ALL_USERS_USECASE)
+    private getAllUsersUseCase: IGetAllUsersUseCase
+  ){
+    
+  }
+  async login(req: Request, res: Response,next:NextFunction) {
     try {
       const login = container.resolve(Login);
       const { email, password, role } = req.body;
 
       console.log(req.body);
 
-      const { accessToken, refreshToken } = await login.execute(
+      const { accessToken, refreshToken } = await this.loginUsecase.execute(
         email,
         password,
         req.body.role
@@ -33,39 +46,27 @@ export class AdminController {
         sameSite: "none",
         maxAge: 7 * 24 * 60 * 60 * 1000,
       });
-      res.status(200).json({
+      res.status(HTTP_STATUS_CODES.OK).json({
         accessToken,
         role,
         message:"your admin login successfull"
       });
     } catch (error) {
-      if (error instanceof AuthError) {
-        res.status(error.statusCode).json({
-          success: false,
-          error: error.message,
-        });
-        return;
-      }
-
-      res.status(500).json({ success: false, error: "Something went wrong" });
-      return;
+        next(error);
     }
   }
 
-  static async getAllUsers(req: Request, res: Response) {
+ async getAllUsers(req: Request, res: Response,next:NextFunction) {
     try {
-      const getAllUsers = container.resolve(GetAllUsers);
-      const usersWithVehicleCount = await getAllUsers.execute();
-
+    
+      const usersWithVehicleCount =  await this.getAllUsersUseCase.execute();
+git add .
       res.status(HTTP_STATUS_CODES.OK).json({
         success: true,
         data: usersWithVehicleCount,
       });
     } catch (error) {
-      res.status(500).json({
-        success: false,
-        error: "Failed to fetch users",
-      });
+    next(error)
     }
   }
 
