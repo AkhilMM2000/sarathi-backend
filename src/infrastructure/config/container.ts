@@ -76,9 +76,9 @@ container.registerSingleton<IRedisrepository>(
   container.registerSingleton<IStripeService>(TOKENS.PAYMENT_SERVICE,
    PaymentService
   );
-  container.register<IChatRepository>("IChatRepository", {
-    useClass: MongoChatRepository,
-  });
+  container.registerSingleton<IChatRepository>(TOKENS.CHAT_REPO, 
+    MongoChatRepository,
+  );
   container.registerSingleton<ChatService>(ChatService);
 
   //wallet service

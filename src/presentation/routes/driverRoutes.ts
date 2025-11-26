@@ -5,9 +5,13 @@ import { CheckBlockedUserOrDriver } from "../../middleware/checkBlocked";
 import { container } from "tsyringe";
 import { AuthController } from "../controllers/AuthController";
 import { BookingController } from "../controllers/BookingController";
-import { bookingController, driverController } from "../../config/controllerResolve";
+
+import { TOKENS } from "../../constants/Tokens";
+import { USECASE_TOKENS } from "../../constants/UseCaseTokens";
 const router = express.Router();
 const checkBlockedMiddleware = container.resolve(CheckBlockedUserOrDriver);
+export const bookingController=container.resolve<BookingController>(TOKENS.BOOKING_CONTROLLER);
+const driverController=container.resolve<DriverController>(USECASE_TOKENS.DRIVER_CONTROLLER);
 router
   .post("/register", driverController.registerDriver.bind(driverController))
   .post("/verify-otp", driverController.verifyOTPDriver.bind(driverController))

@@ -2,10 +2,12 @@ import express from "express";
 import { AdminController } from "../controllers/AdminController";
 import { protectRoute } from "../../middleware/authMiddleware";
 import { BookingController } from "../controllers/BookingController";
-import { bookingController } from "../../config/controllerResolve";
+import { container } from "tsyringe";
+import { TOKENS } from "../../constants/Tokens";
+
 
 const router = express.Router();
-
+export const bookingController=container.resolve<BookingController>(TOKENS.BOOKING_CONTROLLER);
 
 router.post("/login", AdminController.login);
 

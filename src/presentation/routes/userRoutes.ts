@@ -5,11 +5,14 @@ import { CheckBlockedUserOrDriver } from "../../middleware/checkBlocked";
 import { container } from "tsyringe";
 import { AuthController } from "../controllers/AuthController";
 import { BookingController } from "../controllers/BookingController";
-import { bookingController, userController } from "../../config/controllerResolve";
+import { UserController } from "../controllers/UserController";
+import { TOKENS } from "../../constants/Tokens";
+
 
 const router= express.Router();
 const checkBlockedMiddleware = container.resolve(CheckBlockedUserOrDriver);
-
+export const userController = container.resolve<UserController>(TOKENS.USER_CONTROLLER);
+export const bookingController=container.resolve<BookingController>(TOKENS.BOOKING_CONTROLLER);
 // Authentication Routes
 router
   .post("/register", userController.register.bind(userController))

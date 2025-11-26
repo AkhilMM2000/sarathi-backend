@@ -5,8 +5,9 @@ import { getIO } from "../socket/socket";
 import { redis } from "../../config/redisconfig";
 @injectable()
 export class SocketNotificationService implements INotificationService {
-  private io = getIO();
-
+   private get io() {
+    return getIO();   // <-- Lazy getter, now getIO() is called ONLY when socket is ready
+  }
   async sendBookingNotification(driverId: string, data: any):Promise< void >{
     const socketId = await redis.get<string>(`driver:socket:${driverId}`);
     console.log('booking notifciation',socketId)
