@@ -72,6 +72,8 @@ import { IGetAllUsersUseCase } from "../../application/use_cases/Admin/Interface
 import { GetAllUsers } from "../../application/use_cases/Admin/GetAllusers";
 import { IBlockUserUseCase } from "../../application/use_cases/Admin/Interfaces/IBlockUserUseCase";
 import { BlockUserUseCase } from "../../application/use_cases/Admin/BlockUser";
+import { IGetDriversUseCase } from "../../application/use_cases/Admin/Interfaces/IGetDriversUseCase";
+import { GetDrivers } from "../../application/use_cases/Admin/GetDrivers";
 
 container.registerSingleton<IRegisterUser>(
   TOKENS.REGISTER_USER_USECASE,
@@ -207,4 +209,8 @@ container.registerSingleton<IGetAllUsersUseCase>(
 container.registerSingleton<IBlockUserUseCase>(
   USECASE_TOKENS.BLOCK_USER_USECASE,
   BlockUserUseCase
+);
+container.registerSingleton<IGetDriversUseCase>(
+  USECASE_TOKENS.GET_DRIVERS_USECASE,
+  GetDrivers
 );

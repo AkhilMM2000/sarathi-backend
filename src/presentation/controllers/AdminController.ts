@@ -15,6 +15,7 @@ import { ILogin } from "../../application/use_cases/Interfaces/ILogin";
 import { USECASE_TOKENS } from "../../constants/UseCaseTokens";
 import { IGetAllUsersUseCase } from "../../application/use_cases/Admin/Interfaces/IGetAllUsersUseCase";
 import { IBlockUserUseCase } from "../../application/use_cases/Admin/Interfaces/IBlockUserUseCase";
+import { IGetDriversUseCase } from "../../application/use_cases/Admin/Interfaces/IGetDriversUseCase";
 
 @injectable()
 export class AdminController {
@@ -25,6 +26,8 @@ export class AdminController {
     private getAllUsersUseCase: IGetAllUsersUseCase,
       @inject(USECASE_TOKENS.BLOCK_USER_USECASE)
   private blockUserUseCase: IBlockUserUseCase,
+     @inject(USECASE_TOKENS.GET_DRIVERS_USECASE)
+    private getDriversUseCase: IGetDriversUseCase
   ){
     
   }
@@ -95,16 +98,15 @@ export class AdminController {
     }
   }
 
-  static async getAllDrivers(req: Request, res: Response) {
+   async getAllDrivers(req: Request, res: Response,next:NextFunction) {
     try {
-      const getAllUsersUseCase = container.resolve(GetDrivers);
-      const drivers = await getAllUsersUseCase.execute();
+    
+      const drivers = await this.getDriversUseCase.execute();
 
       res.status(HTTP_STATUS_CODES.OK).json(drivers);
     } catch (error) {
-      console.error("Error fetching drivers:", error);
-      res.status(HTTP_STATUS_CODES.INTERNAL_SERVER_ERROR).json({ message: "Failed to fetch drivers", error });
-    }
+next(error)
+       }
   }
 
   static async changeDriverStatus(req: Request, res: Response) {
