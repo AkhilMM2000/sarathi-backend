@@ -14,6 +14,7 @@ import { TOKENS } from "../../constants/Tokens";
 import { ILogin } from "../../application/use_cases/Interfaces/ILogin";
 import { USECASE_TOKENS } from "../../constants/UseCaseTokens";
 import { IGetAllUsersUseCase } from "../../application/use_cases/Admin/Interfaces/IGetAllUsersUseCase";
+import { IBlockUserUseCase } from "../../application/use_cases/Admin/Interfaces/IBlockUserUseCase";
 
 @injectable()
 export class AdminController {
@@ -21,7 +22,9 @@ export class AdminController {
      @inject(TOKENS.LOGIN_USECASE)
     private loginUsecase: ILogin,
       @inject(USECASE_TOKENS.GET_ALL_USERS_USECASE)
-    private getAllUsersUseCase: IGetAllUsersUseCase
+    private getAllUsersUseCase: IGetAllUsersUseCase,
+      @inject(USECASE_TOKENS.BLOCK_USER_USECASE)
+  private blockUserUseCase: IBlockUserUseCase,
   ){
     
   }
@@ -60,7 +63,7 @@ export class AdminController {
     try {
     
       const usersWithVehicleCount =  await this.getAllUsersUseCase.execute();
-git add .
+
       res.status(HTTP_STATUS_CODES.OK).json({
         success: true,
         data: usersWithVehicleCount,
@@ -70,14 +73,14 @@ git add .
     }
   }
 
-  static async updateUserStatus(req: Request, res: Response) {
+ async updateUserStatus(req: Request, res: Response,next:NextFunction) {
     try {
       const { userId } = req.params;
       const { isBlock} = req.body
      
       
-      const blockUserUseCase = container.resolve(BlockUserUseCase);
-      const blockedUser = await blockUserUseCase.execute(userId,isBlock);
+    
+      const blockedUser = await this.blockUserUseCase.execute(userId,isBlock);
 
 
       res.status(HTTP_STATUS_CODES.OK).json({
@@ -88,16 +91,7 @@ git add .
         user: blockedUser,
       });
     } catch (error) {
-      if (error instanceof AuthError) {
-        res.status(error.statusCode).json({
-          success: false,
-          error: error.message,
-        });
-        return;
-      }
-
-      res.status(HTTP_STATUS_CODES.INTERNAL_SERVER_ERROR).json({ success: false, error: "Something went wrong" });
-      return;
+      next(error)
     }
   }
 

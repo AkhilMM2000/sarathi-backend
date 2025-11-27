@@ -70,6 +70,8 @@ import { IGetDriverEarningsSummaryUseCase } from "../../application/use_cases/Dr
 import { GetDriverEarningsSummary } from "../../application/use_cases/Driver/GetMonthlyEarningsReport";
 import { IGetAllUsersUseCase } from "../../application/use_cases/Admin/Interfaces/IGetAllUsersUseCase";
 import { GetAllUsers } from "../../application/use_cases/Admin/GetAllusers";
+import { IBlockUserUseCase } from "../../application/use_cases/Admin/Interfaces/IBlockUserUseCase";
+import { BlockUserUseCase } from "../../application/use_cases/Admin/BlockUser";
 
 container.registerSingleton<IRegisterUser>(
   TOKENS.REGISTER_USER_USECASE,
@@ -201,4 +203,8 @@ container.registerSingleton<IGetDriverEarningsSummaryUseCase>(
 container.registerSingleton<IGetAllUsersUseCase>(
   USECASE_TOKENS.GET_ALL_USERS_USECASE,
   GetAllUsers
+);
+container.registerSingleton<IBlockUserUseCase>(
+  USECASE_TOKENS.BLOCK_USER_USECASE,
+  BlockUserUseCase
 );
