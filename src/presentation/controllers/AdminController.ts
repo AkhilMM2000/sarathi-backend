@@ -19,6 +19,7 @@ import { IGetDriversUseCase } from "../../application/use_cases/Admin/Interfaces
 import { ERROR_MESSAGES } from "../../constants/ErrorMessages";
 import { IAdminChangeDriverStatusUseCase } from "../../application/use_cases/Admin/Interfaces/IAdminChangeDriverStatus";
 import { IBlockOrUnblockDriverUseCase } from "../../application/use_cases/Admin/Interfaces/IBlockOrUnblockDriverUseCase";
+import { IGetVehiclesByUserUseCase } from "../../application/use_cases/User/interfaces/IGetVehiclesByUserUseCase";
 
 @injectable()
 export class AdminController {
@@ -34,7 +35,9 @@ export class AdminController {
       @inject(USECASE_TOKENS.ADMIN_CHANGE_DRIVER_STATUS_USECASE)
   private changeDriverStatusUseCase: IAdminChangeDriverStatusUseCase,
    @inject(USECASE_TOKENS.BLOCK_OR_UNBLOCK_DRIVER_USECASE)
-    private blockOrUnblockDriverUseCase: IBlockOrUnblockDriverUseCase
+    private blockOrUnblockDriverUseCase: IBlockOrUnblockDriverUseCase,
+    @inject(TOKENS.GET_VEHICLES_BY_USER_USECASE)
+        private getVehiclebyUserUsecase: IGetVehiclesByUserUseCase,
   ){
     
   }
@@ -147,8 +150,8 @@ next(error)
 
       // Validate input
       if (typeof isBlock!== "boolean") {
-        res.status(400).json({ message: "Invalid isBlocked value. Must be a boolean." });
-        return
+    
+        throw new AuthError( "Invalid isBlocked value. Must be a boolean.",HTTP_STATUS_CODES.BAD_REQUEST)
       }
 
   
@@ -163,24 +166,15 @@ next(error)
  
   }
 
-  static async getVehiclesByUser(req: Request, res: Response) {
+   async getVehiclesByUser(req: Request, res: Response,next:NextFunction) {
     try {
       const { userId } = req.params;
-      const getVehiclesByUser = container.resolve(GetVehiclesByUser);
-      const vehicles = await getVehiclesByUser.execute(userId);
       
-       res.status(200).json({ success: true, data: vehicles });
+      const vehicles = await this.getVehiclebyUserUsecase.execute(userId);
+      
+       res.status(HTTP_STATUS_CODES.OK).json({ success: true, data: vehicles });
     } catch (error:any) {
-      if (error instanceof AuthError) {
-        res.status(error.statusCode).json({
-          success: false,
-          error: error.message,
-        });
-        return;
-      }
-
-      res.status(500).json({ success: false, error: "Something went wrong" });
-      return;
+       next(error)
     }
   
   }
