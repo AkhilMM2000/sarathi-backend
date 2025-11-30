@@ -16,6 +16,8 @@ import { USECASE_TOKENS } from "../../constants/UseCaseTokens";
 import { IGetAllUsersUseCase } from "../../application/use_cases/Admin/Interfaces/IGetAllUsersUseCase";
 import { IBlockUserUseCase } from "../../application/use_cases/Admin/Interfaces/IBlockUserUseCase";
 import { IGetDriversUseCase } from "../../application/use_cases/Admin/Interfaces/IGetDriversUseCase";
+import { ERROR_MESSAGES } from "../../constants/ErrorMessages";
+import { IAdminChangeDriverStatusUseCase } from "../../application/use_cases/Admin/Interfaces/IAdminChangeDriverStatus";
 
 @injectable()
 export class AdminController {
@@ -27,7 +29,9 @@ export class AdminController {
       @inject(USECASE_TOKENS.BLOCK_USER_USECASE)
   private blockUserUseCase: IBlockUserUseCase,
      @inject(USECASE_TOKENS.GET_DRIVERS_USECASE)
-    private getDriversUseCase: IGetDriversUseCase
+    private getDriversUseCase: IGetDriversUseCase,
+      @inject(USECASE_TOKENS.ADMIN_CHANGE_DRIVER_STATUS_USECASE)
+  private changeDriverStatusUseCase: IAdminChangeDriverStatusUseCase,
   ){
     
   }
@@ -109,27 +113,27 @@ next(error)
        }
   }
 
-  static async changeDriverStatus(req: Request, res: Response) {
+   async changeDriverStatus(req: Request, res: Response,next:NextFunction) {
     try {
       const { driverId } = req.params;
       const {  status, reason } = req.body;
 
-      const adminChangeDriverStatus = container.resolve(AdminChangeDriverStatus);
+      
 
       // Execute the use case
-      const updatedDriver = await adminChangeDriverStatus.execute(driverId, status, reason);
+      const updatedDriver = await this.changeDriverStatusUseCase.execute(driverId, status, reason);
 
       if (!updatedDriver) {
-         res.status(404).json({ message: "Driver not found" });
-         return
+        
+      throw new AuthError(ERROR_MESSAGES.DRIVER_NOT_FOUND,HTTP_STATUS_CODES.NOT_FOUND)
       }
 
-     res.status(200).json({
+     res.status(HTTP_STATUS_CODES.OK).json({
         message: "Driver status updated successfully",
         driver: updatedDriver
       });
     } catch (error: any) {
-       res.status(500).json({ message: error.message });
+       next(error)
     }
   }
 
