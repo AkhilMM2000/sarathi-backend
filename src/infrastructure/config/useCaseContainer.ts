@@ -76,6 +76,8 @@ import { IGetDriversUseCase } from "../../application/use_cases/Admin/Interfaces
 import { GetDrivers } from "../../application/use_cases/Admin/GetDrivers";
 import { IAdminChangeDriverStatusUseCase } from "../../application/use_cases/Admin/Interfaces/IAdminChangeDriverStatus";
 import { AdminChangeDriverStatus } from "../../application/use_cases/Admin/AdminChangeDriverStatus";
+import { IBlockOrUnblockDriverUseCase } from "../../application/use_cases/Admin/Interfaces/IBlockOrUnblockDriverUseCase";
+import { BlockOrUnblockDriver } from "../../application/use_cases/Admin/BlockOrUnblockDriver";
 
 container.registerSingleton<IRegisterUser>(
   TOKENS.REGISTER_USER_USECASE,
@@ -219,4 +221,8 @@ container.registerSingleton<IGetDriversUseCase>(
 container.registerSingleton<IAdminChangeDriverStatusUseCase>(
   USECASE_TOKENS.ADMIN_CHANGE_DRIVER_STATUS_USECASE,
   AdminChangeDriverStatus
+);
+container.registerSingleton<IBlockOrUnblockDriverUseCase>(
+  USECASE_TOKENS.BLOCK_OR_UNBLOCK_DRIVER_USECASE,
+  BlockOrUnblockDriver
 );

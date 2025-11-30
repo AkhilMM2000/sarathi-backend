@@ -2,9 +2,11 @@ import { inject, injectable } from "tsyringe";
 import { IDriverRepository } from "../../../domain/repositories/IDriverepository"; 
 import { AuthError } from "../../../domain/errors/Autherror";
 import { TOKENS } from "../../../constants/Tokens";
+import { HTTP_STATUS_CODES } from "../../../constants/HttpStatusCode";
+import { IBlockOrUnblockDriverUseCase } from "./Interfaces/IBlockOrUnblockDriverUseCase";
 
 @injectable()
-export class BlockOrUnblockDriver {
+export class BlockOrUnblockDriver implements IBlockOrUnblockDriverUseCase {
   constructor(
     @inject(TOKENS.IDRIVER_REPO) private driverRepository: IDriverRepository
   ) {}
@@ -13,7 +15,7 @@ export class BlockOrUnblockDriver {
     
     const driver = await this.driverRepository.findDriverById(driverId);
     if (!driver) {
-        throw new AuthError("Driver not found", 404);
+        throw new AuthError("Driver not found",HTTP_STATUS_CODES.NOT_FOUND);
       }
       
 

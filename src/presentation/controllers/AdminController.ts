@@ -18,6 +18,7 @@ import { IBlockUserUseCase } from "../../application/use_cases/Admin/Interfaces/
 import { IGetDriversUseCase } from "../../application/use_cases/Admin/Interfaces/IGetDriversUseCase";
 import { ERROR_MESSAGES } from "../../constants/ErrorMessages";
 import { IAdminChangeDriverStatusUseCase } from "../../application/use_cases/Admin/Interfaces/IAdminChangeDriverStatus";
+import { IBlockOrUnblockDriverUseCase } from "../../application/use_cases/Admin/Interfaces/IBlockOrUnblockDriverUseCase";
 
 @injectable()
 export class AdminController {
@@ -32,6 +33,8 @@ export class AdminController {
     private getDriversUseCase: IGetDriversUseCase,
       @inject(USECASE_TOKENS.ADMIN_CHANGE_DRIVER_STATUS_USECASE)
   private changeDriverStatusUseCase: IAdminChangeDriverStatusUseCase,
+   @inject(USECASE_TOKENS.BLOCK_OR_UNBLOCK_DRIVER_USECASE)
+    private blockOrUnblockDriverUseCase: IBlockOrUnblockDriverUseCase
   ){
     
   }
@@ -137,7 +140,7 @@ next(error)
     }
   }
 
-  static async handleBlockStatus(req: Request, res: Response){
+   async handleBlockStatus(req: Request, res: Response,next:NextFunction){
     try {
       const { driverId } = req.params;
       const { isBlock} = req.body;
@@ -148,24 +151,14 @@ next(error)
         return
       }
 
-      // Get use case from DI container
-      const blockOrUnblockDriver = container.resolve(BlockOrUnblockDriver);
+  
 
       // Execute the use case
-      await blockOrUnblockDriver.execute(driverId, isBlock);
+      await this.blockOrUnblockDriverUseCase.execute(driverId, isBlock);
 
-    res.status(200).json({ success:true, message: `Driver ${isBlock ? "blocked" : "unblocked"} successfully` });
+    res.status(HTTP_STATUS_CODES.OK).json({ success:true, message: `Driver ${isBlock ? "blocked" : "unblocked"} successfully` });
     } catch (error: any) {
-      if (error instanceof AuthError) {
-        res.status(error.statusCode).json({
-          success: false,
-          error: error.message,
-        });
-        return;
-      }
-
-      res.status(500).json({ success: false, error: "Something went wrong" });
-      return;
+    next(error)
     }
  
   }
