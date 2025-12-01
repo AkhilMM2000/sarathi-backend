@@ -25,19 +25,19 @@ import { IGetVehiclesByUserUseCase } from "../../application/use_cases/User/inte
 export class AdminController {
   constructor(
      @inject(TOKENS.LOGIN_USECASE)
-    private loginUsecase: ILogin,
+     private loginUsecase: ILogin,
       @inject(USECASE_TOKENS.GET_ALL_USERS_USECASE)
-    private getAllUsersUseCase: IGetAllUsersUseCase,
-      @inject(USECASE_TOKENS.BLOCK_USER_USECASE)
-  private blockUserUseCase: IBlockUserUseCase,
+     private getAllUsersUseCase: IGetAllUsersUseCase,
+       @inject(USECASE_TOKENS.BLOCK_USER_USECASE)
+    private blockUserUseCase: IBlockUserUseCase,
      @inject(USECASE_TOKENS.GET_DRIVERS_USECASE)
     private getDriversUseCase: IGetDriversUseCase,
-      @inject(USECASE_TOKENS.ADMIN_CHANGE_DRIVER_STATUS_USECASE)
-  private changeDriverStatusUseCase: IAdminChangeDriverStatusUseCase,
+    @inject(USECASE_TOKENS.ADMIN_CHANGE_DRIVER_STATUS_USECASE)
+   private changeDriverStatusUseCase: IAdminChangeDriverStatusUseCase,
    @inject(USECASE_TOKENS.BLOCK_OR_UNBLOCK_DRIVER_USECASE)
     private blockOrUnblockDriverUseCase: IBlockOrUnblockDriverUseCase,
     @inject(TOKENS.GET_VEHICLES_BY_USER_USECASE)
-        private getVehiclebyUserUsecase: IGetVehiclesByUserUseCase,
+    private getVehiclebyUserUsecase: IGetVehiclesByUserUseCase,
   ){
     
   }

@@ -6,6 +6,7 @@ import { ForgotPasswordUseCase } from "../../application/use_cases/Auth/ForgotPa
 import { ResetPasswordUseCase } from "../../application/use_cases/Auth/ResetPasswordUseCase";
 import { AuthenticatedRequest } from "../../middleware/authMiddleware";
 import { ChangePassword } from "../../application/use_cases/Auth/ChangePassword";
+import { HTTP_STATUS_CODES } from "../../constants/HttpStatusCode";
 
 export class AuthController {
   static async refreshToken(req: Request, res: Response) {
@@ -40,7 +41,7 @@ console.log(refreshTokenKey, ":", refreshToken);
 
       const result = await refreshTokenUseCase.execute(refreshToken, role);
 
-      res.status(200).json({ success: true, accessToken: result.accessToken });
+      res.status(HTTP_STATUS_CODES.OK).json({ success: true, accessToken: result.accessToken });
     } catch (error) {
       if (error instanceof AuthError) {
         res
