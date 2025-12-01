@@ -4,7 +4,9 @@ import { TOKENS } from "../../constants/Tokens";
 import { DriverController } from "../../presentation/controllers/DriverControler";
 import { USECASE_TOKENS } from "../../constants/UseCaseTokens";
 import { BookingController } from "../../presentation/controllers/BookingController";
+import { AdminController } from "../../presentation/controllers/AdminController";
 
 container.registerSingleton<UserController>(TOKENS.USER_CONTROLLER, UserController);
 container.registerSingleton<DriverController>(USECASE_TOKENS.DRIVER_CONTROLLER,DriverController)
-container.registerSingleton<BookingController>(TOKENS.BOOKING_CONTROLLER,BookingController)
+container.registerSingleton<BookingController>(TOKENS.BOOKING_CONTROLLER,BookingController);
+container.registerSingleton<AdminController>(TOKENS.ADMIN_CONTROLLER,AdminController);

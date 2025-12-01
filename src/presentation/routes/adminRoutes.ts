@@ -7,38 +7,38 @@ import { TOKENS } from "../../constants/Tokens";
 
 
 const router = express.Router();
-export const bookingController=container.resolve<BookingController>(TOKENS.BOOKING_CONTROLLER);
-
-router.post("/login", AdminController.login);
+ const bookingController=container.resolve<BookingController>(TOKENS.BOOKING_CONTROLLER);
+const adminController=container.resolve<AdminController>(TOKENS.ADMIN_CONTROLLER)
+router.post("/login", adminController.login.bind(adminController));
 
 // User Management
 router
   .route("/user")
-  .get(protectRoute(["admin"]), AdminController.getAllUsers);
+  .get(protectRoute(["admin"]), adminController.getAllUsers.bind(adminController));
 
 router
   .route("/update-user-status/:userId")
-  .put(protectRoute(["admin"]), AdminController.updateUserStatus);
+  .put(protectRoute(["admin"]), adminController.updateUserStatus.bind(adminController));
 
 // Driver Management
 router
   .route("/driver")
-  .get(protectRoute(["admin"]), AdminController.getAllDrivers)
+  .get(protectRoute(["admin"]), adminController.getAllDrivers.bind(adminController))
 
   router
   .route("/driver/status/:driverId")
-  .put(protectRoute(["admin"]), AdminController.changeDriverStatus);
+  .put(protectRoute(["admin"]), adminController.changeDriverStatus.bind(adminController));
 
 router
   .route("/driver/blockstatus/:driverId")
-  .patch(protectRoute(["admin"]), AdminController.handleBlockStatus);
+  .patch(protectRoute(["admin"]),adminController.handleBlockStatus.bind(adminController));
 
 // Vehicle Management
 router
   .route("/vehicles/:userId")
-  .get(protectRoute(["admin"]), AdminController.getVehiclesByUser);
+  .get(protectRoute(["admin"]), adminController.getVehiclesByUser.bind(adminController));
 
-  router.get("/bookings", bookingController.getAllBookings);
+  router.get("/bookings", bookingController.getAllBookings.bind(bookingController));
 export default router;
 
 
