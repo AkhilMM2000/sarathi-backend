@@ -1,14 +1,6 @@
-import { container, inject, injectable } from "tsyringe";
-
+import {inject, injectable } from "tsyringe";
 import { NextFunction, Request, Response } from "express";
 import { AuthError } from "../../domain/errors/Autherror";
-import { Login } from "../../application/use_cases/Login";
-import { GetAllUsers } from "../../application/use_cases/Admin/GetAllusers";
-import { BlockUserUseCase } from "../../application/use_cases/Admin/BlockUser";
-import { GetDrivers } from "../../application/use_cases/Admin/GetDrivers";
-import { AdminChangeDriverStatus } from "../../application/use_cases/Admin/AdminChangeDriverStatus";
-import { BlockOrUnblockDriver } from "../../application/use_cases/Admin/BlockOrUnblockDriver";
-import { GetVehiclesByUser } from "../../application/use_cases/User/GetVehiclesByUser";
 import { HTTP_STATUS_CODES } from "../../constants/HttpStatusCode";
 import { TOKENS } from "../../constants/Tokens";
 import { ILogin } from "../../application/use_cases/Interfaces/ILogin";
@@ -26,9 +18,9 @@ export class AdminController {
   constructor(
      @inject(TOKENS.LOGIN_USECASE)
      private loginUsecase: ILogin,
-      @inject(USECASE_TOKENS.GET_ALL_USERS_USECASE)
+    @inject(USECASE_TOKENS.GET_ALL_USERS_USECASE)
      private getAllUsersUseCase: IGetAllUsersUseCase,
-       @inject(USECASE_TOKENS.BLOCK_USER_USECASE)
+      @inject(USECASE_TOKENS.BLOCK_USER_USECASE)
     private blockUserUseCase: IBlockUserUseCase,
      @inject(USECASE_TOKENS.GET_DRIVERS_USECASE)
     private getDriversUseCase: IGetDriversUseCase,
@@ -43,7 +35,7 @@ export class AdminController {
   }
   async login(req: Request, res: Response,next:NextFunction) {
     try {
-      const login = container.resolve(Login);
+   
       const { email, password, role } = req.body;
 
       console.log(req.body);
