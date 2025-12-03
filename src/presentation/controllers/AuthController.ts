@@ -12,7 +12,7 @@ export class AuthController {
   static async refreshToken(req: Request, res: Response) {
     try {
       const { role } = req.body;
-console.log("Role from request body:", role);
+
       if (!role) {
         throw new AuthError("Role is required", 400);
       }
