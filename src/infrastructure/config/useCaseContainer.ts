@@ -78,6 +78,8 @@ import { IAdminChangeDriverStatusUseCase } from "../../application/use_cases/Adm
 import { AdminChangeDriverStatus } from "../../application/use_cases/Admin/AdminChangeDriverStatus";
 import { IBlockOrUnblockDriverUseCase } from "../../application/use_cases/Admin/Interfaces/IBlockOrUnblockDriverUseCase";
 import { BlockOrUnblockDriver } from "../../application/use_cases/Admin/BlockOrUnblockDriver";
+import { IRefreshTokenUseCase } from "../../application/use_cases/Interfaces/IRefreshTokenUseCase";
+import { RefreshTokenUseCase } from "../../application/use_cases/Refreshtoken";
 
 container.registerSingleton<IRegisterUser>(
   TOKENS.REGISTER_USER_USECASE,
@@ -225,4 +227,9 @@ container.registerSingleton<IAdminChangeDriverStatusUseCase>(
 container.registerSingleton<IBlockOrUnblockDriverUseCase>(
   USECASE_TOKENS.BLOCK_OR_UNBLOCK_DRIVER_USECASE,
   BlockOrUnblockDriver
+);
+//Authcontroller related usecase abstraction
+container.registerSingleton<IRefreshTokenUseCase>(
+ USECASE_TOKENS.REFRESH_TOKEN_USECASE,
+  RefreshTokenUseCase
 );

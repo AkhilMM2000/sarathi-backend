@@ -1,20 +1,32 @@
-import { container } from "tsyringe";
-import { RefreshToken } from "../../application/use_cases/Refreshtoken";
-import { Request, Response } from "express";
+import { container, inject, injectable } from "tsyringe";
+
+import { NextFunction, Request, Response } from "express";
 import { AuthError } from "../../domain/errors/Autherror";
 import { ForgotPasswordUseCase } from "../../application/use_cases/Auth/ForgotPasswordUseCase";
 import { ResetPasswordUseCase } from "../../application/use_cases/Auth/ResetPasswordUseCase";
 import { AuthenticatedRequest } from "../../middleware/authMiddleware";
 import { ChangePassword } from "../../application/use_cases/Auth/ChangePassword";
 import { HTTP_STATUS_CODES } from "../../constants/HttpStatusCode";
-
+import { ERROR_MESSAGES } from "../../constants/ErrorMessages";
+import { IRefreshTokenUseCase } from "../../application/use_cases/Interfaces/IRefreshTokenUseCase";
+import { USECASE_TOKENS } from "../../constants/UseCaseTokens";
+@injectable()
 export class AuthController {
-  static async refreshToken(req: Request, res: Response) {
+
+  constructor(
+        @inject(USECASE_TOKENS.REFRESH_TOKEN_USECASE)
+    private refreshTokenUseCase: IRefreshTokenUseCase,
+  ){
+
+  }
+  async refreshToken(req: Request, res: Response,next:NextFunction) {
+
+
     try {
       const { role } = req.body;
 
       if (!role) {
-        throw new AuthError("Role is required", 400);
+        throw new AuthError(ERROR_MESSAGES.ROLE_REQUIRED,HTTP_STATUS_CODES.BAD_REQUEST);
       }
 
       const refreshTokenKey =
@@ -27,30 +39,23 @@ export class AuthController {
           : null;
 
       if (!refreshTokenKey) {
-        throw new AuthError("Invalid role", 400);
+        throw new AuthError(ERROR_MESSAGES.INVALID_ROLE, HTTP_STATUS_CODES.BAD_REQUEST);
       }
 
       const refreshToken = req.cookies[refreshTokenKey];
-console.log(refreshTokenKey, ":", refreshToken);
+
       
       if (!refreshToken) {
-        throw new AuthError("No refresh token found", 403);
+        throw new AuthError(ERROR_MESSAGES.REFRESHTOKEN_NOTFOUND, HTTP_STATUS_CODES.FORBIDDEN);
       }
 
-      const refreshTokenUseCase = container.resolve(RefreshToken);
+     
 
-      const result = await refreshTokenUseCase.execute(refreshToken, role);
+      const result = await this.refreshTokenUseCase.execute(refreshToken, role);
 
-      res.status(HTTP_STATUS_CODES.OK).json({ success: true, accessToken: result.accessToken });
+      res.status(HTTP_STATUS_CODES.OK).json({ success: true, accessToken: result });
     } catch (error) {
-      if (error instanceof AuthError) {
-        res
-          .status(error.statusCode)
-          .json({ success: false, message: error.message });
-        return;
-      }
-      res.status(500).json({ success: false, message: "Server error", error });
-      return;
+     next(error) 
     }
   }
 

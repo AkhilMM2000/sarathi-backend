@@ -8,6 +8,10 @@ export const ERROR_MESSAGES = {
     
     // Authentication / Authorization
     AUTH_FAILED: "Authentication failed.",
+    NOT_AUTHORIZED_ADMIN:"Not authorized as admin",
+    ROLE_REQUIRED:"role is required",
+    INVALID_ROLE:"Invalid role",
+    REFRESHTOKEN_NOTFOUND:"No refresh token found",
     INVALID_TOKEN: "Invalid or expired token.",
      PENDING_NOTFOUND :"No pending registration found. Please sign up again.",
     ACCESS_DENIED: "Access denied.",
