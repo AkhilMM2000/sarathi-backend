@@ -10,12 +10,18 @@ import { HTTP_STATUS_CODES } from "../../constants/HttpStatusCode";
 import { ERROR_MESSAGES } from "../../constants/ErrorMessages";
 import { IRefreshTokenUseCase } from "../../application/use_cases/Interfaces/IRefreshTokenUseCase";
 import { USECASE_TOKENS } from "../../constants/UseCaseTokens";
+import { IForgotPasswordUseCase } from "../../application/use_cases/Auth/interface/IForgotPasswordUseCase";
+import { IResetPasswordUseCase } from "../../application/use_cases/Auth/interface/IResetPasswordUseCase";
 @injectable()
 export class AuthController {
 
   constructor(
         @inject(USECASE_TOKENS.REFRESH_TOKEN_USECASE)
     private refreshTokenUseCase: IRefreshTokenUseCase,
+       @inject(USECASE_TOKENS.FORGOT_PASSWORD_USECASE)
+    private forgotPasswordUseCase: IForgotPasswordUseCase,
+        @inject(USECASE_TOKENS.RESET_PASSWORD_USECASE)
+    private resetPasswordUseCase: IResetPasswordUseCase,
   ){
 
   }
@@ -59,59 +65,42 @@ export class AuthController {
     }
   }
 
-  static async forgotPassword(req: Request, res: Response) {
+ async forgotPassword(req: Request, res: Response,next:NextFunction) {
     try {
       const { email, role } = req.body;
-      const forgotPassword = container.resolve(ForgotPasswordUseCase);
-      const { message } = await forgotPassword.execute(email, role);
-      res.status(200).json({ success: true, message });
+      
+        await this.forgotPasswordUseCase.execute(email, role);
+      res.status(HTTP_STATUS_CODES.OK).json({ success: true, message:`check ${role} mail for reset password`});
     } catch (error) {
-      if (error instanceof AuthError) {
-        res
-          .status(error.statusCode)
-          .json({ success: false, message: error.message });
-        return;
-      }
-      res.status(500).json({ success: false, message: "Server error", error });
-      return;
+     next(error)
     }
   }
 
-  static async resetPassword(req: Request, res: Response) {
+   async resetPassword(req: Request, res: Response,next:NextFunction) {
     try {
       const { token, newPassword, role } = req.body;
 
       if (!token || !newPassword || !role) {
-        res.status(400).json({ message: "Invalid input!" });
-        return;
+      
+        throw new AuthError("Invalid input!",HTTP_STATUS_CODES.BAD_REQUEST)
       }
 
-      const resetPasswordUseCase = container.resolve(ResetPasswordUseCase);
+     
 
-      const result = await resetPasswordUseCase.execute(
+      const result = await this.resetPasswordUseCase.execute(
         token,
         newPassword,
         role
       );
 
-      res.status(200).json({
+      res.status(HTTP_STATUS_CODES.OK).json({
         success: true,
-        message: result?.message,
+        message:  `${role}Password reset successful`,
       });
     } catch (error) {
-      if (error instanceof AuthError) {
-        res.status(error.statusCode).json({
-          success: false,
-          error: error.message,
-        });
-        return;
-      }
-
-      console.error("Error resetting password:", error);
-      res.status(500).json({
-        success: false,
-        error: "Something went wrong!",
-      });
+     
+ next(error)
+      
     }
   }
 

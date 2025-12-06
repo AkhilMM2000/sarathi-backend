@@ -1,34 +1,38 @@
-import bcrypt from 'bcryptjs';
+
 import { inject, injectable } from 'tsyringe';
 import { IRedisrepository } from '../../../domain/repositories/IRedisrepository';
 import { IUserRepository } from '../../../domain/repositories/IUserepository';
 import { IDriverRepository } from '../../../domain/repositories/IDriverepository';
 import { AuthError } from '../../../domain/errors/Autherror';
+import { TOKENS } from '../../../constants/Tokens';
+import { HTTP_STATUS_CODES } from '../../../constants/HttpStatusCode';
+import { ERROR_MESSAGES } from '../../../constants/ErrorMessages';
+import { IResetPasswordUseCase } from './interface/IResetPasswordUseCase';
 
 @injectable()
-export class ResetPasswordUseCase {
+export class ResetPasswordUseCase implements  IResetPasswordUseCase {
   constructor(
-    @inject('UserRegistrationStore') private store: IRedisrepository,
-    @inject('IUserRepository') private userRepository: IUserRepository,
-    @inject('IDriverRepository') private driverRepository: IDriverRepository,
+    @inject(TOKENS.USER_REGISTERSTORE) private store: IRedisrepository,
+    @inject(TOKENS.IUSER_REPO) private userRepository: IUserRepository,
+    @inject(TOKENS.IDRIVER_REPO) private driverRepository: IDriverRepository,
     
   ) {}
 
-  async execute(token: string, newPassword: string, role: 'user' | 'driver') {
+  async execute(token: string, newPassword: string, role: 'user' | 'driver'):Promise<void> {
     
     const userId = await this.store.getTokenUser(role, token);
-    console.log(userId);
+ 
     
-    if (!userId) throw new AuthError('Invalid or expired token', 400);
+    if (!userId) throw new AuthError(ERROR_MESSAGES.INVALID_TOKEN, HTTP_STATUS_CODES.BAD_REQUEST);
    
  
     let user;
     if (role === 'user') {
       user = await this.userRepository.getUserById(userId);
-      if (!user) throw new AuthError('User not found', 404);
+      if (!user) throw new AuthError(ERROR_MESSAGES.USER_NOT_FOUND, HTTP_STATUS_CODES.NOT_FOUND);
     } else if (role === 'driver') {
       user = await this.driverRepository.findDriverById(userId);
-      if (!user) throw new AuthError('Driver not found', 404);
+      if (!user) throw new AuthError(ERROR_MESSAGES.DRIVER_NOT_FOUND, HTTP_STATUS_CODES.NOT_FOUND);
     }
 
    
@@ -57,9 +61,9 @@ export class ResetPasswordUseCase {
       // Remove token from Redis after successful password reset
       await this.store.removeTokenUser(role, token);
 
-      return { message: `${role}Password reset successful` };
+      
     } else {
-      throw new AuthError('User not found', 404);
+      throw new AuthError(ERROR_MESSAGES.USER_NOT_FOUND, HTTP_STATUS_CODES.NOT_FOUND);
     }
   }
 

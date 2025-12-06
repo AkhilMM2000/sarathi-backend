@@ -19,6 +19,7 @@ export const TOKENS = {
   IBOOKING_REPO:Symbol.for("IBookingRepository"),
   DRIVER_REVIEW_REPO:Symbol.for('DriverReviewRepository'),
   CHAT_REPO:Symbol.for('IChatRepository'),
+ 
   REGISTER_USER_USECASE:Symbol.for("RegisterUseCase"),
   GET_USER_DATA_USECASE:Symbol.for('GET_USER_DATA_USECASE'),
   VERIFY_OTP_USECAE:Symbol.for("VERIFY_OTP"),

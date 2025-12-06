@@ -80,6 +80,10 @@ import { IBlockOrUnblockDriverUseCase } from "../../application/use_cases/Admin/
 import { BlockOrUnblockDriver } from "../../application/use_cases/Admin/BlockOrUnblockDriver";
 import { IRefreshTokenUseCase } from "../../application/use_cases/Interfaces/IRefreshTokenUseCase";
 import { RefreshTokenUseCase } from "../../application/use_cases/Refreshtoken";
+import { IForgotPasswordUseCase } from "../../application/use_cases/Auth/interface/IForgotPasswordUseCase";
+import { ForgotPasswordUseCase } from "../../application/use_cases/Auth/ForgotPasswordUseCase";
+import { IResetPasswordUseCase } from "../../application/use_cases/Auth/interface/IResetPasswordUseCase";
+import { ResetPasswordUseCase } from "../../application/use_cases/Auth/ResetPasswordUseCase";
 
 container.registerSingleton<IRegisterUser>(
   TOKENS.REGISTER_USER_USECASE,
@@ -232,4 +236,12 @@ container.registerSingleton<IBlockOrUnblockDriverUseCase>(
 container.registerSingleton<IRefreshTokenUseCase>(
  USECASE_TOKENS.REFRESH_TOKEN_USECASE,
   RefreshTokenUseCase
+);
+container.registerSingleton<IForgotPasswordUseCase>(
+  USECASE_TOKENS.FORGOT_PASSWORD_USECASE,
+  ForgotPasswordUseCase
+);
+container.registerSingleton<IResetPasswordUseCase>(
+  USECASE_TOKENS.RESET_PASSWORD_USECASE,
+  ResetPasswordUseCase
 );
