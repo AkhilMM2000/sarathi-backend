@@ -11,6 +11,7 @@ export const ERROR_MESSAGES = {
     NOT_AUTHORIZED_ADMIN:"Not authorized as admin",
     ROLE_REQUIRED:"role is required",
     INVALID_ROLE:"Invalid role",
+    INCORRECT_CURRENT_PASSWORD:"incorrect current password",
     REFRESHTOKEN_NOTFOUND:"No refresh token found",
     INVALID_TOKEN: "Invalid or expired token.",
      PENDING_NOTFOUND :"No pending registration found. Please sign up again.",
@@ -27,6 +28,7 @@ export const ERROR_MESSAGES = {
     OTP_INVALID: "Invalid OTP provided.",
     LOCATION_NOTFOUND:"User location not found",
     ACCOUNT_NOT_VERIFIED: "Account not verified. Please verify first.",
+     ACCOUNT_NOTFOUND:"account not found",
     EMAIL_OR_MOBILE_EXIST:"User already exists with this email or mobile",
     // Driver
     DRIVER_NOT_FOUND: "Driver not found.",

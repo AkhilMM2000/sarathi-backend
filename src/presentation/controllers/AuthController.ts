@@ -1,9 +1,6 @@
 import { container, inject, injectable } from "tsyringe";
-
 import { NextFunction, Request, Response } from "express";
 import { AuthError } from "../../domain/errors/Autherror";
-import { ForgotPasswordUseCase } from "../../application/use_cases/Auth/ForgotPasswordUseCase";
-import { ResetPasswordUseCase } from "../../application/use_cases/Auth/ResetPasswordUseCase";
 import { AuthenticatedRequest } from "../../middleware/authMiddleware";
 import { ChangePassword } from "../../application/use_cases/Auth/ChangePassword";
 import { HTTP_STATUS_CODES } from "../../constants/HttpStatusCode";
@@ -12,6 +9,7 @@ import { IRefreshTokenUseCase } from "../../application/use_cases/Interfaces/IRe
 import { USECASE_TOKENS } from "../../constants/UseCaseTokens";
 import { IForgotPasswordUseCase } from "../../application/use_cases/Auth/interface/IForgotPasswordUseCase";
 import { IResetPasswordUseCase } from "../../application/use_cases/Auth/interface/IResetPasswordUseCase";
+import { IChangePasswordUseCase } from "../../application/use_cases/Auth/interface/IChangePasswordUseCase";
 @injectable()
 export class AuthController {
 
@@ -22,6 +20,8 @@ export class AuthController {
     private forgotPasswordUseCase: IForgotPasswordUseCase,
         @inject(USECASE_TOKENS.RESET_PASSWORD_USECASE)
     private resetPasswordUseCase: IResetPasswordUseCase,
+        @inject(USECASE_TOKENS.CHANGE_PASSWORD_USECASE)
+    private changePasswordUseCase: IChangePasswordUseCase,
   ){
 
   }
@@ -104,14 +104,14 @@ export class AuthController {
     }
   }
 
-  static logout(req: Request, res: Response) {
+   logout(req: Request, res: Response,next:NextFunction) {
     try {
       const role = req.query.role as "driver" | "user" | "admin";
       console.log(role);
 
       if (!role) {
         res.status(400).json({ message: "Role is required" });
-        return;
+        throw new AuthError("Role is required" ,)
       }
 
       const token = req.cookies[`${role}RefreshToken`];
@@ -124,32 +124,31 @@ export class AuthController {
       });
 
       res
-        .status(200)
+        .status(HTTP_STATUS_CODES.OK)
         .json({ success: true, message: `${role} is logout successfully` });
     } catch (error) {
-      res.status(500).json({ message: "Logout failed" });
-      return;
+       next(error)
     }
   }
 
-  static async ChangePassword(req:AuthenticatedRequest, res: Response) {
+  async ChangePassword(req:AuthenticatedRequest, res: Response,next:NextFunction) {
     try {
       const { oldPassword, newPassword, role } = req.body;
       const userId = req.user?.id
       if (!userId) {
-        throw new AuthError("Unauthorized: User ID is missing.", 401);
+        throw new AuthError(ERROR_MESSAGES.USER_ID_NOT_FOUND, HTTP_STATUS_CODES.UNAUTHORIZED);
       }
 
      
       if (!oldPassword || !newPassword || !role) {
         throw new AuthError(
           "All fields (oldPassword, newPassword, role) are required.",
-          400
+          HTTP_STATUS_CODES.BAD_REQUEST
         ); 
       }
 
       if (role !== "user" && role !== "driver") {
-        throw new AuthError("Role must be 'user' or 'driver'.", 400);
+        throw new AuthError("Role must be 'user' or 'driver'.", HTTP_STATUS_CODES.NOT_FOUND);
       }
 
       const changePassword = container.resolve(ChangePassword);
@@ -160,22 +159,11 @@ export class AuthController {
         role
       );
       res
-        .status(200)
+        .status(HTTP_STATUS_CODES.OK)
         .json({ message: "Password changed successfully." });
     } catch (error) {
-      if (error instanceof AuthError) {
-        res.status(error.statusCode).json({
-          success: false,
-          error: error.message,
-        });
-        return;
-      }
-
-      console.error("Error resetting password:", error);
-      res.status(500).json({
-        success: false,
-        error: "Something went wrong!",
-      });
+     
+   next(error)
     }
   }
 }

@@ -84,6 +84,8 @@ import { IForgotPasswordUseCase } from "../../application/use_cases/Auth/interfa
 import { ForgotPasswordUseCase } from "../../application/use_cases/Auth/ForgotPasswordUseCase";
 import { IResetPasswordUseCase } from "../../application/use_cases/Auth/interface/IResetPasswordUseCase";
 import { ResetPasswordUseCase } from "../../application/use_cases/Auth/ResetPasswordUseCase";
+import { IChangePasswordUseCase } from "../../application/use_cases/Auth/interface/IChangePasswordUseCase";
+import { ChangePassword } from "../../application/use_cases/Auth/ChangePassword";
 
 container.registerSingleton<IRegisterUser>(
   TOKENS.REGISTER_USER_USECASE,
@@ -244,4 +246,8 @@ container.registerSingleton<IForgotPasswordUseCase>(
 container.registerSingleton<IResetPasswordUseCase>(
   USECASE_TOKENS.RESET_PASSWORD_USECASE,
   ResetPasswordUseCase
+);
+container.registerSingleton<IChangePasswordUseCase>(
+  USECASE_TOKENS.CHANGE_PASSWORD_USECASE,
+  ChangePassword
 );

@@ -4,10 +4,13 @@ import { IDriverRepository } from "../../../domain/repositories/IDriverepository
 import { IHashService} from "../../services/HashService"; 
 import { AuthError } from "../../../domain/errors/Autherror";
 import { TOKENS } from "../../../constants/Tokens";
+import { HTTP_STATUS_CODES } from "../../../constants/HttpStatusCode";
+import { ERROR_MESSAGES } from "../../../constants/ErrorMessages";
+import { IChangePasswordUseCase } from "./interface/IChangePasswordUseCase";
 
 
 @injectable()
-export class ChangePassword {
+export class ChangePassword implements IChangePasswordUseCase {
   constructor(
     @inject(TOKENS.IUSER_REPO) private userRepository: IUserRepository,
     @inject(TOKENS.IDRIVER_REPO) private driverRepository: IDriverRepository,
@@ -25,13 +28,13 @@ export class ChangePassword {
     }
 
     if (!account) {
-        throw new AuthError("Account not found.", 404); // 404 Not Found
+        throw new AuthError(ERROR_MESSAGES.ACCOUNT_NOTFOUND, HTTP_STATUS_CODES.NOT_FOUND); // 404 Not Found
       }
  
     const isPasswordValid = await this.hashService.compare(oldPassword, account.password);
   
 if (!isPasswordValid) {
-    throw new AuthError("Incorrect current password.", 400); // 400 Bad Request
+    throw new AuthError(ERROR_MESSAGES.INCORRECT_CURRENT_PASSWORD, HTTP_STATUS_CODES.BAD_REQUEST); // 400 Bad Request
   }
    
   
