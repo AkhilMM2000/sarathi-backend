@@ -3,10 +3,11 @@ import express from "express";
 import { protectRoute } from "../../middleware/authMiddleware"; 
 import { CheckBlockedUserOrDriver } from "../../middleware/checkBlocked";
 import { container } from "tsyringe";
-import { AuthController } from "../controllers/AuthController";
+
 import { BookingController } from "../controllers/BookingController";
 import { UserController } from "../controllers/UserController";
 import { TOKENS } from "../../constants/Tokens";
+import { authController } from "./AuthRoute";
 
 
 const router= express.Router();
@@ -47,7 +48,7 @@ router
 
 router.get("/nearby",protectRoute(['user']),checkBlockedMiddleware.handle.bind(checkBlockedMiddleware),userController.fetchDrivers.bind(userController));
 
-router.patch('/auth/change-password',protectRoute(['user']),checkBlockedMiddleware.handle.bind(checkBlockedMiddleware),AuthController.ChangePassword)
+router.patch('/auth/change-password',protectRoute(['user']),checkBlockedMiddleware.handle.bind(checkBlockedMiddleware),authController.ChangePassword.bind(authController))
 
 //Booking Routes
 router

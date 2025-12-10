@@ -8,6 +8,7 @@ import { BookingController } from "../controllers/BookingController";
 
 import { TOKENS } from "../../constants/Tokens";
 import { USECASE_TOKENS } from "../../constants/UseCaseTokens";
+import { authController } from "./AuthRoute";
 const router = express.Router();
 const checkBlockedMiddleware = container.resolve(CheckBlockedUserOrDriver);
 export const bookingController=container.resolve<BookingController>(TOKENS.BOOKING_CONTROLLER);
@@ -35,7 +36,7 @@ router
      BookingController.getRideHistory
     ).patch('/auth/change-password',
       protectRoute(['driver']),checkBlockedMiddleware.handle.bind(checkBlockedMiddleware),
-      AuthController.ChangePassword)
+      authController.ChangePassword.bind(authController))
 
       .post('/onboard',
         protectRoute(['driver']),checkBlockedMiddleware.handle.bind(checkBlockedMiddleware),
