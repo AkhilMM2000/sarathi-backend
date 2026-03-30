@@ -69,5 +69,6 @@ router
  
 .get('/dashboard/status-summary',protectRoute(['driver']),checkBlockedMiddleware.handle.bind(checkBlockedMiddleware), bookingController.getDriverBookingStatusSummary.bind(bookingController));
 router.get('/dashboard/earnings-summary',protectRoute(['driver']),checkBlockedMiddleware.handle.bind(checkBlockedMiddleware), bookingController.getDriverEarningsByMonth.bind(bookingController));
+router.get('/dashboard',protectRoute(['driver']),checkBlockedMiddleware.handle.bind(checkBlockedMiddleware), bookingController.getDriverDashboard.bind(bookingController));
 
 export default router;

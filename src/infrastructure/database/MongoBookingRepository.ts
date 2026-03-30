@@ -367,4 +367,65 @@ async countBookingsByStatus(driverId: string, year?: number, month?: number): Pr
     }
   }
 
+  async getDriverDashboardStats(driverId: string): Promise<any> {
+    try {
+      const now = new Date();
+      const todayStart = new Date(now);
+      todayStart.setHours(0, 0, 0, 0);
+
+      const weekStart = new Date(now);
+      const day = weekStart.getDay();
+      const diff = weekStart.getDate() - day + (day === 0 ? -6 : 1);
+      weekStart.setDate(diff);
+      weekStart.setHours(0, 0, 0, 0);
+
+      const result = await BookingModel.aggregate([
+        { $match: { driverId: new mongoose.Types.ObjectId(driverId) } },
+        {
+          $facet: {
+            earnings: [
+              { $match: { paymentStatus: 'COMPLETED' } },
+              {
+                $group: {
+                  _id: null,
+                  total: { $sum: "$driver_fee" },
+                  today: {
+                    $sum: {
+                      $cond: [
+                        { $gte: ["$createdAt", todayStart] },
+                        "$driver_fee",
+                        0
+                      ]
+                    }
+                  },
+                  thisWeek: {
+                    $sum: {
+                      $cond: [
+                        { $gte: ["$createdAt", weekStart] },
+                        "$driver_fee",
+                        0
+                      ]
+                    }
+                  }
+                }
+              }
+            ],
+            rideStats: [
+              {
+                $group: {
+                  _id: "$status",
+                  count: { $sum: 1 }
+                }
+              }
+            ]
+          }
+        }
+      ]);
+
+      return result[0] || { earnings: [], rideStats: [] };
+    } catch (error: any) {
+      console.error('Error in getDriverDashboardStats:', error.message);
+      throw new AuthError('Failed to fetch dashboard stats', HTTP_STATUS_CODES.INTERNAL_SERVER_ERROR);
+    }
   }
+}

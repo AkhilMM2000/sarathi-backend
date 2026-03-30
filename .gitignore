@@ -24,3 +24,8 @@ node_modules
 *.sw?
 .env
 package-lock.json
+# Agent / AI tools (IMPORTANT for you)
+.agents/
+.augment/
+.claude/
+skills-lock.json

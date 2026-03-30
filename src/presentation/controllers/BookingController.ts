@@ -39,6 +39,7 @@ import { IWalletPaymentUseCase } from "../../application/use_cases/User/interfac
 import { IGetDriverReviewsUseCase } from "../../application/use_cases/Driver/interfaces/IGetDriverReviewsUseCase";
 import { IGetBookingStatusSummaryUseCase } from "../../application/use_cases/Driver/interfaces/IGetBookingStatusSummaryUseCase";
 import { IGetDriverEarningsSummaryUseCase } from "../../application/use_cases/Driver/interfaces/IGetDriverEarningsSummaryUseCase";
+import { IGetDriverDashboardStatsUseCase } from "../../application/use_cases/Driver/interfaces/IGetDriverDashboardStatsUseCase";
 @injectable()
 export class BookingController {
 
@@ -72,7 +73,9 @@ private bookDriverUseCase: IBookDriverUseCase,
    @inject(USECASE_TOKENS.GET_BOOKING_STATUS_SUMMARY_USECASE)
   private getBookingStatusSummary: IGetBookingStatusSummaryUseCase,
     @inject(USECASE_TOKENS.GET_DRIVER_EARNINGS_SUMMARY_USECASE)
-  private earningsSummaryUseCase: IGetDriverEarningsSummaryUseCase
+  private earningsSummaryUseCase: IGetDriverEarningsSummaryUseCase,
+    @inject(USECASE_TOKENS.GET_DRIVER_DASHBOARD_STATS_USECASE)
+  private getDriverDashboardStatsUseCase: IGetDriverDashboardStatsUseCase
 
    ){}
    async bookDriver(req: AuthenticatedRequest, res: Response,next:NextFunction) {
@@ -384,6 +387,18 @@ next(error)
     next(error)
   }
 };
+
+async getDriverDashboard(req: AuthenticatedRequest, res: Response, next: NextFunction) {
+  try {
+    const driverId = req.user?.id;
+    if (!driverId) throw new AuthError(ERROR_MESSAGES.USER_ID_NOT_FOUND, HTTP_STATUS_CODES.UNAUTHORIZED);
+
+    const result = await this.getDriverDashboardStatsUseCase.execute(driverId);
+    res.status(HTTP_STATUS_CODES.OK).json(result);
+  } catch (error: any) {
+    next(error);
+  }
+}
 
 }
 

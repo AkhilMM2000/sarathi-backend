@@ -56,5 +56,6 @@ export interface IBookingRepository {
     chartData: { label: string; totalEarnings: number }[];
     totalEarnings: number;
     totalRides: number;
-  }>
+  }>;
+  getDriverDashboardStats(driverId: string): Promise<any>;
 }

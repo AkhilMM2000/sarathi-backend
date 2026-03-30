@@ -89,6 +89,8 @@ import { ChangePassword } from "../../application/use_cases/Auth/ChangePassword"
 import { IFindNearbyDriversUseCase } from "../../application/use_cases/User/interfaces/IFindNearbyDriversUseCase";
 import { IGetNearbyDriverDetailsUseCase } from "../../application/use_cases/Interfaces/IGetNearbyDriverDetailsUseCase";
 import { GetNearbyDriverDetails } from "../../application/use_cases/User/GetNearbyDriverDetails";
+import { IGetDriverDashboardStatsUseCase } from "../../application/use_cases/Driver/interfaces/IGetDriverDashboardStatsUseCase";
+import { GetDriverDashboardStats } from "../../application/use_cases/Driver/GetDriverDashboardStats";
 
 container.registerSingleton<IRegisterUser>(
   TOKENS.REGISTER_USER_USECASE,
@@ -258,4 +260,8 @@ container.registerSingleton<IFindNearbyDriversUseCase>(
 container.registerSingleton<IGetNearbyDriverDetailsUseCase>(
   USECASE_TOKENS.GET_NEARBY_DRIVER_DETAILS_USECASE,
   GetNearbyDriverDetails
+);
+container.registerSingleton<IGetDriverDashboardStatsUseCase>(
+  USECASE_TOKENS.GET_DRIVER_DASHBOARD_STATS_USECASE,
+  GetDriverDashboardStats
 );
