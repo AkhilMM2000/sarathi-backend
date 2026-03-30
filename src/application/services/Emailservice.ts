@@ -16,6 +16,7 @@ export class EmailService {
   }
 
   async sendOTP(email: string, otp: string): Promise<void> {
+    console.log(process.env.EMAIL_USER,process.env.EMAIL_PASS)
     const mailOptions = {
       from: process.env.EMAIL_USER,
       to: email,
@@ -47,7 +48,16 @@ export class EmailService {
       `,
     };
     
-    await this.transporter.sendMail(mailOptions);
+    try {
+      await this.transporter.sendMail(mailOptions);
+    } catch (error: any) {
+      console.error("Nodemailer OTP Error: ", error);
+      // In development, log the OTP regardless so progress is possible
+      if (process.env.NODE_ENV !== 'production') {
+        console.log(`[DEV] Fallback OTP for ${email}: ${otp}`);
+      }
+      throw error;
+    }
   }
 
   async sendForgotPasswordLink(email: string, link: string): Promise<void> {

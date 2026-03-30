@@ -1,4 +1,4 @@
-// infrastructure/database/MongoDriverReviewRepository.ts
+
 import { injectable } from "tsyringe";
 import { IDriverReviewRepository, PaginatedReview } from "../../domain/repositories/IDriverReviewRepository";
 import { DriverReview } from "../../domain/models/DriverReview";

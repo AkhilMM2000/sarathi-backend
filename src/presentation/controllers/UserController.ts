@@ -2,7 +2,7 @@ import { NextFunction, Request, Response } from "express";
 import { inject, injectable } from "tsyringe";
 import { AuthError } from "../../domain/errors/Autherror";
 import { AuthenticatedRequest } from "../../middleware/authMiddleware";
-import { FindNearbyDrivers } from "../../application/use_cases/User/FindNearbyDrivers";
+
 import { ERROR_MESSAGES } from "../../constants/ErrorMessages";
 import { HTTP_STATUS_CODES } from "../../constants/HttpStatusCode";
 import { IRegisterUser } from "../../application/use_cases/User/interfaces/IRegisterUser";
@@ -20,6 +20,9 @@ import { ICreatePaymentIntent } from "../../application/use_cases/User/interface
 import { IGetDriverProfile } from "../../application/use_cases/Driver/interfaces/IGetDriverProfile";
 import { IWalletTransaction } from "../../application/use_cases/User/interfaces/IWalletTransaction";
 import { ISubmitDriverReview } from "../../application/use_cases/User/interfaces/ISubmitDriverReview";
+import { USECASE_TOKENS } from "../../constants/UseCaseTokens";
+import { IFindNearbyDriversUseCase } from "../../application/use_cases/User/interfaces/IFindNearbyDriversUseCase";
+import { IGetNearbyDriverDetailsUseCase } from "../../application/use_cases/Interfaces/IGetNearbyDriverDetailsUseCase";
 @injectable()
 export class UserController {
   constructor(
@@ -41,8 +44,8 @@ export class UserController {
     private getVehiclebyUserUsecase: IGetVehiclesByUserUseCase,
     @inject(TOKENS.UPDATE_USER_USECASE)
     private updateuserUsecase: IUpdateUserData,
-    @inject(TOKENS.FIND_NEARBY_DRIVERS_USECASE)
-    private findNearbyDrivers: FindNearbyDrivers,
+    @inject(USECASE_TOKENS.FIND_NEARBY_DRIVERS_USECASE)
+    private findNearbyDrivers: IFindNearbyDriversUseCase,
     @inject(TOKENS.CREATE_PAYMENT_INTENT_USECASE)
     private createPaymentUsecase: ICreatePaymentIntent,
     @inject(TOKENS.GET_DRIVER_PROFILE_USECASE)
@@ -50,7 +53,9 @@ export class UserController {
     @inject(TOKENS.WALLET_TRANSACTION_USECASE)
     private walletTransactionUsecase: IWalletTransaction,
     @inject(TOKENS.SUBMIT_REVIEW_USECASE)
-    private submitReviewUsecase: ISubmitDriverReview
+    private submitReviewUsecase: ISubmitDriverReview,
+    @inject( USECASE_TOKENS.GET_NEARBY_DRIVER_DETAILS_USECASE)
+  private getNearbyDriverDetailsUseCase:IGetNearbyDriverDetailsUseCase
   ) {}
 
   async register(req: Request, res: Response, next: NextFunction) {
@@ -83,6 +88,7 @@ export class UserController {
       res.cookie(`userRefreshToken`, refreshToken, {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
+        sameSite: "lax",
         maxAge: 7 * 24 * 60 * 60 * 1000,
       });
       res
@@ -106,6 +112,7 @@ export class UserController {
     }
   }
 
+  
   async login(req: Request, res: Response, next: NextFunction) {
     try {
       const { email, password, role } = req.body;
@@ -123,7 +130,7 @@ export class UserController {
       res.cookie(refreshTokenKey, refreshToken, {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
-        sameSite: "none",
+        sameSite: "lax",
         maxAge: 7 * 24 * 60 * 60 * 1000,
       });
       res.status(HTTP_STATUS_CODES.OK).json({
@@ -242,7 +249,8 @@ export class UserController {
   ) {
     try {
       const userId = req.user?.id;
-
+     
+const { page = "1", limit = "10", search = "" } = req.query;
       if (!userId) {
         throw new AuthError(
           ERROR_MESSAGES.USER_ID_NOT_FOUND,
@@ -251,13 +259,29 @@ export class UserController {
       }
 
       // Execute the use case and fetch drivers
-      const drivers = await this.findNearbyDrivers.execute(userId);
+      const drivers = await this.findNearbyDrivers.execute( userId,
+  Number(page),
+  Number(limit),
+  String(search));
       console.log(drivers, "got it ");
       res.status(HTTP_STATUS_CODES.OK).json({ success: true, drivers });
     } catch (error) {
       next(error);
     }
   }
+async getDriverDetails(req:Request, res: Response,next:NextFunction) {
+  try{
+const userId = '67e7b4415e9af0fdf18ad833';
+  const { driverId } = req.params;
+ console.log(driverId,'got ')
+  const driver =
+    await this.getNearbyDriverDetailsUseCase.execute(userId, driverId);
+
+  res.status(HTTP_STATUS_CODES.OK).json(driver);
+  }catch(err){
+next(err)
+  }
+}
 
   async createPaymentIntent(req: Request, res: Response, next: NextFunction) {
     const { amount, driverId } = req.body;

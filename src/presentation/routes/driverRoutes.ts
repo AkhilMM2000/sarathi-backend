@@ -16,6 +16,7 @@ const driverController=container.resolve<DriverController>(USECASE_TOKENS.DRIVER
 router
   .post("/register", driverController.registerDriver.bind(driverController))
   .post("/verify-otp", driverController.verifyOTPDriver.bind(driverController))
+  .post("/resend-otp", driverController.resendOTP.bind(driverController))
   .post("/login", driverController.login.bind(driverController));
 
   router

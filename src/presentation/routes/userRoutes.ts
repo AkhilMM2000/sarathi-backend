@@ -46,7 +46,10 @@ router
    
 
 
-router.get("/nearby",protectRoute(['user']),checkBlockedMiddleware.handle.bind(checkBlockedMiddleware),userController.fetchDrivers.bind(userController));
+router.get("/nearby",protectRoute(['user']),checkBlockedMiddleware.handle.bind(checkBlockedMiddleware),userController.fetchDrivers.bind(userController))
+.get('/driver/:driverId',userController.getDriverDetails.bind(userController))
+
+;
 
 router.patch('/auth/change-password',protectRoute(['user']),checkBlockedMiddleware.handle.bind(checkBlockedMiddleware),authController.ChangePassword.bind(authController))
 

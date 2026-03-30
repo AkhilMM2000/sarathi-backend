@@ -10,6 +10,7 @@ import { IRegisterDriverUseCase } from "../../application/use_cases/Driver/inter
 import { USECASE_TOKENS } from "../../constants/UseCaseTokens";
 import { HTTP_STATUS_CODES } from "../../constants/HttpStatusCode";
 import { IVerifyOtp } from "../../application/use_cases/Interfaces/IVerifyOtp";
+import { IResendOTP } from "../../application/use_cases/Interfaces/IResendOTP";
 import { TOKENS } from "../../constants/Tokens";
 import { ILogin } from "../../application/use_cases/Interfaces/ILogin";
 import { IGetDriverProfile } from "../../application/use_cases/Driver/interfaces/IGetDriverProfile";
@@ -32,6 +33,8 @@ export class DriverController {
     private getDriverProfileUsecase: IGetDriverProfile,
     @inject(TOKENS.GET_USER_DATA_USECASE)
     private getUserDataUsecase: IGetUserData,
+    @inject(TOKENS.RESEND_OTP_USECASE)
+    private resendOtpUsecase: IResendOTP,
      @inject(USECASE_TOKENS.EDIT_DRIVER_PROFILE)
     private editDriverProfileUseCase: IEditDriverProfile,
       @inject(USECASE_TOKENS.ONBOARD_DRIVER_USECASE)
@@ -69,6 +72,7 @@ private verifyDriverPaymentAccount: IVerifyDriverPaymentAccount
       res.cookie(`driverRefreshToken`, refreshToken, {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
+        sameSite: "lax",
         maxAge: 7 * 24 * 60 * 60 * 1000,
       });
       res
@@ -96,7 +100,7 @@ private verifyDriverPaymentAccount: IVerifyDriverPaymentAccount
       res.cookie(refreshTokenKey, refreshToken, {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
-        sameSite: "none",
+        sameSite: "lax",
         maxAge: 7 * 24 * 60 * 60 * 1000,
       });
       res.status(HTTP_STATUS_CODES.OK).json({
@@ -204,6 +208,16 @@ async verifyAccount(req: Request, res: Response,next:NextFunction) {
     } catch (error: any) {
      next(error)
      
+    }
+  }
+
+  async resendOTP(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { email, role } = req.body;
+      const result = await this.resendOtpUsecase.execute(email, role);
+      res.status(HTTP_STATUS_CODES.OK).json({ success: true, message: result.message });
+    } catch (error) {
+      next(error);
     }
   }
   

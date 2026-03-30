@@ -9,6 +9,7 @@ export interface Driver {
     profileImage: string;
     location:
     | {
+        
         latitude: number;
         longitude: number;
       }

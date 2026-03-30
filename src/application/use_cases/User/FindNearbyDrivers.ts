@@ -6,16 +6,18 @@ import { AuthError } from "../../../domain/errors/Autherror";
 import { TOKENS } from "../../../constants/Tokens";
 import { ERROR_MESSAGES } from "../../../constants/ErrorMessages";
 import { HTTP_STATUS_CODES } from "../../../constants/HttpStatusCode";
+import { FindNearbyDriversResult } from "./userDTO/Nearbydriver";
+import { IFindNearbyDriversUseCase } from "./interfaces/IFindNearbyDriversUseCase";
 
 @injectable()
-export class FindNearbyDrivers  {
+export class FindNearbyDrivers implements IFindNearbyDriversUseCase{
   constructor(
     @inject(TOKENS.IDRIVER_REPO) private driverRepository: IDriverRepository,
     @inject(TOKENS.IUSER_REPO) private userRepository: IUserRepository,
     @inject(TOKENS.GOOGLE_DISTANCE_SERVICE) private distanceService: GoogleDistanceService
   ) {}
 
-   async execute(userId: string, page: number = 1, limit: number = 2, placeKey?: string) {
+   async execute(userId: string, page: number = 1, limit: number = 2, placeKey?: string): Promise<FindNearbyDriversResult> {
     // 1️⃣ Fetch the user's location from the database
     const user = await this.userRepository.getUserById(userId);
     
@@ -37,6 +39,7 @@ export class FindNearbyDrivers  {
 
     if (drivers.length === 0) return { ...paginatedResult, data: [] };
 
+    
     // 3️⃣ Extract driver locations
     const driverLocations = drivers.map((driver) => {
       if ('coordinates' in driver.location) {
@@ -69,7 +72,7 @@ export class FindNearbyDrivers  {
         distance: driverId ? distances[driverId] || null : null,
       };
     });
-
+    console.log(driversWithDistance,'driverwith distance')
     // 6️⃣ Sort & return with pagination info
     return {
       ...paginatedResult,

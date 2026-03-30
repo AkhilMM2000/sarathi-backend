@@ -86,6 +86,9 @@ import { IResetPasswordUseCase } from "../../application/use_cases/Auth/interfac
 import { ResetPasswordUseCase } from "../../application/use_cases/Auth/ResetPasswordUseCase";
 import { IChangePasswordUseCase } from "../../application/use_cases/Auth/interface/IChangePasswordUseCase";
 import { ChangePassword } from "../../application/use_cases/Auth/ChangePassword";
+import { IFindNearbyDriversUseCase } from "../../application/use_cases/User/interfaces/IFindNearbyDriversUseCase";
+import { IGetNearbyDriverDetailsUseCase } from "../../application/use_cases/Interfaces/IGetNearbyDriverDetailsUseCase";
+import { GetNearbyDriverDetails } from "../../application/use_cases/User/GetNearbyDriverDetails";
 
 container.registerSingleton<IRegisterUser>(
   TOKENS.REGISTER_USER_USECASE,
@@ -115,10 +118,7 @@ container.register<IGetVehiclesByUserUseCase>(TOKENS.GET_VEHICLES_BY_USER_USECAS
 container.registerSingleton<IUpdateUserData>(TOKENS.UPDATE_USER_USECASE,
   UpdateUserData,
 );
-container.registerSingleton<FindNearbyDrivers>(
-  TOKENS.FIND_NEARBY_DRIVERS_USECASE,
-  FindNearbyDrivers
-);
+
 container.registerSingleton<ICreatePaymentIntent>(
   TOKENS.CREATE_PAYMENT_INTENT_USECASE,
   CreatePaymentIntent
@@ -250,4 +250,12 @@ container.registerSingleton<IResetPasswordUseCase>(
 container.registerSingleton<IChangePasswordUseCase>(
   USECASE_TOKENS.CHANGE_PASSWORD_USECASE,
   ChangePassword
+);
+container.registerSingleton<IFindNearbyDriversUseCase>(
+  USECASE_TOKENS.FIND_NEARBY_DRIVERS_USECASE,
+  FindNearbyDrivers
+);
+container.registerSingleton<IGetNearbyDriverDetailsUseCase>(
+  USECASE_TOKENS.GET_NEARBY_DRIVER_DETAILS_USECASE,
+  GetNearbyDriverDetails
 );

@@ -8,7 +8,9 @@ export interface NearbyDriverDTO extends Omit<Driver, "password"> {
 
 export interface PaginatedResultDTO<T> {
   data: T[];
-  total: number;
-  page: number;
-  limit: number;
+  total: number,
+  page: number,
+  totalPages: number
 }
+export type FindNearbyDriversResult =
+  PaginatedResultDTO<NearbyDriverDTO>;
