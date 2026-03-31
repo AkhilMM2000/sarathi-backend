@@ -1,6 +1,6 @@
 import { BookingWithUsername, IBookingRepository, PaginatedResult, rideHistory } from "../../domain/repositories/IBookingrepository"; 
 import { Booking, paymentStatus } from "../../domain/models/Booking"; 
-import BookingModel from "./modals/Bookingschema"; 
+import BookingModel, { BookingDocument } from "./modals/Bookingschema"; 
 import { injectable } from "tsyringe";
 import { AuthError } from "../../domain/errors/Autherror";
 import { STATUS_CODES } from "http";
@@ -9,26 +9,18 @@ import mongoose from "mongoose";
 import { BaseRepository } from "./BaseRepository";
 
 @injectable()
-export class MongoBookingRepository extends BaseRepository<Booking, any> implements IBookingRepository {
+export class MongoBookingRepository extends BaseRepository<Booking, BookingDocument> implements IBookingRepository {
   constructor() {
     super(BookingModel);
   }
 
   async createBooking(booking: Booking): Promise<Booking> {
-    try {
-      const created = await BookingModel.create(booking);
-      return created.toObject();
-    } catch (err: any) {
-      console.error("MongoBookingRepository.createBooking error:", err);
-     
-      throw new AuthError(`Failed to create booking. Please try again.${err.message}`, 500);
-    }
+    return super.create(booking);
   }
   
-    async findBookingById(id: string): Promise<Booking | null> {
-      const booking = await BookingModel.findById(id);
-      return booking ? booking.toObject() : null;
-    }
+  async findBookingById(id: string): Promise<Booking | null> {
+    return super.findById(id);
+  }
 
     async GetAllBookings(page: number, limit: number): Promise<PaginatedResult<BookingWithUsername>> {
       try {
@@ -122,15 +114,9 @@ const query: any = {
 
   
     async updateBooking(id: string, updates: Partial<Booking>): Promise<Booking | null> {
-      try {
-        const updated = await BookingModel.findByIdAndUpdate(id, updates, { new: true });
-        return updated ? updated.toObject() : null;
-      } catch (error:any) {
-        console.error('Error updating booking:', error.message);
-        throw new AuthError(`${error.message}`, 500);
-      }
+      return super.update(id, updates);
     }
-    
+
       
   
     async checkDriverAvailability(driverId: string, start: Date, end?: Date): Promise<boolean> {
@@ -168,7 +154,6 @@ const conflict = await BookingModel.findOne({
     
   
 }
-/////////////////////////current working
 async findBookingsByUser(userId: string, page: number, limit: number): Promise<PaginatedResult<BookingWithUsername>> {
   try {
     const skip = (page - 1) * limit;
