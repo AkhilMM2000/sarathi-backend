@@ -1,7 +1,7 @@
 import mongoose, { Schema, Document } from "mongoose";
 import { User } from "../../../domain/models/User";
 import bcrypt from "bcryptjs";
-interface UserDocument extends Omit<User, "_id">, Document {}
+export interface UserDocument extends Omit<User, "_id">, Document {}
 
 const UserSchema = new Schema<UserDocument>({
   name: { type: String, required: true },

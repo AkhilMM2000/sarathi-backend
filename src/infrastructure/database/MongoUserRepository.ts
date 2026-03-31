@@ -1,7 +1,7 @@
 import { injectable } from "tsyringe";
 import { IUserRepository, UserWithVehicleCount } from "../../domain/repositories/IUserepository"; 
 import { User } from "../../domain/models/User";
-import UserModel from "./modals/userschema";  // MongoDB Schema
+import UserModel, { UserDocument } from "./modals/userschema";  // MongoDB Schema
 import { isValidObjectId, Types } from "mongoose";
 import { AuthError } from "../../domain/errors/Autherror";
 import { HTTP_STATUS_CODES } from "../../constants/HttpStatusCode";
@@ -9,18 +9,13 @@ import { ERROR_MESSAGES } from "../../constants/ErrorMessages";
 import { BaseRepository } from "./BaseRepository";
 
 @injectable()
-export class MongoUserRepository extends BaseRepository<User, any> implements IUserRepository {
+export class MongoUserRepository extends BaseRepository<User, UserDocument> implements IUserRepository {
   constructor() {
     super(UserModel);
   }
 
   async create(user: User): Promise<User> {
-    try {
-      return await super.create(user);
-    } catch (error) {
-      console.error("Error creating user:", error);
-      throw new Error("Failed to create user");
-    }
+    return super.create(user);
   }
   async updateUser(userId: string, data: Partial<User>): Promise<User | null> {
     if (!isValidObjectId(userId)) throw new Error("Invalid user ID");
@@ -37,32 +32,17 @@ export class MongoUserRepository extends BaseRepository<User, any> implements IU
     
 
   async findByEmail(email: string): Promise<User | null> {
-    try {
-      return await UserModel.findOne({ email });
-    } catch (error) {
-      console.error("Error finding user by email:", error);
-      throw new Error("Failed to find user");
-    }
+    return super.findOne({ email });
   }
 
-async findByReferralCode(referralCode: string): Promise<User | null> {
-  if (!referralCode) return null; 
-  try {
-    return await UserModel.findOne({ referralCode });
-  } catch (error:any) {
-    console.error("Error finding user by referral code:", error.message);
-    throw new AuthError("Failed to find user by referral code",HTTP_STATUS_CODES.INTERNAL_SERVER_ERROR);
+  async findByReferralCode(referralCode: string): Promise<User | null> {
+    if (!referralCode) return null; 
+    return super.findOne({ referralCode });
   }
-}
 
   async getUserById(userId: string): Promise<User | null> {
-    try {
-      if (!isValidObjectId(userId)) return null; 
-      return await super.findById(userId);
-    } catch (error:any) {
-      console.error("Error finding user by ID:", error.message);
-      throw new AuthError(ERROR_MESSAGES.INTERNAL_SERVER_ERROR,HTTP_STATUS_CODES.INTERNAL_SERVER_ERROR);
-    }
+    if (!isValidObjectId(userId)) return null; 
+    return super.findById(userId);
   }
   
   
@@ -153,18 +133,9 @@ async blockOrUnblockUser(userId: string,isBlock: boolean): Promise<UserWithVehic
   }
 }
 
-async findByEmailOrMobile( email: string,mobile: string,): Promise<boolean> {
-  try {
-   
-    const user = await UserModel.findOne({ 
-      $or: [{ email }, { mobile }] 
-    });
-
-    return !!user; 
-  } catch (error) {
-    console.error("Error finding user by email or mobile:", error);
-    return false; // or throw an AppError if you want to handle differently
-  }
+async findByEmailOrMobile(email: string, mobile: string): Promise<boolean> {
+  const user = await super.findOne({ $or: [{ email }, { mobile }] });
+  return !!user; 
 }
 
 
