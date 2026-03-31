@@ -18,7 +18,6 @@ import { IGetVehiclesByUserUseCase } from "../../application/use_cases/User/inte
 import { GetVehiclesByUser } from "../../application/use_cases/User/GetVehiclesByUser";
 import { IUpdateUserData } from "../../application/use_cases/User/interfaces/IUpdateUserData";
 import { UpdateUserData } from "../../application/use_cases/User/UpdateUserData";
-import { FindNearbyDrivers } from "../../application/use_cases/User/FindNearbyDrivers";
 import { ICreatePaymentIntent } from "../../application/use_cases/User/interfaces/ICreatePaymentIntent";
 import { CreatePaymentIntent } from "../../application/use_cases/User/CreatePaymentIntent";
 import { IGetDriverProfile } from "../../application/use_cases/Driver/interfaces/IGetDriverProfile";
@@ -87,10 +86,12 @@ import { ResetPasswordUseCase } from "../../application/use_cases/Auth/ResetPass
 import { IChangePasswordUseCase } from "../../application/use_cases/Auth/interface/IChangePasswordUseCase";
 import { ChangePassword } from "../../application/use_cases/Auth/ChangePassword";
 import { IFindNearbyDriversUseCase } from "../../application/use_cases/User/interfaces/IFindNearbyDriversUseCase";
+import { FindNearbyDrivers } from "../../application/use_cases/User/FindNearbyDrivers";
 import { IGetNearbyDriverDetailsUseCase } from "../../application/use_cases/Interfaces/IGetNearbyDriverDetailsUseCase";
 import { GetNearbyDriverDetails } from "../../application/use_cases/User/GetNearbyDriverDetails";
 import { IGetDriverDashboardStatsUseCase } from "../../application/use_cases/Driver/interfaces/IGetDriverDashboardStatsUseCase";
 import { GetDriverDashboardStats } from "../../application/use_cases/Driver/GetDriverDashboardStats";
+import { GetAdminDashboardStats } from "../../application/use_cases/Admin/GetAdminDashboardStats";
 
 container.registerSingleton<IRegisterUser>(
   TOKENS.REGISTER_USER_USECASE,
@@ -264,4 +265,8 @@ container.registerSingleton<IGetNearbyDriverDetailsUseCase>(
 container.registerSingleton<IGetDriverDashboardStatsUseCase>(
   USECASE_TOKENS.GET_DRIVER_DASHBOARD_STATS_USECASE,
   GetDriverDashboardStats
+);
+container.registerSingleton<GetAdminDashboardStats>(
+  USECASE_TOKENS.GET_ADMIN_DASHBOARD_STATS_USECASE,
+  GetAdminDashboardStats
 );

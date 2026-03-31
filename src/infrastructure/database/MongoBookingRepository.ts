@@ -428,4 +428,78 @@ async countBookingsByStatus(driverId: string, year?: number, month?: number): Pr
       throw new AuthError('Failed to fetch dashboard stats', HTTP_STATUS_CODES.INTERNAL_SERVER_ERROR);
     }
   }
-}
+
+  async getAdminDashboardStats(): Promise<any> {
+    try {
+      const now = new Date();
+      const startOfToday = new Date(now);
+      startOfToday.setHours(0, 0, 0, 0);
+
+      const startOfWeek = new Date(now);
+      const day = startOfWeek.getDay();
+      const diff = startOfWeek.getDate() - day + (day === 0 ? -6 : 1);
+      startOfWeek.setDate(diff);
+      startOfWeek.setHours(0, 0, 0, 0);
+
+      const result = await BookingModel.aggregate([
+        {
+          $facet: {
+            finance: [
+              { $match: { paymentStatus: 'COMPLETED' } },
+              {
+                $group: {
+                  _id: null,
+                  totalPlatformProfit: { $sum: "$platform_fee" },
+                  totalRevenue: { $sum: "$finalFare" },
+                  totalDriverPayout: { $sum: "$driver_fee" },
+                  todayPlatformProfit: {
+                    $sum: {
+                      $cond: [
+                        { $gte: ["$createdAt", startOfToday] },
+                        "$platform_fee",
+                        0
+                      ]
+                    }
+                  },
+                  weekPlatformProfit: {
+                    $sum: {
+                      $cond: [
+                        { $gte: ["$createdAt", startOfWeek] },
+                        "$platform_fee",
+                        0
+                      ]
+                    }
+                  }
+                }
+              }
+            ],
+            rideStats: [
+              {
+                $group: {
+                  _id: "$status",
+                  count: { $sum: 1 }
+                }
+              }
+            ],
+            earningsTrend: [
+              { $match: { paymentStatus: 'COMPLETED' } },
+              {
+                $group: {
+                  _id: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } },
+                  earnings: { $sum: "$platform_fee" }
+                }
+              },
+              { $sort: { _id: 1 } },
+              { $limit: 30 }
+            ]
+          }
+        }
+      ]);
+
+      return result[0];
+    } catch (error: any) {
+      console.error('Error in getAdminDashboardStats:', error.message);
+      throw new AuthError('Failed to fetch admin dashboard stats', HTTP_STATUS_CODES.INTERNAL_SERVER_ERROR);
+    }
+  }
+}

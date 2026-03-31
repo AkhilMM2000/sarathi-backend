@@ -58,4 +58,5 @@ export interface IBookingRepository {
     totalRides: number;
   }>;
   getDriverDashboardStats(driverId: string): Promise<any>;
+  getAdminDashboardStats(): Promise<any>;
 }

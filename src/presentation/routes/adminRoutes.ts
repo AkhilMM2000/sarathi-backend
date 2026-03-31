@@ -10,6 +10,7 @@ const router = express.Router();
  const bookingController=container.resolve<BookingController>(TOKENS.BOOKING_CONTROLLER);
 const adminController=container.resolve<AdminController>(TOKENS.ADMIN_CONTROLLER)
 router.post("/login", adminController.login.bind(adminController));
+router.get("/dashboard", protectRoute(["admin"]), adminController.getDashboardStats.bind(adminController));
 
 // User Management
 router

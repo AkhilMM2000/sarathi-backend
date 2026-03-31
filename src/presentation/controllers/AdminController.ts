@@ -12,6 +12,7 @@ import { ERROR_MESSAGES } from "../../constants/ErrorMessages";
 import { IAdminChangeDriverStatusUseCase } from "../../application/use_cases/Admin/Interfaces/IAdminChangeDriverStatus";
 import { IBlockOrUnblockDriverUseCase } from "../../application/use_cases/Admin/Interfaces/IBlockOrUnblockDriverUseCase";
 import { IGetVehiclesByUserUseCase } from "../../application/use_cases/User/interfaces/IGetVehiclesByUserUseCase";
+import { GetAdminDashboardStats } from "../../application/use_cases/Admin/GetAdminDashboardStats";
 
 @injectable()
 export class AdminController {
@@ -30,6 +31,8 @@ export class AdminController {
     private blockOrUnblockDriverUseCase: IBlockOrUnblockDriverUseCase,
     @inject(TOKENS.GET_VEHICLES_BY_USER_USECASE)
     private getVehiclebyUserUsecase: IGetVehiclesByUserUseCase,
+    @inject(USECASE_TOKENS.GET_ADMIN_DASHBOARD_STATS_USECASE)
+    private getAdminDashboardStatsUseCase: GetAdminDashboardStats,
   ){
     
   }
@@ -171,4 +174,15 @@ next(error)
   
   }
 
+  async getDashboardStats(req: Request, res: Response, next: NextFunction) {
+    try {
+      const stats = await this.getAdminDashboardStatsUseCase.execute();
+      res.status(HTTP_STATUS_CODES.OK).json({
+        success: true,
+        data: stats,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
 }
