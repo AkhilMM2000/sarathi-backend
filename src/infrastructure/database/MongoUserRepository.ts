@@ -6,15 +6,17 @@ import { isValidObjectId, Types } from "mongoose";
 import { AuthError } from "../../domain/errors/Autherror";
 import { HTTP_STATUS_CODES } from "../../constants/HttpStatusCode";
 import { ERROR_MESSAGES } from "../../constants/ErrorMessages";
-
+import { BaseRepository } from "./BaseRepository";
 
 @injectable()
-export class MongoUserRepository implements IUserRepository {
+export class MongoUserRepository extends BaseRepository<User, any> implements IUserRepository {
+  constructor() {
+    super(UserModel);
+  }
+
   async create(user: User): Promise<User> {
     try {
-      const newUser = new UserModel(user);
-      const savedUser = await newUser.save();
-      return savedUser.toObject() as User;
+      return await super.create(user);
     } catch (error) {
       console.error("Error creating user:", error);
       throw new Error("Failed to create user");
@@ -55,8 +57,8 @@ async findByReferralCode(referralCode: string): Promise<User | null> {
 
   async getUserById(userId: string): Promise<User | null> {
     try {
-      if (!isValidObjectId(userId)) return null; // ✅ Validate ID format
-      return await UserModel.findById(new Types.ObjectId(userId));
+      if (!isValidObjectId(userId)) return null; 
+      return await super.findById(userId);
     } catch (error:any) {
       console.error("Error finding user by ID:", error.message);
       throw new AuthError(ERROR_MESSAGES.INTERNAL_SERVER_ERROR,HTTP_STATUS_CODES.INTERNAL_SERVER_ERROR);
