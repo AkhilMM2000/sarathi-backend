@@ -23,7 +23,7 @@ export abstract class BaseRepository<T, U extends Document> implements IBaseRepo
   }
 
   async update(id: string, updates: UpdateQuery<U>): Promise<T | null> {
-    return this.model.findByIdAndUpdate(id, updates, { new: true }).lean() as Promise<T | null>;
+    return this.model.findByIdAndUpdate(id, updates, { new: true, runValidators: true }).lean() as Promise<T | null>;
   }
 
   async delete(id: string): Promise<boolean> {

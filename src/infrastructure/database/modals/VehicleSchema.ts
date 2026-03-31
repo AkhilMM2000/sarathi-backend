@@ -1,7 +1,7 @@
 import mongoose, { Schema, Document, Types } from "mongoose";
 import { Vehicle, VehicleType} from "../../../domain/models/Vehicle"; // Import Enum
 
-interface VehicleDocument extends  Omit<Vehicle, "_id">, Document {}
+export interface VehicleDocument extends  Omit<Vehicle, "_id">, Document {}
 
 const VehicleSchema = new Schema<VehicleDocument>(
     {
