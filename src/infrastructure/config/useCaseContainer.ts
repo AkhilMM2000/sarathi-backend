@@ -92,6 +92,7 @@ import { GetNearbyDriverDetails } from "../../application/use_cases/User/GetNear
 import { IGetDriverDashboardStatsUseCase } from "../../application/use_cases/Driver/interfaces/IGetDriverDashboardStatsUseCase";
 import { GetDriverDashboardStats } from "../../application/use_cases/Driver/GetDriverDashboardStats";
 import { GetAdminDashboardStats } from "../../application/use_cases/Admin/GetAdminDashboardStats";
+import { IGetAdminDashboardStatsUseCase } from "../../application/use_cases/Admin/Interfaces/IGetAdminDashboardStatsUseCase";
 
 container.registerSingleton<IRegisterUser>(
   TOKENS.REGISTER_USER_USECASE,
@@ -266,7 +267,7 @@ container.registerSingleton<IGetDriverDashboardStatsUseCase>(
   USECASE_TOKENS.GET_DRIVER_DASHBOARD_STATS_USECASE,
   GetDriverDashboardStats
 );
-container.registerSingleton<GetAdminDashboardStats>(
+container.registerSingleton<IGetAdminDashboardStatsUseCase>(
   USECASE_TOKENS.GET_ADMIN_DASHBOARD_STATS_USECASE,
   GetAdminDashboardStats
 );
