@@ -8,8 +8,13 @@ import mongoose, { Types } from 'mongoose';
 import { injectable } from 'tsyringe';
 import { HTTP_STATUS_CODES } from '../../constants/HttpStatusCode';
 import { ERROR_MESSAGES } from '../../constants/ErrorMessages';
+import { BaseRepository } from './BaseRepository';
+
 @injectable()
-export class MongoWalletRepository implements IWalletRepository {
+export class MongoWalletRepository extends BaseRepository<Wallet, any> implements IWalletRepository {
+  constructor() {
+    super(WalletModel);
+  }
   
   async createWallet(userId: string): Promise<Wallet> {
     try {

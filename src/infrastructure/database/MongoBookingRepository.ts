@@ -6,8 +6,14 @@ import { AuthError } from "../../domain/errors/Autherror";
 import { STATUS_CODES } from "http";
 import { HTTP_STATUS_CODES } from "../../constants/HttpStatusCode";
 import mongoose from "mongoose";
+import { BaseRepository } from "./BaseRepository";
+
 @injectable()
-export class MongoBookingRepository implements IBookingRepository {
+export class MongoBookingRepository extends BaseRepository<Booking, any> implements IBookingRepository {
+  constructor() {
+    super(BookingModel);
+  }
+
   async createBooking(booking: Booking): Promise<Booking> {
     try {
       const created = await BookingModel.create(booking);

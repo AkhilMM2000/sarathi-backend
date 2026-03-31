@@ -5,8 +5,13 @@ import { AuthError } from '../../domain/errors/Autherror';
 import { ObjectId } from 'mongodb';
 import { injectable } from 'tsyringe';
 import { Types } from 'mongoose';
+import { BaseRepository } from './BaseRepository';
+
 @injectable()
-export class MongoChatRepository implements IChatRepository {
+export class MongoChatRepository extends BaseRepository<Chat, any> implements IChatRepository {
+  constructor() {
+    super(ChatModel);
+  }
   async findChatByBookingId(bookingId: string): Promise<Chat | null> {
   try{
     return await ChatModel.findOne({ bookingId }).lean() as Chat | null;

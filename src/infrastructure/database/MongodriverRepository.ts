@@ -6,9 +6,14 @@ import { isValidObjectId, Types } from "mongoose";
 import { AuthError } from "../../domain/errors/Autherror";
 import { PaginatedResult } from "../../domain/repositories/IBookingrepository";
 import { HTTP_STATUS_CODES } from "../../constants/HttpStatusCode";
+import { BaseRepository } from "./BaseRepository";
 
 @injectable()
-export class MongoDriverRepository implements IDriverRepository {
+export class MongoDriverRepository extends BaseRepository<Driver, any> implements IDriverRepository {
+  constructor() {
+    super(DriverModel);
+  }
+
  async create(driver: Driver): Promise<Driver> {
   let geoDriver = { ...driver };
 

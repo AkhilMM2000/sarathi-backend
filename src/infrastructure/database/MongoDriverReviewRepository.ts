@@ -6,9 +6,13 @@ import DriverReviewModel from "./modals/DriverReviewschema";
 import { toDomain, toPersistence } from "./mappers/DriverReviewMapper";
 import { AuthError } from "../../domain/errors/Autherror";
 import { HTTP_STATUS_CODES } from "../../constants/HttpStatusCode";
+import { BaseRepository } from "./BaseRepository";
 
 @injectable()
-export class MongoDriverReviewRepository implements IDriverReviewRepository {
+export class MongoDriverReviewRepository extends BaseRepository<DriverReview, any> implements IDriverReviewRepository {
+  constructor() {
+    super(DriverReviewModel);
+  }
   async createReview(review: Omit<DriverReview,'_id'|'createdAt'>): Promise<DriverReview> {
     const data = toPersistence({ ...review, createdAt: new Date() });
     const created = await DriverReviewModel.create(data);

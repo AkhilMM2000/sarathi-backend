@@ -4,8 +4,14 @@ import { Vehicle } from "../../domain/models/Vehicle";
 import { injectable } from "tsyringe";
 import { Types } from "mongoose";
 
+import { BaseRepository } from "./BaseRepository";
+
 @injectable()
-export class MongoVehicleRepository implements IVehicleRepository {
+export class MongoVehicleRepository extends BaseRepository<Vehicle, any> implements IVehicleRepository {
+  constructor() {
+    super(VehicleModel);
+  }
+
     async addVehicle(vehicleData: Vehicle): Promise<Vehicle> {
         try {
             const vehicle = new VehicleModel(vehicleData);
