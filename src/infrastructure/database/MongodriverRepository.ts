@@ -1,7 +1,7 @@
 import { injectable } from "tsyringe";
 import { IDriverRepository } from "../../domain/repositories/IDriverepository";
 import { Driver } from "../../domain/models/Driver";
-import DriverModel from "./modals/Driverschema"; // MongoDB Schema
+import DriverModel, { IDriver } from "./modals/Driverschema"; // MongoDB Schema
 import { isValidObjectId, Types } from "mongoose";
 import { AuthError } from "../../domain/errors/Autherror";
 import { PaginatedResult } from "../../domain/repositories/IBookingrepository";
@@ -9,7 +9,7 @@ import { HTTP_STATUS_CODES } from "../../constants/HttpStatusCode";
 import { BaseRepository } from "./BaseRepository";
 
 @injectable()
-export class MongoDriverRepository extends BaseRepository<Driver, any> implements IDriverRepository {
+export class MongoDriverRepository extends BaseRepository<Driver, IDriver> implements IDriverRepository {
   constructor() {
     super(DriverModel);
   }
@@ -63,7 +63,7 @@ export class MongoDriverRepository extends BaseRepository<Driver, any> implement
     }
   }
   async findByEmail(email: string): Promise<Driver | null> {
-    return await DriverModel.findOne({ email });
+    return super.findOne({ email });
   }
 
   async updateStatus(
@@ -73,25 +73,20 @@ export class MongoDriverRepository extends BaseRepository<Driver, any> implement
   ): Promise<Driver | null> {
     const updateData: any = { status };
     if (status === "rejected" && reason) {
-   
-      
       updateData.reason = reason;
     } else {
       updateData.reason = null;
     }
     
-    return await DriverModel.findByIdAndUpdate(driverId, updateData, {
-      new: true, 
-      runValidators: true, 
-    });
+    return super.update(driverId, updateData);
   }
 
   async blockOrUnblockDriver(driverId: string, isBlock: boolean): Promise<void> {
-    await DriverModel.findByIdAndUpdate(driverId, { isBlock });
+    await super.update(driverId, { isBlock });
   }
  
   async getDrivers(): Promise<Driver[]> {
-    return await DriverModel.find(); 
+    return super.findAll();
   }
   async findActiveDrivers(
   page: number,
@@ -171,7 +166,7 @@ async updateRatingStats(driverId: string, stats: {
   totalRatings: number;
   averageRating: number;
 }): Promise<void> {
-  await DriverModel.findByIdAndUpdate(driverId, {
+  await super.update(driverId, {
     $set: {
       totalRatingPoints: stats.totalRatingPoints,
       totalRatings: stats.totalRatings,
