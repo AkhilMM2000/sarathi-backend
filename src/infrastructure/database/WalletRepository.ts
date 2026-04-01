@@ -2,7 +2,7 @@
 
 import { IWalletRepository } from '../../domain/repositories/IWalletRepository';
 import { Wallet,WalletTransaction } from '../../domain/models/Wallet'; 
-import { WalletModel } from './modals/Walletschema'; 
+import { WalletModel, WalletDocument } from './modals/Walletschema'; 
 import { AuthError } from '../../domain/errors/Autherror'; // Assuming you have this
 import mongoose, { Types } from 'mongoose';
 import { injectable } from 'tsyringe';
@@ -11,31 +11,23 @@ import { ERROR_MESSAGES } from '../../constants/ErrorMessages';
 import { BaseRepository } from './BaseRepository';
 
 @injectable()
-export class MongoWalletRepository extends BaseRepository<Wallet, any> implements IWalletRepository {
+export class MongoWalletRepository extends BaseRepository<Wallet, WalletDocument> implements IWalletRepository {
   constructor() {
     super(WalletModel);
   }
   
   async createWallet(userId: string): Promise<Wallet> {
-    try {
-      const newWallet = await WalletModel.create({
-        userId: new Types.ObjectId(userId),
-        balance: 0,
-        transactions: [],
-      });
-      return this.toIWallet(newWallet);
-    } catch (error) {
-      throw new AuthError('Failed to create wallet.');
-    }
+    const newWallet = await super.create({
+      userId: userId,
+      balance: 0,
+      transactions: [],
+    } as any);
+    return this.toIWallet(newWallet);
   }
 
   async getWalletByUserId(userId: string): Promise<Wallet | null> {
-    try {
-      const wallet = await WalletModel.findOne({ userId: new Types.ObjectId(userId) });
-      return wallet ? this.toIWallet(wallet) : null;
-    } catch (error) {
-      throw new AuthError('Failed to fetch wallet.',HTTP_STATUS_CODES.INTERNAL_SERVER_ERROR);
-    }
+    const wallet = await super.findOne({ userId });
+    return wallet ? this.toIWallet(wallet) : null;
   }
 
   async walletBalance(userId: string): Promise<number> {

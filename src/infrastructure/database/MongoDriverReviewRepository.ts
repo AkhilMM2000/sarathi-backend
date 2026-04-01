@@ -2,14 +2,14 @@
 import { injectable } from "tsyringe";
 import { IDriverReviewRepository, PaginatedReview } from "../../domain/repositories/IDriverReviewRepository";
 import { DriverReview } from "../../domain/models/DriverReview";
-import DriverReviewModel from "./modals/DriverReviewschema";
+import DriverReviewModel, { ReviewDocument } from "./modals/DriverReviewschema";
 import { toDomain, toPersistence } from "./mappers/DriverReviewMapper";
 import { AuthError } from "../../domain/errors/Autherror";
 import { HTTP_STATUS_CODES } from "../../constants/HttpStatusCode";
 import { BaseRepository } from "./BaseRepository";
 
 @injectable()
-export class MongoDriverReviewRepository extends BaseRepository<DriverReview, any> implements IDriverReviewRepository {
+export class MongoDriverReviewRepository extends BaseRepository<DriverReview, ReviewDocument> implements IDriverReviewRepository {
   constructor() {
     super(DriverReviewModel);
   }
@@ -20,10 +20,7 @@ export class MongoDriverReviewRepository extends BaseRepository<DriverReview, an
   }
 
   async hasUserAlreadyReviewed(driverId: string, userId: string): Promise<boolean> {
-    const existing = await DriverReviewModel.findOne({
-      driverId: driverId,
-      userId: userId,
-    });
+    const existing = await super.findOne({ driverId, userId });
     return !!existing;
   }
 
