@@ -24,7 +24,7 @@ import { USECASE_TOKENS } from "../../constants/UseCaseTokens";
 import { IFindNearbyDriversUseCase } from "../../application/use_cases/User/interfaces/IFindNearbyDriversUseCase";
 import { IGetNearbyDriverDetailsUseCase } from "../../application/use_cases/Interfaces/IGetNearbyDriverDetailsUseCase";
 import { ZodHelper } from "../dto/common/ZodHelper";
-import { LoginSchema, RegisterSchema, ResendOtpSchema, toUserResponse, VerifyOtpSchema } from "../dto/user/UserDTO";
+import { LoginSchema, RegisterSchema, ResendOtpSchema, toUserResponse, UpdateUserSchema, VerifyOtpSchema } from "../dto/user/UserDTO";
 import { z } from "zod";
 
 @injectable()
@@ -259,25 +259,41 @@ export class UserController {
     }
   }
 
-  async updateUser(req: Request, res: Response, next: NextFunction) {
+  async updateUser(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const userId = req.params.id;
-      const updateData = req.body;
+      
+      // 1. DTO Validation
+      const validatedData = ZodHelper.validate(UpdateUserSchema, req.body);
+
       if (!userId) {
         throw new AuthError(
           ERROR_MESSAGES.USER_ID_NOT_FOUND,
           HTTP_STATUS_CODES.BAD_REQUEST
         );
       }
-      const updatedUser = await this.updateuserUsecase.execute(
-        userId,
-        updateData
-      );
 
-      res
-        .status(HTTP_STATUS_CODES.OK)
-        .json({ success: true, user: updatedUser });
+      // 2. Execute Use Case with sanitized data
+      const updatedUser = await this.updateuserUsecase.execute(userId, validatedData);
+
+      // 3. Response Mapping
+      if (!updatedUser) {
+        throw new AuthError(ERROR_MESSAGES.USER_NOT_FOUND, HTTP_STATUS_CODES.NOT_FOUND);
+      }
+
+      res.status(HTTP_STATUS_CODES.OK).json({
+        success: true,
+        message: "User Profile Updated Sucessfully",
+        user: toUserResponse(updatedUser as any),
+      });
     } catch (error: any) {
+      if (error instanceof z.ZodError) {
+        res.status(HTTP_STATUS_CODES.BAD_REQUEST).json({
+          success: false,
+          errors: error.issues
+        });
+        return;
+      }
       next(error);
     }
   }

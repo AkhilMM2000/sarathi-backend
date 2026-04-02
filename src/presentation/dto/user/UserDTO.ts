@@ -42,6 +42,22 @@ export const ResendOtpSchema = z.object({
 });
 
 /**
+ * Update User Schema
+ * Allows partial updates of secondary fields only
+ */
+export const UpdateUserSchema = z.object({
+  name: z.string().min(3, "Name must be at least 3 characters").optional(),
+  email: z.string().email("Invalid email format").optional(),
+  mobile: z.string().regex(/^\d{10}$/, "Mobile must be exactly 10 digits").optional(),
+  profile: z.string().optional(),
+  location: z.object({
+    latitude: z.number(),
+    longitude: z.number(),
+  }).optional(),
+  place: z.string().optional(),
+});
+
+/**
  * User Response Mapper
  * Filters out sensitive database fields before sending as JSON
  */
