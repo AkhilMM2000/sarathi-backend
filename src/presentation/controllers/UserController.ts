@@ -24,7 +24,7 @@ import { USECASE_TOKENS } from "../../constants/UseCaseTokens";
 import { IFindNearbyDriversUseCase } from "../../application/use_cases/User/interfaces/IFindNearbyDriversUseCase";
 import { IGetNearbyDriverDetailsUseCase } from "../../application/use_cases/Interfaces/IGetNearbyDriverDetailsUseCase";
 import { ZodHelper } from "../dto/common/ZodHelper";
-import { RegisterSchema, toUserResponse } from "../dto/user/UserDTO";
+import { RegisterSchema, toUserResponse, VerifyOtpSchema } from "../dto/user/UserDTO";
 import { z } from "zod";
 
 @injectable()
@@ -62,7 +62,7 @@ export class UserController {
   private getNearbyDriverDetailsUseCase:IGetNearbyDriverDetailsUseCase
   ) {}
 
-  async register(req: Request, res: Response, next: NextFunction) {
+  async register(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
 
      
@@ -90,21 +90,16 @@ export class UserController {
       next(error);
     }
   }
-  async verifyOTPUser(req: Request, res: Response, next: NextFunction) {
+  async verifyOTPUser(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const { email, otp } = req.body;
+      // 1. DTO Validation
+      const { email, otp } = ZodHelper.validate(VerifyOtpSchema, req.body);
 
-      if (otp.length < 6) {
-        throw new AuthError(
-          ERROR_MESSAGES.OTP_INVALID,
-          HTTP_STATUS_CODES.BAD_REQUEST
-        );
-      }
-
-      console.log(req.body);
-
+      // 2. Execute Use Case
       const { accessToken, refreshToken, user } =
         await this.verifyOtpUsecase.execute(email, otp, "user");
+
+      // 3. Set Cookie and Response
       res.cookie(`userRefreshToken`, refreshToken, {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
@@ -114,7 +109,14 @@ export class UserController {
       res
         .status(HTTP_STATUS_CODES.OK)
         .json({ success: true, accessToken, user });
-    } catch (error) {
+    } catch (error: any) {
+      if (error instanceof z.ZodError) {
+        res.status(HTTP_STATUS_CODES.BAD_REQUEST).json({
+          success: false,
+          errors: error.issues
+        });
+        return;
+      }
       next(error);
     }
   }

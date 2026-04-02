@@ -13,6 +13,14 @@ export const RegisterSchema = z.object({
 });
 
 /**
+ * Verify OTP Schema
+ */
+export const VerifyOtpSchema = z.object({
+  email: z.string().email("Invalid email format"),
+  otp: z.string().length(6, "OTP must be exactly 6 digits"),
+});
+
+/**
  * User Response Mapper
  * Filters out sensitive database fields before sending as JSON
  */
