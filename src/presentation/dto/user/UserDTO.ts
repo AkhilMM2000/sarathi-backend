@@ -21,6 +21,27 @@ export const VerifyOtpSchema = z.object({
 });
 
 /**
+ * Login User Schema
+ */
+export const LoginSchema = z.object({
+  email: z.string().email("Invalid email format"),
+  password: z.string().min(1, "Password is required"),
+  role: z.enum(["user", "admin", "driver"] as const, {
+    message: "Role must be user, admin, or driver",
+  }),
+});
+
+/**
+ * Resend OTP Schema
+ */
+export const ResendOtpSchema = z.object({
+  email: z.string().email("Invalid email format"),
+  role: z.enum(["user", "admin", "driver"] as const, {
+    message: "Role must be user, admin, or driver",
+  }),
+});
+
+/**
  * User Response Mapper
  * Filters out sensitive database fields before sending as JSON
  */

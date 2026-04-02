@@ -24,7 +24,7 @@ import { USECASE_TOKENS } from "../../constants/UseCaseTokens";
 import { IFindNearbyDriversUseCase } from "../../application/use_cases/User/interfaces/IFindNearbyDriversUseCase";
 import { IGetNearbyDriverDetailsUseCase } from "../../application/use_cases/Interfaces/IGetNearbyDriverDetailsUseCase";
 import { ZodHelper } from "../dto/common/ZodHelper";
-import { RegisterSchema, toUserResponse, VerifyOtpSchema } from "../dto/user/UserDTO";
+import { LoginSchema, RegisterSchema, ResendOtpSchema, toUserResponse, VerifyOtpSchema } from "../dto/user/UserDTO";
 import { z } from "zod";
 
 @injectable()
@@ -120,33 +120,44 @@ export class UserController {
       next(error);
     }
   }
-  async resendOTP(req: Request, res: Response, next: NextFunction) {
+  async resendOTP(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const { email, role } = req.body;
-      console.log(email, role);
+      // 1. DTO Validation
+      const { email, role } = ZodHelper.validate(ResendOtpSchema, req.body);
 
+      // 2. Execute Use Case
       const result = await this.resendOtpUsecase.execute(email, role);
+
+      // 3. Response
       res
         .status(HTTP_STATUS_CODES.OK)
         .json({ success: true, message: result.message });
-    } catch (error) {
+    } catch (error: any) {
+      if (error instanceof z.ZodError) {
+        res.status(HTTP_STATUS_CODES.BAD_REQUEST).json({
+          success: false,
+          errors: error.issues
+        });
+        return;
+      }
       next(error);
     }
   }
 
   
-  async login(req: Request, res: Response, next: NextFunction) {
+  async login(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const { email, password, role } = req.body;
+      // 1. DTO Validation
+      const { email, password, role } = ZodHelper.validate(LoginSchema, req.body);
 
-      console.log(req.body);
-
+      // 2. Execute Use Case
       const { accessToken, refreshToken } = await this.loginUsecase.execute(
         email,
         password,
         role
       );
 
+      // 3. Set Cookie and Response
       const refreshTokenKey = `${role}RefreshToken`;
 
       res.cookie(refreshTokenKey, refreshToken, {
@@ -159,7 +170,14 @@ export class UserController {
         accessToken,
         role,
       });
-    } catch (error) {
+    } catch (error: any) {
+      if (error instanceof z.ZodError) {
+        res.status(HTTP_STATUS_CODES.BAD_REQUEST).json({
+          success: false,
+          errors: error.issues
+        });
+        return;
+      }
       next(error);
     }
   }
