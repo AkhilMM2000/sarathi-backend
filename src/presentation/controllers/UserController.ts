@@ -23,6 +23,10 @@ import { ISubmitDriverReview } from "../../application/use_cases/User/interfaces
 import { USECASE_TOKENS } from "../../constants/UseCaseTokens";
 import { IFindNearbyDriversUseCase } from "../../application/use_cases/User/interfaces/IFindNearbyDriversUseCase";
 import { IGetNearbyDriverDetailsUseCase } from "../../application/use_cases/Interfaces/IGetNearbyDriverDetailsUseCase";
+import { ZodHelper } from "../dto/common/ZodHelper";
+import { RegisterSchema, toUserResponse } from "../dto/user/UserDTO";
+import { z } from "zod";
+
 @injectable()
 export class UserController {
   constructor(
@@ -60,13 +64,29 @@ export class UserController {
 
   async register(req: Request, res: Response, next: NextFunction) {
     try {
-       console.log(req.body)
-      const user = await this.registerUsecase.execute(req.body);
+
      
-      res
-        .status(HTTP_STATUS_CODES.CREATED)
-        .json({ success: true, message: INFO_MESSAGES.USER.REGISTERED, user });
-    } catch (error) {
+      // 1. DTO Validation
+      const validatedData = ZodHelper.validate(RegisterSchema, req.body);
+
+      // 2. Execute Use Case (Unchanged signature)
+      // Note: registerUsecase returns { message: string } during the OTP phase
+      const result = await this.registerUsecase.execute(validatedData as any);
+     
+      // 3. Response Mapping
+      res.status(HTTP_STATUS_CODES.CREATED).json({ 
+        success: true, 
+        message: INFO_MESSAGES.USER.REGISTERED, 
+        user: result 
+      });
+    } catch (error: any) {
+      if (error instanceof z.ZodError) {
+        res.status(HTTP_STATUS_CODES.BAD_REQUEST).json({
+          success: false,
+          errors: error.issues
+        });
+        return;
+      }
       next(error);
     }
   }
