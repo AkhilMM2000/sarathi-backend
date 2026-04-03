@@ -84,6 +84,15 @@ export const CreatePaymentIntentSchema = z.object({
 });
 
 /**
+ * Wallet History Pagination Schema
+ * Coerces query strings (page, limit) to numbers
+ */
+export const WalletPaginationSchema = z.object({
+  page: z.coerce.number().min(1).default(1),
+  limit: z.coerce.number().min(1).max(50).default(10),
+});
+
+/**
  * User Response Mapper
  * Filters out sensitive database fields before sending as JSON
  */

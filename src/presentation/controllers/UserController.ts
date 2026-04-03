@@ -24,7 +24,7 @@ import { USECASE_TOKENS } from "../../constants/UseCaseTokens";
 import { IFindNearbyDriversUseCase } from "../../application/use_cases/User/interfaces/IFindNearbyDriversUseCase";
 import { IGetNearbyDriverDetailsUseCase } from "../../application/use_cases/Interfaces/IGetNearbyDriverDetailsUseCase";
 import { ZodHelper } from "../dto/common/ZodHelper";
-import { CreatePaymentIntentSchema, DriverIdParamSchema, FetchDriversSchema, LoginSchema, RegisterSchema, ResendOtpSchema, toUserResponse, UpdateUserSchema, VerifyOtpSchema } from "../dto/user/UserDTO";
+import { CreatePaymentIntentSchema, DriverIdParamSchema, FetchDriversSchema, LoginSchema, RegisterSchema, ResendOtpSchema, toUserResponse, UpdateUserSchema, VerifyOtpSchema, WalletPaginationSchema } from "../dto/user/UserDTO";
 import { toDriverListResponse, toDriverResponse } from "../dto/user/DriverDTO";
 import { z } from "zod";
 
@@ -440,11 +440,12 @@ export class UserController {
     req: AuthenticatedRequest,
     res: Response,
     next: NextFunction
-  ) {
+  ): Promise<void> {
     try {
-      const { page, limit } = req.query;
-      const userId = req.user?.id;
+      // 1. DTO Validation (Automatic numeric coercion)
+      const { page, limit } = ZodHelper.validate(WalletPaginationSchema, req.query);
 
+      const userId = req.user?.id;
       if (!userId) {
         throw new AuthError(
           ERROR_MESSAGES.USER_ID_NOT_FOUND,
@@ -452,19 +453,29 @@ export class UserController {
         );
       }
 
+      // 2. Execute
       const transactionHistory =
         await this.walletTransactionUsecase.getTransactionHistory(
           userId,
-          Number(page),
-          Number(limit)
+          page,
+          limit
         );
       const ballence = await this.walletTransactionUsecase.getWalletBalance(
         userId
       );
+
+      // 3. Response
       res
         .status(HTTP_STATUS_CODES.OK)
         .json({ success: true, transactionHistory, ballence });
-    } catch (error) {
+    } catch (error: any) {
+      if (error instanceof z.ZodError) {
+        res.status(HTTP_STATUS_CODES.BAD_REQUEST).json({
+          success: false,
+          errors: error.issues
+        });
+        return;
+      }
       next(error);
     }
   }
