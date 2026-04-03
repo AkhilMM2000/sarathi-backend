@@ -80,7 +80,10 @@ export const DriverIdParamSchema = z.object({
  */
 export const CreatePaymentIntentSchema = z.object({
   amount: z.number().positive("Amount must be greater than zero"),
-  driverId: z.string().min(1, "Driver ID is required"),
+  driverId: z.union([
+    z.string().min(1),
+    z.object({ _id: z.string().min(1) }).transform((obj) => obj._id),
+  ]),
 });
 
 /**
