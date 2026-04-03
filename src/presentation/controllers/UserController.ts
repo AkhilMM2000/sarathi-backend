@@ -402,20 +402,32 @@ export class UserController {
       next(error);
     }
   }
-  async getDriverById(req: Request, res: Response, next: NextFunction) {
+  async getDriverById(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
     try {
-      const driverId = req.params.id;
-      if (!driverId) {
-        res
-          .status(400)
-          .json({ success: false, error: ERROR_MESSAGES.DRIVER_ID_NOT_FOUND });
-        return;
-      }
+      // 1. Param Validation
+      const { driverId } = ZodHelper.validate(DriverIdParamSchema, {
+        driverId: req.params.id,
+      });
 
+      // 2. Execute
       const driver = await this.getDriverProfileUsecase.execute(driverId);
 
-      res.status(HTTP_STATUS_CODES.OK).json({ success: true, driver });
-    } catch (error) {
+      // 3. Response Mapping
+      res
+        .status(HTTP_STATUS_CODES.OK)
+        .json({ success: true, driver: toDriverResponse(driver) });
+    } catch (error: any) {
+      if (error instanceof z.ZodError) {
+        res.status(HTTP_STATUS_CODES.BAD_REQUEST).json({
+          success: false,
+          errors: error.issues
+        });
+        return;
+      }
       next(error);
     }
   }
