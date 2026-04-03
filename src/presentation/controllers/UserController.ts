@@ -24,7 +24,8 @@ import { USECASE_TOKENS } from "../../constants/UseCaseTokens";
 import { IFindNearbyDriversUseCase } from "../../application/use_cases/User/interfaces/IFindNearbyDriversUseCase";
 import { IGetNearbyDriverDetailsUseCase } from "../../application/use_cases/Interfaces/IGetNearbyDriverDetailsUseCase";
 import { ZodHelper } from "../dto/common/ZodHelper";
-import { LoginSchema, RegisterSchema, ResendOtpSchema, toUserResponse, UpdateUserSchema, VerifyOtpSchema } from "../dto/user/UserDTO";
+import { DriverIdParamSchema, FetchDriversSchema, LoginSchema, RegisterSchema, ResendOtpSchema, toUserResponse, UpdateUserSchema, VerifyOtpSchema } from "../dto/user/UserDTO";
+import { toDriverListResponse, toDriverResponse } from "../dto/user/DriverDTO";
 import { z } from "zod";
 
 @injectable()
@@ -302,11 +303,10 @@ export class UserController {
     req: AuthenticatedRequest,
     res: Response,
     next: NextFunction
-  ) {
+  ): Promise<void> {
     try {
+      // 1. Authenticated User Check
       const userId = req.user?.id;
-     
-const { page = "1", limit = "10", search = "" } = req.query;
       if (!userId) {
         throw new AuthError(
           ERROR_MESSAGES.USER_ID_NOT_FOUND,
@@ -314,30 +314,59 @@ const { page = "1", limit = "10", search = "" } = req.query;
         );
       }
 
-      // Execute the use case and fetch drivers
-      const drivers = await this.findNearbyDrivers.execute( userId,
-  Number(page),
-  Number(limit),
-  String(search));
-      console.log(drivers, "got it ");
-      res.status(HTTP_STATUS_CODES.OK).json({ success: true, drivers });
-    } catch (error) {
+      // 2. Query Validation (Automatic page/limit numeric coercion)
+      const { page, limit, search } = ZodHelper.validate(FetchDriversSchema, req.query);
+
+      // 3. Execute the use case
+      const paginatedDrivers = await this.findNearbyDrivers.execute(
+        userId,
+        page,
+        limit,
+        search
+      );
+
+      // 4. Map to safe Response DTOs
+      res.status(HTTP_STATUS_CODES.OK).json({ 
+        success: true, 
+        drivers: {
+          ...paginatedDrivers,
+          data: toDriverListResponse(paginatedDrivers.data)
+        }
+      });
+    } catch (error: any) {
+      if (error instanceof z.ZodError) {
+        res.status(HTTP_STATUS_CODES.BAD_REQUEST).json({
+          success: false,
+          errors: error.issues
+        });
+        return;
+      }
       next(error);
     }
   }
-async getDriverDetails(req:Request, res: Response,next:NextFunction) {
-  try{
-const userId = '67e7b4415e9af0fdf18ad833';
-  const { driverId } = req.params;
- console.log(driverId,'got ')
-  const driver =
-    await this.getNearbyDriverDetailsUseCase.execute(userId, driverId);
+  async getDriverDetails(req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> {
+    try {
+      // 1. Param Validation
+      const { driverId } = ZodHelper.validate(DriverIdParamSchema, req.params);
 
-  res.status(HTTP_STATUS_CODES.OK).json(driver);
-  }catch(err){
-next(err)
+     
+      const userId = req.user?.id
+
+      // 3. Execute and map to safe Response DTO
+      const driver = await this.getNearbyDriverDetailsUseCase.execute(userId!, driverId);
+
+      res.status(HTTP_STATUS_CODES.OK).json(toDriverResponse(driver));
+    } catch (error: any) {
+      if (error instanceof z.ZodError) {
+        res.status(HTTP_STATUS_CODES.BAD_REQUEST).json({
+          success: false,
+          errors: error.issues
+        });
+        return;
+      }
+      next(error);
+    }
   }
-}
 
   async createPaymentIntent(req: Request, res: Response, next: NextFunction) {
     const { amount, driverId } = req.body;

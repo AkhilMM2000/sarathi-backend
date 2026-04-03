@@ -58,6 +58,24 @@ export const UpdateUserSchema = z.object({
 });
 
 /**
+ * Fetch Drivers Query Schema
+ * Handles pagination and search parameters from query string
+ */
+export const FetchDriversSchema = z.object({
+  page: z.coerce.number().min(1).default(1),
+  limit: z.coerce.number().min(1).max(50).default(10),
+  search: z.string().optional().default(""),
+});
+
+/**
+ * Driver Params Schema
+ * Validates driverId from req.params
+ */
+export const DriverIdParamSchema = z.object({
+  driverId: z.string().min(1, "Driver ID is required"),
+});
+
+/**
  * User Response Mapper
  * Filters out sensitive database fields before sending as JSON
  */
