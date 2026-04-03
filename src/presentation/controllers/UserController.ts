@@ -416,6 +416,10 @@ export class UserController {
       // 2. Execute
       const driver = await this.getDriverProfileUsecase.execute(driverId);
 
+      if (!driver) {
+        throw new AuthError(ERROR_MESSAGES.DRIVER_NOT_FOUND, HTTP_STATUS_CODES.NOT_FOUND);
+      }
+
       // 3. Response Mapping
       res
         .status(HTTP_STATUS_CODES.OK)
