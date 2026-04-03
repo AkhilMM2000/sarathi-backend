@@ -24,7 +24,7 @@ import { USECASE_TOKENS } from "../../constants/UseCaseTokens";
 import { IFindNearbyDriversUseCase } from "../../application/use_cases/User/interfaces/IFindNearbyDriversUseCase";
 import { IGetNearbyDriverDetailsUseCase } from "../../application/use_cases/Interfaces/IGetNearbyDriverDetailsUseCase";
 import { ZodHelper } from "../dto/common/ZodHelper";
-import { DriverIdParamSchema, FetchDriversSchema, LoginSchema, RegisterSchema, ResendOtpSchema, toUserResponse, UpdateUserSchema, VerifyOtpSchema } from "../dto/user/UserDTO";
+import { CreatePaymentIntentSchema, DriverIdParamSchema, FetchDriversSchema, LoginSchema, RegisterSchema, ResendOtpSchema, toUserResponse, UpdateUserSchema, VerifyOtpSchema } from "../dto/user/UserDTO";
 import { toDriverListResponse, toDriverResponse } from "../dto/user/DriverDTO";
 import { z } from "zod";
 
@@ -368,27 +368,37 @@ export class UserController {
     }
   }
 
-  async createPaymentIntent(req: Request, res: Response, next: NextFunction) {
-    const { amount, driverId } = req.body;
-    console.log(req.body);
-    if (!amount || !driverId) {
-      throw new AuthError(
-        "missing amount or driverinfo",
-        HTTP_STATUS_CODES.BAD_REQUEST
-      );
-    }
-
+  async createPaymentIntent(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
     try {
+      // 1. DTO Validation
+      const { amount, driverId } = ZodHelper.validate(
+        CreatePaymentIntentSchema,
+        req.body
+      );
+
+      // 2. Execute Use Case
       const result = await this.createPaymentUsecase.execute({
         amount,
         driverId,
       });
 
-      res.json({
+      // 3. Response 
+      res.status(HTTP_STATUS_CODES.OK).json({
         clientSecret: result.clientSecret,
         paymentIntentId: result.paymentIntentId,
       });
     } catch (error: any) {
+      if (error instanceof z.ZodError) {
+        res.status(HTTP_STATUS_CODES.BAD_REQUEST).json({
+          success: false,
+          errors: error.issues
+        });
+        return;
+      }
       next(error);
     }
   }

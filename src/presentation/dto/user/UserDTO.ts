@@ -76,6 +76,14 @@ export const DriverIdParamSchema = z.object({
 });
 
 /**
+ * Payment Intent Request Schema
+ */
+export const CreatePaymentIntentSchema = z.object({
+  amount: z.number().positive("Amount must be greater than zero"),
+  driverId: z.string().min(1, "Driver ID is required"),
+});
+
+/**
  * User Response Mapper
  * Filters out sensitive database fields before sending as JSON
  */
