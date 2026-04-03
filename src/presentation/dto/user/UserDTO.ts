@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { User } from "../../../domain/models/User";
+import { VehicleType } from "../../../domain/models/Vehicle";
 
 /**
  * Register User Schema
@@ -103,6 +104,31 @@ export const SubmitReviewSchema = z.object({
   rideId: z.string().min(1, "Ride ID is required"),
   rating: z.number().min(1, "Minimum rating is 1").max(5, "Maximum rating is 5"),
   review: z.string().optional(),
+});
+
+/**
+ * Add Vehicle Request Schema
+ */
+export const AddVehicleSchema = z.object({
+  vehicleImage: z.string().min(1, "Vehicle Image is required"),
+  rcBookImage: z.string().min(1, "RC Book Image is required"),
+  Register_No: z.string().min(1, "Register number is required"),
+  ownerName: z.string().min(1, "Owner name is required"),
+  vehicleName: z.string().min(1, "Vehicle name is required"),
+  vehicleType: z.nativeEnum(VehicleType),
+  polution_expire: z.coerce.date(),
+});
+
+/**
+ * Edit Vehicle Request Schema (Partial Update)
+ */
+export const EditVehicleSchema = AddVehicleSchema.partial();
+
+/**
+ * Vehicle ID Params Schema
+ */
+export const VehicleIdParamSchema = z.object({
+  vehicleId: z.string().min(1, "Vehicle ID is required"),
 });
 
 /**
