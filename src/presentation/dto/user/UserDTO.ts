@@ -93,6 +93,16 @@ export const WalletPaginationSchema = z.object({
 });
 
 /**
+ * Driver Review Request Schema
+ */
+export const SubmitReviewSchema = z.object({
+  driverId: z.string().min(1, "Driver ID is required"),
+  rideId: z.string().min(1, "Ride ID is required"),
+  rating: z.number().min(1, "Minimum rating is 1").max(5, "Maximum rating is 5"),
+  review: z.string().optional(),
+});
+
+/**
  * User Response Mapper
  * Filters out sensitive database fields before sending as JSON
  */

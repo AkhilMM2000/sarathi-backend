@@ -24,7 +24,7 @@ import { USECASE_TOKENS } from "../../constants/UseCaseTokens";
 import { IFindNearbyDriversUseCase } from "../../application/use_cases/User/interfaces/IFindNearbyDriversUseCase";
 import { IGetNearbyDriverDetailsUseCase } from "../../application/use_cases/Interfaces/IGetNearbyDriverDetailsUseCase";
 import { ZodHelper } from "../dto/common/ZodHelper";
-import { CreatePaymentIntentSchema, DriverIdParamSchema, FetchDriversSchema, LoginSchema, RegisterSchema, ResendOtpSchema, toUserResponse, UpdateUserSchema, VerifyOtpSchema, WalletPaginationSchema } from "../dto/user/UserDTO";
+import { CreatePaymentIntentSchema, DriverIdParamSchema, FetchDriversSchema, LoginSchema, RegisterSchema, ResendOtpSchema, SubmitReviewSchema, toUserResponse, UpdateUserSchema, VerifyOtpSchema, WalletPaginationSchema } from "../dto/user/UserDTO";
 import { toDriverListResponse, toDriverResponse } from "../dto/user/DriverDTO";
 import { z } from "zod";
 
@@ -484,16 +484,15 @@ export class UserController {
     req: AuthenticatedRequest,
     res: Response,
     next: NextFunction
-  ) {
+  ): Promise<void> {
     try {
-      const { driverId, rideId, rating, review } = req.body;
+      // 1. DTO Validation
+      const { driverId, rideId, rating, review } = ZodHelper.validate(
+        SubmitReviewSchema,
+        req.body
+      );
+
       const userId = req.user?.id;
-      if (!driverId || !rideId || !rating) {
-        throw new AuthError(
-          "All fields are required",
-          HTTP_STATUS_CODES.BAD_REQUEST
-        );
-      }
       if (!userId) {
         throw new AuthError(
           ERROR_MESSAGES.USER_ID_NOT_FOUND,
@@ -501,6 +500,7 @@ export class UserController {
         );
       }
 
+      // 2. Execute
       const createdReview = await this.submitReviewUsecase.execute({
         driverId,
         userId,
@@ -508,10 +508,19 @@ export class UserController {
         rating,
         review,
       });
+
+      // 3. Response
       res
         .status(HTTP_STATUS_CODES.CREATED)
         .json({ message: "Review submitted", review: createdReview });
     } catch (error: any) {
+      if (error instanceof z.ZodError) {
+        res.status(HTTP_STATUS_CODES.BAD_REQUEST).json({
+          success: false,
+          errors: error.issues
+        });
+        return;
+      }
       next(error);
     }
   }
