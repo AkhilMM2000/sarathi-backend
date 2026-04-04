@@ -1,5 +1,6 @@
-import {inject, injectable } from "tsyringe";
+import { inject, injectable } from "tsyringe";
 import { NextFunction, Request, Response } from "express";
+import { ZodHelper } from "../dto/common/ZodHelper";
 import { AuthError } from "../../domain/errors/Autherror";
 import { HTTP_STATUS_CODES } from "../../constants/HttpStatusCode";
 import { TOKENS } from "../../constants/Tokens";
@@ -13,6 +14,7 @@ import { IAdminChangeDriverStatusUseCase } from "../../application/use_cases/Adm
 import { IBlockOrUnblockDriverUseCase } from "../../application/use_cases/Admin/Interfaces/IBlockOrUnblockDriverUseCase";
 import { IGetVehiclesByUserUseCase } from "../../application/use_cases/User/interfaces/IGetVehiclesByUserUseCase";
 import { IGetAdminDashboardStatsUseCase } from "../../application/use_cases/Admin/Interfaces/IGetAdminDashboardStatsUseCase";
+import { AdminLoginSchema, UserIdParamSchema, UpdateUserStatusSchema, DriverIdParamSchema, ChangeDriverStatusSchema, HandleBlockStatusSchema } from "../dto/admin/AdminRequestDTO";
 
 @injectable()
 export class AdminController {
@@ -33,21 +35,15 @@ export class AdminController {
     private getVehiclebyUserUsecase: IGetVehiclesByUserUseCase,
     @inject(USECASE_TOKENS.GET_ADMIN_DASHBOARD_STATS_USECASE)
     private getAdminDashboardStatsUseCase: IGetAdminDashboardStatsUseCase,
-  ){
-    
-  }
+  ){}
+
   async login(req: Request, res: Response,next:NextFunction) {
     try {
-   
-      const { email, password, role } = req.body;
+      // 1. DTO Validation
+      const { email, password, role } = ZodHelper.validate(AdminLoginSchema, req.body);
 
-      console.log(req.body);
-
-      const { accessToken, refreshToken } = await this.loginUsecase.execute(
-        email,
-        password,
-        req.body.role
-      );
+      // 2. Execute
+      const { accessToken, refreshToken } = await this.loginUsecase.execute(email, password, role);
 
       const refreshTokenKey = `${role}RefreshToken`;
 
@@ -57,6 +53,7 @@ export class AdminController {
         sameSite: "none",
         maxAge: 7 * 24 * 60 * 60 * 1000,
       });
+
       res.status(HTTP_STATUS_CODES.OK).json({
         accessToken,
         role,
@@ -67,9 +64,9 @@ export class AdminController {
     }
   }
 
- async getAllUsers(req: Request, res: Response,next:NextFunction) {
+  async getAllUsers(req: Request, res: Response,next:NextFunction) {
     try {
-    
+      // 2. Execute
       const usersWithVehicleCount =  await this.getAllUsersUseCase.execute();
 
       res.status(HTTP_STATUS_CODES.OK).json({
@@ -81,15 +78,14 @@ export class AdminController {
     }
   }
 
- async updateUserStatus(req: Request, res: Response,next:NextFunction) {
+  async updateUserStatus(req: Request, res: Response,next:NextFunction) {
     try {
-      const { userId } = req.params;
-      const { isBlock} = req.body
-     
-      
+      // 1. Param & Body Validation
+      const { userId } = ZodHelper.validate(UserIdParamSchema, req.params);
+      const { isBlock } = ZodHelper.validate(UpdateUserStatusSchema, req.body);
     
-      const blockedUser = await this.blockUserUseCase.execute(userId,isBlock);
-
+      // 2. Execute
+      const blockedUser = await this.blockUserUseCase.execute(userId, isBlock);
 
       res.status(HTTP_STATUS_CODES.OK).json({
         success: true,
@@ -103,30 +99,28 @@ export class AdminController {
     }
   }
 
-   async getAllDrivers(req: Request, res: Response,next:NextFunction) {
+  async getAllDrivers(req: Request, res: Response,next:NextFunction) {
     try {
-    
+      // 2. Execute
       const drivers = await this.getDriversUseCase.execute();
 
       res.status(HTTP_STATUS_CODES.OK).json(drivers);
     } catch (error) {
-next(error)
-       }
+      next(error)
+    }
   }
 
-   async changeDriverStatus(req: Request, res: Response,next:NextFunction) {
+  async changeDriverStatus(req: Request, res: Response,next:NextFunction) {
     try {
-      const { driverId } = req.params;
-      const {  status, reason } = req.body;
+      // 1. Param & Body Validation
+      const { driverId } = ZodHelper.validate(DriverIdParamSchema, req.params);
+      const { status, reason } = ZodHelper.validate(ChangeDriverStatusSchema, req.body);
 
-      
-
-      // Execute the use case
+      // 2. Execute the use case
       const updatedDriver = await this.changeDriverStatusUseCase.execute(driverId, status, reason);
 
       if (!updatedDriver) {
-        
-      throw new AuthError(ERROR_MESSAGES.DRIVER_NOT_FOUND,HTTP_STATUS_CODES.NOT_FOUND)
+        throw new AuthError(ERROR_MESSAGES.DRIVER_NOT_FOUND,HTTP_STATUS_CODES.NOT_FOUND)
       }
 
      res.status(HTTP_STATUS_CODES.OK).json({
@@ -138,40 +132,33 @@ next(error)
     }
   }
 
-   async handleBlockStatus(req: Request, res: Response,next:NextFunction){
+  async handleBlockStatus(req: Request, res: Response,next:NextFunction){
     try {
-      const { driverId } = req.params;
-      const { isBlock} = req.body;
+      // 1. Param & Body Validation
+      const { driverId } = ZodHelper.validate(DriverIdParamSchema, req.params);
+      const { isBlock } = ZodHelper.validate(HandleBlockStatusSchema, req.body);
 
-      // Validate input
-      if (typeof isBlock!== "boolean") {
-    
-        throw new AuthError( "Invalid isBlocked value. Must be a boolean.",HTTP_STATUS_CODES.BAD_REQUEST)
-      }
-
-  
-
-      // Execute the use case
+      // 2. Execute the use case
       await this.blockOrUnblockDriverUseCase.execute(driverId, isBlock);
 
-    res.status(HTTP_STATUS_CODES.OK).json({ success:true, message: `Driver ${isBlock ? "blocked" : "unblocked"} successfully` });
+      res.status(HTTP_STATUS_CODES.OK).json({ success:true, message: `Driver ${isBlock ? "blocked" : "unblocked"} successfully` });
     } catch (error: any) {
     next(error)
     }
- 
   }
 
-   async getVehiclesByUser(req: Request, res: Response,next:NextFunction) {
+  async getVehiclesByUser(req: Request, res: Response,next:NextFunction) {
     try {
-      const { userId } = req.params;
+      // 1. Param Validation
+      const { userId } = ZodHelper.validate(UserIdParamSchema, req.params);
       
+      // 2. Execute
       const vehicles = await this.getVehiclebyUserUsecase.execute(userId);
       
-       res.status(HTTP_STATUS_CODES.OK).json({ success: true, data: vehicles });
+      res.status(HTTP_STATUS_CODES.OK).json({ success: true, data: vehicles });
     } catch (error:any) {
        next(error)
     }
-  
   }
 
   async getDashboardStats(req: Request, res: Response, next: NextFunction) {
