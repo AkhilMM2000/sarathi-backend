@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { BookingType } from "../../../domain/models/Booking";
+import { BookingType, BookingStatus } from "../../../domain/models/Booking";
 
 /**
  * Book Driver Request Schema
@@ -24,6 +24,33 @@ export const BookDriverSchema = z.object({
 });
 
 export type BookDriverRequest = z.infer<typeof BookDriverSchema>;
+
+/**
+ * Update Booking Status Schema
+ */
+export const UpdateBookingStatusSchema = z.object({
+  status: z.nativeEnum(BookingStatus),
+  reason: z.string().optional(),
+  finalKm: z.number().nonnegative().optional(),
+}).refine((data) => {
+  if (data.status === BookingStatus.REJECTED && !data.reason) {
+    return false;
+  }
+  return true;
+}, {
+  message: "Reason is required when rejecting a booking",
+  path: ["reason"],
+}).refine((data) => {
+  if (data.status === BookingStatus.COMPLETED && data.finalKm === undefined) {
+    return false;
+  }
+  return true;
+}, {
+  message: "Final KM is required when completing a booking",
+  path: ["finalKm"],
+});
+
+export type UpdateBookingStatusRequest = z.infer<typeof UpdateBookingStatusSchema>;
 
 /**
  * Get Estimated Fare Request Schema
@@ -59,8 +86,15 @@ export const AttachPaymentIntentSchema = z.object({
 export type AttachPaymentIntentRequest = z.infer<typeof AttachPaymentIntentSchema>;
 
 /**
+ * Ride ID Params Schema
+ */
+export const RideIdParamSchema = z.object({
+  rideId: z.string().min(1, "Ride ID is required"),
+});
+
+/**
  * Booking ID Params Schema
  */
 export const BookingIdParamSchema = z.object({
-  rideId: z.string().min(1, "Ride ID is required"),
+  bookingId: z.string().min(1, "Booking ID is required"),
 });

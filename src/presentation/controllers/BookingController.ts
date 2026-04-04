@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import { ZodHelper } from "../dto/common/ZodHelper";
-import { BookDriverSchema, GetEstimatedFareSchema, UserBookingPaginationSchema, AttachPaymentIntentSchema, BookingIdParamSchema } from "../dto/booking/BookingRequestDTO";
+import { BookDriverSchema, GetEstimatedFareSchema, UserBookingPaginationSchema, AttachPaymentIntentSchema, BookingIdParamSchema, UpdateBookingStatusSchema, RideIdParamSchema } from "../dto/booking/BookingRequestDTO";
 import { container, inject, injectable } from "tsyringe";
 import {BookDriverInput } from "../../application/use_cases/User/BookDriver";
 import { AuthError } from "../../domain/errors/Autherror";
@@ -147,7 +147,7 @@ private bookDriverUseCase: IBookDriverUseCase,
       }
 
       // 1. Param & Body Validation
-      const { rideId } = ZodHelper.validate(BookingIdParamSchema, req.params);
+      const { rideId } = ZodHelper.validate(RideIdParamSchema, req.params);
       const validatedData = ZodHelper.validate(AttachPaymentIntentSchema, req.body);
      
       // 2. Execute
@@ -168,30 +168,21 @@ private bookDriverUseCase: IBookDriverUseCase,
   }
 
   
- async updateStatus(req: Request, res: Response,next:NextFunction) {
+  async updateStatus(req: Request, res: Response,next:NextFunction) {
     try {
-      const { bookingId } = req.params;
-      const { status, reason, finalKm } = req.body;
-      console.log(req.body);
-      if (!status) {
-      
-       throw new AuthError("status required for updating status" ,HTTP_STATUS_CODES.BAD_REQUEST)
+      // 1. Param & Body Validation
+      const { bookingId } = ZodHelper.validate(BookingIdParamSchema, req.params);
+      const validatedData = ZodHelper.validate(UpdateBookingStatusSchema, req.body);
+
+      if (!bookingId) {
+        throw new AuthError("Booking ID is required", HTTP_STATUS_CODES.BAD_REQUEST);
       }
 
-      if (status === "REJECTED" && !reason) {
-    
-     throw new AuthError( "Reason is required when rejecting a booking.",HTTP_STATUS_CODES.BAD_REQUEST)
-      }
-      if (
-        (status === "COMPLETED" && finalKm === undefined) ||
-        finalKm === null
-      ) {
-    
-         throw new AuthError( "finalKm is required when completing a booking.",HTTP_STATUS_CODES.BAD_REQUEST)
-      }
-
- 
-      await this.updateBookingStatusUseCase.execute({ bookingId, status, reason, finalKm });
+      // 2. Execute
+      await this.updateBookingStatusUseCase.execute({ 
+        bookingId, 
+        ...validatedData 
+      });
 
       res.status(HTTP_STATUS_CODES.OK).json({ message: "Booking status updated successfully" });
     } catch (error: any) {
@@ -201,10 +192,10 @@ private bookDriverUseCase: IBookDriverUseCase,
 
    async getAllBookings(req: Request, res: Response,next:NextFunction) {
     try {
-      const page = parseInt(req.query.page as string) || 1;
-      const limit = parseInt(req.query.limit as string) || 2;
+      // 1. Query Validation
+      const { page, limit } = ZodHelper.validate(UserBookingPaginationSchema, req.query);
 
-   
+      // 2. Execute
       const bookings = await this.getAllBookingsUseCase.execute(page, limit);
 
       res.status(HTTP_STATUS_CODES.OK).json({ bookings });
