@@ -14,7 +14,7 @@ import { IAdminChangeDriverStatusUseCase } from "../../application/use_cases/Adm
 import { IBlockOrUnblockDriverUseCase } from "../../application/use_cases/Admin/Interfaces/IBlockOrUnblockDriverUseCase";
 import { IGetVehiclesByUserUseCase } from "../../application/use_cases/User/interfaces/IGetVehiclesByUserUseCase";
 import { IGetAdminDashboardStatsUseCase } from "../../application/use_cases/Admin/Interfaces/IGetAdminDashboardStatsUseCase";
-import { AdminLoginSchema, UserIdParamSchema, UpdateUserStatusSchema, DriverIdParamSchema, ChangeDriverStatusSchema, HandleBlockStatusSchema } from "../dto/admin/AdminRequestDTO";
+import { AdminLoginSchema, UserIdParamSchema, UpdateUserStatusSchema, DriverIdParamSchema, ChangeDriverStatusSchema, HandleBlockStatusSchema, AdminUserPaginationSchema } from "../dto/admin/AdminRequestDTO";
 
 @injectable()
 export class AdminController {
@@ -37,7 +37,7 @@ export class AdminController {
     private getAdminDashboardStatsUseCase: IGetAdminDashboardStatsUseCase,
   ){}
 
-  async login(req: Request, res: Response,next:NextFunction) {
+  async login(req: Request, res: Response, next: NextFunction) {
     try {
       // 1. DTO Validation
       const { email, password, role } = ZodHelper.validate(AdminLoginSchema, req.body);
@@ -57,24 +57,28 @@ export class AdminController {
       res.status(HTTP_STATUS_CODES.OK).json({
         accessToken,
         role,
-        message:"your admin login successfull"
+        message: "your admin login successfull",
       });
     } catch (error) {
-        next(error);
+      next(error);
     }
   }
 
-  async getAllUsers(req: Request, res: Response,next:NextFunction) {
+  async getAllUsers(req: Request, res: Response, next: NextFunction) {
     try {
+      // 1. Request Validation (Optional pagination params)
+      const { page, limit } = ZodHelper.validate(AdminUserPaginationSchema, req.query);
+
       // 2. Execute
-      const usersWithVehicleCount =  await this.getAllUsersUseCase.execute();
+      const usersWithVehicleCount = await this.getAllUsersUseCase.execute();
 
       res.status(HTTP_STATUS_CODES.OK).json({
         success: true,
         data: usersWithVehicleCount,
+        pagination: { page, limit }
       });
     } catch (error) {
-    next(error)
+      next(error);
     }
   }
 
