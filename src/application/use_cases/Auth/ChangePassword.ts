@@ -17,11 +17,11 @@ export class ChangePassword implements IChangePasswordUseCase {
     @inject(TOKENS.HASH_SERVICE) private hashService: IHashService
   ) {}
 
-  async execute(userId: string, oldPassword: string, newPassword: string, role: "user" | "driver"): Promise<void> {
+  async execute(userId: string, oldPassword: string, newPassword: string, role: "user" | "driver" | "admin"): Promise<void> {
     let account;
 
     // Fetch account based on role
-    if (role === "user") {
+    if (role === "user" || role === "admin") {
       account = await this.userRepository.getUserById(userId);
     } else {
       account = await this.driverRepository.findDriverById(userId);
@@ -38,7 +38,7 @@ if (!isPasswordValid) {
   }
    
   
-    if (role === "user") {
+    if (role === "user" || role === "admin") {
       await this.userRepository.updateUser(userId, { password: newPassword });
     } else {
       await this.driverRepository.update(userId, { password: newPassword });

@@ -8,13 +8,8 @@ const coerceToSingle = (val: any) => (Array.isArray(val) ? val[0] : val);
 /**
  * Common Role Enum
  */
-const RoleEnum = z.enum(["user", "driver", "admin"] as const, {
-  errorMap: (issue, ctx) => {
-    if (issue.code === "invalid_enum_value" || issue.code === "invalid_type") {
-      return { message: "Role must be user, driver, or admin" };
-    }
-    return { message: ctx.defaultError };
-  },
+export const RoleEnum = z.enum(["user", "driver", "admin"] as const, {
+  message: "Role must be user, driver, or admin",
 });
 
 /**
@@ -54,9 +49,7 @@ export const LogoutSchema = z.object({
 export const ChangePasswordSchema = z.object({
   oldPassword: z.string().min(1, "Old password is required"),
   newPassword: z.string().min(6, "New password must be at least 6 characters"),
-  role: z.enum(["user", "driver"] as const, {
-    message: "Role must be user or driver for password change",
-  }),
+  role: RoleEnum,
 });
 
 export type RefreshTokenRequest = z.infer<typeof RefreshTokenSchema>;

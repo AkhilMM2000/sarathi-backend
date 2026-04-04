@@ -3,6 +3,6 @@ export interface IChangePasswordUseCase {
     userId: string,
     oldPassword: string,
     newPassword: string,
-    role: "user" | "driver"
+    role: "user" | "driver" | "admin"
   ): Promise<void>;
 }

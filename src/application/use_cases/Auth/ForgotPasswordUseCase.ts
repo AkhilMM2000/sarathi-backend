@@ -18,11 +18,11 @@ export class ForgotPasswordUseCase implements  IForgotPasswordUseCase  {
     @inject(TOKENS.EMAIL_SERVICE) private emailService: EmailService,
   ) {}
 
-  async execute(email: string,role:'user'|'driver'):Promise<void> {
+  async execute(email: string,role:'user'|'driver' | 'admin'):Promise<void> {
     let user;
     console.log(email,role);
     
-    if(role=='user'){
+    if(role=='user' || role == 'admin'){
      user= await this.userRepository.findByEmail(email);
     if (!user) throw new AuthError(ERROR_MESSAGES.USER_NOT_FOUND,HTTP_STATUS_CODES.NOT_FOUND);
     }

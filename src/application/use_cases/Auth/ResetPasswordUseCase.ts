@@ -18,7 +18,7 @@ export class ResetPasswordUseCase implements  IResetPasswordUseCase {
     
   ) {}
 
-  async execute(token: string, newPassword: string, role: 'user' | 'driver'):Promise<void> {
+  async execute(token: string, newPassword: string, role: 'user' | 'driver' | 'admin'):Promise<void> {
     
     const userId = await this.store.getTokenUser(role, token);
  
@@ -27,7 +27,7 @@ export class ResetPasswordUseCase implements  IResetPasswordUseCase {
    
  
     let user;
-    if (role === 'user') {
+    if (role === 'user' || role === 'admin') {
       user = await this.userRepository.getUserById(userId);
       if (!user) throw new AuthError(ERROR_MESSAGES.USER_NOT_FOUND, HTTP_STATUS_CODES.NOT_FOUND);
     } else if (role === 'driver') {
@@ -46,7 +46,7 @@ export class ResetPasswordUseCase implements  IResetPasswordUseCase {
       };
      
 
-      if (role === 'user') {
+      if (role === 'user' || role === 'admin') {
         if (user._id) {
         await this.userRepository.updateUser(user._id.toString(), updatedData);
   
