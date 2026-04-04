@@ -128,7 +128,7 @@ router
   ).get('/wallet/ballence',
     protectRoute(["user"]), 
     checkBlockedMiddleware.handle.bind(checkBlockedMiddleware),
-      bookingController.Walletballence.bind(bookingController)
+      bookingController.WalletBalance.bind(bookingController)
   ).post('/wallet/ridepayment',
     protectRoute(["user"]), 
     checkBlockedMiddleware.handle.bind(checkBlockedMiddleware),

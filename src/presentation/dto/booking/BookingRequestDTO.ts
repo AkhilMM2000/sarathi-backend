@@ -139,3 +139,36 @@ export const BookingIdParamSchema = z.object({
 export const RideHistorySchema = UserBookingPaginationSchema;
 
 export type RideHistoryRequest = z.infer<typeof RideHistorySchema>;
+/**
+ * Chat Signature Request Schema
+ */
+export const GetChatSignatureSchema = z.object({
+  fileType: z.string().min(1, "File type is required"),
+});
+
+export type GetChatSignatureRequest = z.infer<typeof GetChatSignatureSchema>;
+
+/**
+ * Wallet Payment Request Schema
+ */
+export const WalletPaymentSchema = z.object({
+  rideId: z.string().min(1, "Ride ID is required"),
+  amount: z.number().positive("Amount must be positive"),
+});
+
+export type WalletPaymentRequest = z.infer<typeof WalletPaymentSchema>;
+
+/**
+ * Driver Review Params Schema (from id param)
+ */
+export const DriverReviewParamsSchema = z.object({
+  id: z.string().min(1, "Driver ID is required"),
+});
+
+/**
+ * Driver Stats Query Schema (year/month)
+ */
+export const DriverStatsQuerySchema = z.object({
+  year: z.preprocess(coerceToSingle, z.coerce.number().int().min(2020).optional()),
+  month: z.preprocess(coerceToSingle, z.coerce.number().int().min(1).max(12).optional()),
+});

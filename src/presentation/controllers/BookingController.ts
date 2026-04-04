@@ -1,13 +1,13 @@
 import { NextFunction, Request, Response } from "express";
 import { ZodHelper } from "../dto/common/ZodHelper";
-import { container, inject, injectable } from "tsyringe";
+import {  inject, injectable } from "tsyringe";
 import { AuthError } from "../../domain/errors/Autherror";
 import { AuthenticatedRequest } from "../../middleware/authMiddleware";
 import { BookingStatus } from "../../domain/models/Booking";
 import { ERROR_MESSAGES } from "../../constants/ErrorMessages";
 import { HTTP_STATUS_CODES } from "../../constants/HttpStatusCode";
 import { IGetRideHistoryUseCase } from "../../application/use_cases/User/interfaces/IGetRideHistoryUseCase";
-import { BookDriverSchema, GetEstimatedFareSchema, UserBookingPaginationSchema, AttachPaymentIntentSchema, BookingIdParamSchema, UpdateBookingStatusSchema, RideIdParamSchema, CancelBookingSchema, ChatParamsSchema, MessageParamsSchema, RideHistorySchema } from "../dto/booking/BookingRequestDTO";
+import { BookDriverSchema, GetEstimatedFareSchema, UserBookingPaginationSchema, AttachPaymentIntentSchema, BookingIdParamSchema, UpdateBookingStatusSchema, RideIdParamSchema, CancelBookingSchema, ChatParamsSchema, MessageParamsSchema, RideHistorySchema, GetChatSignatureSchema, WalletPaymentSchema, DriverReviewParamsSchema, DriverStatsQuerySchema } from "../dto/booking/BookingRequestDTO";
 import { USECASE_TOKENS } from "../../constants/UseCaseTokens";
 import { IBookDriverUseCase } from "../../application/use_cases/User/interfaces/IBookDriverUseCase";
 import { IGetEstimatedFare } from "../../application/use_cases/User/interfaces/IGetEstimatedFare";
@@ -261,86 +261,91 @@ private bookDriverUseCase: IBookDriverUseCase,
   async getChatSignature(req: AuthenticatedRequest, res: Response,next:NextFunction) {
     try {
       const id = req.user?.id!;
-      const { fileType } = req.body;
+      
+      // 1. DTO Validation
+      const { fileType } = ZodHelper.validate(GetChatSignatureSchema, req.body);
      
+      // 2. Execute
       const chatUploadMedia = await this.generateSignedUrlUseCase.execute(fileType, id);
-      console.log(chatUploadMedia,'media signurl reach');
+      
       res.status(HTTP_STATUS_CODES.OK).json(chatUploadMedia);
     } catch (error: any) {
        next(error)
     }
   }
-async Walletballence(req: AuthenticatedRequest, res: Response,next:NextFunction) {
-   try {
-const userId = req.user?.id!;
+  async WalletBalance(req: AuthenticatedRequest, res: Response,next:NextFunction) {
+    try {
+      const userId = req.user?.id!;
 
-const ballence=await this.walletBalanceUseCase.execute(userId);
-res.status(HTTP_STATUS_CODES.OK).json({ballence})
-   } catch (error: any) {
-    
+      const balance = await this.walletBalanceUseCase.execute(userId);
+      res.status(HTTP_STATUS_CODES.OK).json({ balance });
+    } catch (error: any) {
+      next(error);
+    }
+  }
 
-next(error)
-
-   }
-}
-
- async WalletPayment(req: AuthenticatedRequest, res: Response,next:NextFunction) {
-   try {
-const userId = req.user?.id;
-const { rideId, amount } = req.body;
+  async WalletPayment(req: AuthenticatedRequest, res: Response,next:NextFunction) {
+    try {
+      const userId = req.user?.id!;
+      
+      // 1. DTO Validation
+      const { rideId, amount } = ZodHelper.validate(WalletPaymentSchema, req.body);
         
+      // 2. Execute
+      await this.walletPaymentUseCase.WalletRidePayment(rideId, userId, amount);
 
-await this.walletPaymentUseCase.WalletRidePayment(rideId, userId!, amount);
-res.status(HTTP_STATUS_CODES.OK).json({message:"payment successfull"})
-   } catch (error: any) {
-     next(error)
-    
-   }
-
- }
- async ReviewDriver(req: AuthenticatedRequest, res: Response,next:NextFunction) {
-try {
-const driverId = req.params.id;
-console.log(driverId, "driver id");
- const page = parseInt(req.query.page as string) || 1;
- const limit = parseInt(req.query.limit as string) || 2;
-  
-const reviews = await this.getDriverReviewsUseCase.execute(driverId, page, limit);
-res.status(HTTP_STATUS_CODES.OK).json(reviews);
-} catch (error: any) {
-  
-next(error)
-}
-}
- async getDriverBookingStatusSummary (req:AuthenticatedRequest, res: Response,next:NextFunction) {
-  try {
- 
-   const driverId = req.user?.id;
-    const year = req.query.year ? parseInt(req.query.year as string) : undefined;
-    const month = req.query.month ? parseInt(req.query.month as string) : undefined;
-
-   
-    const result = await this.getBookingStatusSummary.execute(driverId!, year, month);
-    res.status(HTTP_STATUS_CODES.OK).json(result);
-  } catch (error: any) {
-     next(error)
+      res.status(HTTP_STATUS_CODES.OK).json({ message: "Payment successful" });
+    } catch (error: any) {
+      next(error);
+    }
   }
-};
 
- async  getDriverEarningsByMonth  (req:AuthenticatedRequest, res: Response,next:NextFunction){
-  try {
- 
-   const driverId = req.user?.id;
-    const year = req.query.year ? parseInt(req.query.year as string) : new Date().getFullYear();
-    const month = req.query.month ? parseInt(req.query.month as string) : undefined;
+  async ReviewDriver(req: AuthenticatedRequest, res: Response,next:NextFunction) {
+    try {
+      // 1. Validation
+      const { id: driverId } = ZodHelper.validate(DriverReviewParamsSchema, req.params);
+      const { page, limit } = ZodHelper.validate(UserBookingPaginationSchema, req.query);
+        
+      // 2. Execute
+      const reviews = await this.getDriverReviewsUseCase.execute(driverId, page, limit);
 
-   
-    const result = await this.earningsSummaryUseCase.execute(driverId!, year, month);
-    res.status(HTTP_STATUS_CODES.OK).json(result);
-  } catch (error: any) {
-    next(error)
+      res.status(HTTP_STATUS_CODES.OK).json(reviews);
+    } catch (error: any) {
+      next(error);
+    }
   }
-};
+
+  async getDriverBookingStatusSummary (req:AuthenticatedRequest, res: Response,next:NextFunction) {
+    try {
+      const driverId = req.user?.id!;
+
+      // 1. Query Validation
+      const { year, month } = ZodHelper.validate(DriverStatsQuerySchema, req.query);
+      
+      // 2. Execute
+      const result = await this.getBookingStatusSummary.execute(driverId, year, month);
+
+      res.status(HTTP_STATUS_CODES.OK).json(result);
+    } catch (error: any) {
+       next(error);
+    }
+  }
+
+  async getDriverEarningsByMonth (req:AuthenticatedRequest, res: Response,next:NextFunction){
+    try {
+      const driverId = req.user?.id!;
+
+      // 1. Query Validation
+      const { year, month } = ZodHelper.validate(DriverStatsQuerySchema, req.query);
+      
+      // 2. Execute
+      const result = await this.earningsSummaryUseCase.execute(driverId, year || new Date().getFullYear(), month);
+
+      res.status(HTTP_STATUS_CODES.OK).json(result);
+    } catch (error: any) {
+      next(error);
+    }
+  }
 
 async getDriverDashboard(req: AuthenticatedRequest, res: Response, next: NextFunction) {
   try {
