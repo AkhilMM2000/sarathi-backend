@@ -55,7 +55,7 @@ private verifyDriverPaymentAccount: IVerifyDriverPaymentAccount
       const validatedData = ZodHelper.validate(RegisterDriverSchema, req.body);
 
       // 2. Execute
-      const response = await this.registerDriverUseCase.execute(validatedData as any);
+      const response = await this.registerDriverUseCase.execute(validatedData);
       
       // 3. Response
       res.status(HTTP_STATUS_CODES.OK).json({ success: true, ...response });

@@ -22,6 +22,8 @@ export const RegisterDriverSchema = z.object({
     longitude: z.number(),
   }),
 });
+export type RegisterDriverRequest = z.infer<typeof RegisterDriverSchema>;
+
 
 /**
  * Driver Login Schema

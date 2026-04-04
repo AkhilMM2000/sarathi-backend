@@ -1,5 +1,6 @@
 import { Driver } from "../../../../domain/models/Driver";
+import { RegisterDriverRequest } from "../../../../presentation/dto/driver/DriverRequestDTO";
 
 export interface IRegisterDriverUseCase {
-  execute(driverData: Driver): Promise<{ message: string }>;
+  execute(driverData: RegisterDriverRequest): Promise<{ message: string }>;
 }

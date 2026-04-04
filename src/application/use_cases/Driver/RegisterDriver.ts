@@ -7,6 +7,8 @@ import { TOKENS } from "../../../constants/Tokens";
 import { AuthError } from "../../../domain/errors/Autherror";
 import { HTTP_STATUS_CODES } from "../../../constants/HttpStatusCode";
 import { IRegisterDriverUseCase } from "./interfaces/IRegisterDriverUseCase";
+import { RegisterDriverRequest } from "../../../presentation/dto/driver/DriverRequestDTO";
+
 @injectable()
 export class RegisterDriver  implements IRegisterDriverUseCase {
   constructor(
@@ -14,7 +16,7 @@ export class RegisterDriver  implements IRegisterDriverUseCase {
     @inject(TOKENS.USER_REGISTERSTORE) private store: IRedisrepository
   ) {}
 
-  async execute(driverData:Driver ) {
+  async execute(driverData: RegisterDriverRequest) {
     const { email } = driverData;
 
    console.log(driverData);
