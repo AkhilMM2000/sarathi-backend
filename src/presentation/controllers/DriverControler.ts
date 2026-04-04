@@ -176,9 +176,8 @@ private verifyDriverPaymentAccount: IVerifyDriverPaymentAccount
 
   async editDriverProfile(req:AuthenticatedRequest, res: Response,next:NextFunction): Promise<void> {
     try {
-      console.log(req.body,'driver data for edit ')
       // 1. DTO Validation
-      const { driverId } = ZodHelper.validate(DriverIdParamSchema, req.params);
+      const { id: driverId } = ZodHelper.validate(UserIdParamSchema, req.params);
       const validatedData = ZodHelper.validate(EditDriverProfileSchema, req.body);
  
       // 2. Execute
