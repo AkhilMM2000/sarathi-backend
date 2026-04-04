@@ -21,6 +21,13 @@ export interface DriverResponse {
   distance?: number | null;
 }
 
+export interface DriverFullResponse extends DriverResponse {
+  aadhaarNumber: string;
+  licenseNumber: string;
+  aadhaarImage: string;
+  licenseImage: string;
+}
+
 /**
  * Maps a single Driver (or partial Driver from application layer) 
  * to a safe Response DTO for the Public API
@@ -39,6 +46,20 @@ export const toDriverResponse = (driver: Omit<Partial<Driver>, "_id"> & { _id?: 
     averageRating: driver.averageRating || 0,
     totalRatings: driver.totalRatings || 0,
     distance: driver.distance ?? null,
+  };
+};
+
+/**
+ * Maps a single Driver to a full Response DTO (includes sensitive docs)
+ * Only for self-viewing (Dashboard)
+ */
+export const toDriverFullResponse = (driver: Omit<Partial<Driver>, "_id"> & { _id?: string | { toString(): string }; distance?: number | null }): DriverFullResponse => {
+  return {
+    ...toDriverResponse(driver),
+    aadhaarNumber: driver.aadhaarNumber || "",
+    licenseNumber: driver.licenseNumber || "",
+    aadhaarImage: driver.aadhaarImage || "",
+    licenseImage: driver.licenseImage || "",
   };
 };
 

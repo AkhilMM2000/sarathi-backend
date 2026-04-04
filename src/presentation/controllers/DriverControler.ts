@@ -19,7 +19,7 @@ import { IGetBooking } from "../../application/use_cases/Driver/interfaces/IGetU
 import { IVerifyDriverPaymentAccount } from "../../application/use_cases/Driver/interfaces/IVerifyDriverPaymentAccount";
 import { ZodHelper } from "../dto/common/ZodHelper";
 import { RegisterDriverSchema, VerifyDriverOtpSchema, DriverLoginSchema, ResendDriverOtpSchema, EditDriverProfileSchema, OnboardDriverSchema, UserIdParamSchema, DriverBookingPaginationSchema, VerifyAccountSchema } from "../dto/driver/DriverRequestDTO";
-import { toDriverResponse } from "../dto/user/DriverDTO";
+import { toDriverResponse, toDriverFullResponse } from "../dto/user/DriverDTO";
 import { toUserResponse, DriverIdParamSchema } from "../dto/user/UserDTO";
 import { z } from "zod";
 @injectable()
@@ -145,8 +145,8 @@ private verifyDriverPaymentAccount: IVerifyDriverPaymentAccount
     }
       const driver = await this.getDriverProfileUsecase.execute(driverId);
 
-      // Return sanitized profile
-      res.status(HTTP_STATUS_CODES.OK).json({ success: true, driver: toDriverResponse(driver as any) });
+      // Return sanitized full profile for the driver's dashboard
+      res.status(HTTP_STATUS_CODES.OK).json({ success: true, driver: toDriverFullResponse(driver as any) });
     } catch (error) {
       next(error)
     }
@@ -190,7 +190,7 @@ private verifyDriverPaymentAccount: IVerifyDriverPaymentAccount
         updateData as any
       );
         
-      res.status(HTTP_STATUS_CODES.OK).json({success: true, driver: toDriverResponse(updatedDriver as any) });
+      res.status(HTTP_STATUS_CODES.OK).json({success: true, driver: toDriverFullResponse(updatedDriver as any) });
     } catch (error: any) {
       if (error instanceof z.ZodError) {
         res.status(HTTP_STATUS_CODES.BAD_REQUEST).json({
