@@ -44,7 +44,10 @@ export const DriverIdParamSchema = z.object({
  * Change Driver Status Schema (Approval/Rejection)
  */
 export const ChangeDriverStatusSchema = z.object({
-  status: z.string().min(1, "Status is required"),
+  status: z.enum(["pending", "approved", "rejected"], {
+    required_error: "Status is required",
+    invalid_type_error: "Invalid status value",
+  }),
   reason: z.string().optional(),
 });
 
