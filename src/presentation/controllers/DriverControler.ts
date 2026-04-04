@@ -50,6 +50,7 @@ private verifyDriverPaymentAccount: IVerifyDriverPaymentAccount
 
    async registerDriver(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
+     
       // 1. DTO Validation
       const validatedData = ZodHelper.validate(RegisterDriverSchema, req.body);
 
@@ -60,6 +61,7 @@ private verifyDriverPaymentAccount: IVerifyDriverPaymentAccount
       res.status(HTTP_STATUS_CODES.OK).json({ success: true, ...response });
     } catch (error: any) {
       if (error instanceof z.ZodError) {
+        console.log(error)
         res.status(HTTP_STATUS_CODES.BAD_REQUEST).json({
           success: false,
           errors: error.issues

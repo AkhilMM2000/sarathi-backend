@@ -12,10 +12,14 @@ export const RegisterDriverSchema = z.object({
   place: z.string().min(1, "Place is required"),
   aadhaarNumber: z.string().min(12, "Aadhaar number must be at least 12 digits"),
   licenseNumber: z.string().min(1, "License number is required"),
-  // These are usually file URLs or paths from previous upload steps
-  profileImage: z.string().url("Invalid profile image URL"),
-  aadhaarImage: z.string().url("Invalid Aadhaar image URL"),
-  licenseImage: z.string().url("Invalid license image URL"),
+  // These are often relative paths (images/uploads/...) from the client
+  profileImage: z.string().optional().or(z.literal("")),
+  aadhaarImage: z.string().min(1, "Aadhaar image path is required"),
+  licenseImage: z.string().min(1, "License image path is required"),
+  location: z.object({
+    latitude: z.number(),
+    longitude: z.number(),
+  }),
 });
 
 /**
