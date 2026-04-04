@@ -53,6 +53,8 @@ export const ResendDriverOtpSchema = z.object({
  * Edit Driver Profile Schema (Partial Update)
  */
 export const EditDriverProfileSchema = RegisterDriverSchema.partial();
+export type EditDriverProfileRequest = z.infer<typeof EditDriverProfileSchema>;
+
 
 /**
  * Onboard Driver Schema

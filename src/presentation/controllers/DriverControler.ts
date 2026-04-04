@@ -187,7 +187,7 @@ private verifyDriverPaymentAccount: IVerifyDriverPaymentAccount
       
       const updatedDriver = await this.editDriverProfileUseCase.execute(
         driverId,
-        updateData as any
+        updateData
       );
         
       res.status(HTTP_STATUS_CODES.OK).json({success: true, driver: toDriverFullResponse(updatedDriver as any) });
