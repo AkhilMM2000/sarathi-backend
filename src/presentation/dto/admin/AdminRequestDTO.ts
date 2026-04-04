@@ -11,7 +11,9 @@ const coerceToSingle = (val: any) => (Array.isArray(val) ? val[0] : val);
 export const AdminLoginSchema = z.object({
   email: z.string().email("Invalid email format"),
   password: z.string().min(6, "Password must be at least 6 characters"),
-  role: z.enum(["user", "driver", "admin"]),
+  role: z.enum(["user", "driver", "admin"] as const, {
+    message: "Role must be user, driver, or admin",
+  }),
 });
 
 export type AdminLoginRequest = z.infer<typeof AdminLoginSchema>;
@@ -28,8 +30,10 @@ export const UserIdParamSchema = z.object({
  */
 export const UpdateUserStatusSchema = z.object({
   isBlock: z.boolean({
-    required_error: "isBlock is required",
-    invalid_type_error: "isBlock must be a boolean",
+    error: (issue) =>
+      issue.input === undefined
+        ? "isBlock is required"
+        : "isBlock must be a boolean",
   }),
 });
 
@@ -44,9 +48,8 @@ export const DriverIdParamSchema = z.object({
  * Change Driver Status Schema (Approval/Rejection)
  */
 export const ChangeDriverStatusSchema = z.object({
-  status: z.enum(["pending", "approved", "rejected"], {
-    required_error: "Status is required",
-    invalid_type_error: "Invalid status value",
+  status: z.enum(["pending", "approved", "rejected"] as const, {
+    message: "Status must be pending, approved, or rejected",
   }),
   reason: z.string().optional(),
 });
@@ -56,8 +59,10 @@ export const ChangeDriverStatusSchema = z.object({
  */
 export const HandleBlockStatusSchema = z.object({
   isBlock: z.boolean({
-    required_error: "isBlock is required",
-    invalid_type_error: "isBlock must be a boolean",
+    error: (issue) =>
+      issue.input === undefined
+        ? "isBlock is required"
+        : "isBlock must be a boolean",
   }),
 });
 
