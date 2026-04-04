@@ -95,11 +95,16 @@ export const GetEstimatedFareSchema = z.object({
 export type GetEstimatedFareRequest = z.infer<typeof GetEstimatedFareSchema>;
 
 /**
+ * Helper to ensure query params are single values even if multiple are sent
+ */
+const coerceToSingle = (val: any) => (Array.isArray(val) ? val[0] : val);
+
+/**
  * User Booking Pagination Schema (Query Params)
  */
 export const UserBookingPaginationSchema = z.object({
-  page: z.coerce.number().min(1).default(1),
-  limit: z.coerce.number().min(1).max(50).default(10),
+  page: z.preprocess(coerceToSingle, z.coerce.number().min(1).default(1)),
+  limit: z.preprocess(coerceToSingle, z.coerce.number().min(1).max(50).default(10)),
 });
 
 export type UserBookingPaginationRequest = z.infer<typeof UserBookingPaginationSchema>;

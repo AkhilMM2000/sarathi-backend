@@ -59,13 +59,18 @@ export const UpdateUserSchema = z.object({
 });
 
 /**
+ * Helper to ensure query params are single values even if multiple are sent
+ */
+const coerceToSingle = (val: any) => (Array.isArray(val) ? val[0] : val);
+
+/**
  * Fetch Drivers Query Schema
  * Handles pagination and search parameters from query string
  */
 export const FetchDriversSchema = z.object({
-  page: z.coerce.number().min(1).default(1),
-  limit: z.coerce.number().min(1).max(50).default(10),
-  search: z.string().optional().default(""),
+  page: z.preprocess(coerceToSingle, z.coerce.number().min(1).default(1)),
+  limit: z.preprocess(coerceToSingle, z.coerce.number().min(1).max(50).default(10)),
+  search: z.preprocess(coerceToSingle, z.string().optional().default("")),
 });
 
 /**
@@ -92,8 +97,8 @@ export const CreatePaymentIntentSchema = z.object({
  * Coerces query strings (page, limit) to numbers
  */
 export const WalletPaginationSchema = z.object({
-  page: z.coerce.number().min(1).default(1),
-  limit: z.coerce.number().min(1).max(50).default(10),
+  page: z.preprocess(coerceToSingle, z.coerce.number().min(1).default(1)),
+  limit: z.preprocess(coerceToSingle, z.coerce.number().min(1).max(50).default(10)),
 });
 
 /**
