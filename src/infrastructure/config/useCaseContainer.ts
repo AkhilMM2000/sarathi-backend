@@ -43,6 +43,8 @@ import { IGetEstimatedFare } from "../../application/use_cases/User/interfaces/I
 import { GetEstimatedFare } from "../../application/use_cases/User/GetEstimatedFare";
 import { IGetUserBookingsUseCase } from "../../application/use_cases/User/interfaces/IGetUserBookingsUseCase";
 import { GetUserBookingsUseCase } from "../../application/use_cases/User/GetUserbooking";
+import { IGetRideHistoryUseCase } from "../../application/use_cases/User/interfaces/IGetRideHistoryUseCase";
+import { GetRideHistory } from "../../application/use_cases/User/GetRideHistory";
 import { IAttachPaymentIntentIdToBookingUseCase } from "../../application/use_cases/User/interfaces/IAttachPaymentIntentIdToBookingUseCase";
 import { AttachPaymentIntentIdToBooking } from "../../application/use_cases/User/AttachPaymentIntentIdToBooking";
 import { IUpdateBookingStatusUseCase } from "../../application/use_cases/Driver/interfaces/IUpdateBookingStatusUseCase";
@@ -189,6 +191,10 @@ container.registerSingleton<ICancelBookingUseCase>(
 container.registerSingleton<IGetMessagesByBookingIdUseCase>(
   USECASE_TOKENS.GET_MESSAGES_BY_BOOKING_USECASE,
   GetMessagesByBookingId
+);
+container.registerSingleton<IGetRideHistoryUseCase>(
+  USECASE_TOKENS.GET_RIDE_HISTORY_USECASE,
+  GetRideHistory
 );
 container.registerSingleton<IDeleteMessageUseCase>(
   USECASE_TOKENS.DELETE_MESSAGE_USECASE,

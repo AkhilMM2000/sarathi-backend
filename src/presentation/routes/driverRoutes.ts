@@ -34,7 +34,7 @@ router
     .get("/ridehistory", 
       protectRoute(["driver"]), 
       checkBlockedMiddleware.handle.bind(checkBlockedMiddleware), 
-     BookingController.getRideHistory
+     bookingController.getRideHistory.bind(bookingController)
     ).patch('/auth/change-password',
       protectRoute(['driver']),checkBlockedMiddleware.handle.bind(checkBlockedMiddleware),
       authController.ChangePassword.bind(authController))

@@ -25,6 +25,36 @@ export const BookDriverSchema = z.object({
 
 export type BookDriverRequest = z.infer<typeof BookDriverSchema>;
 
+export type BookingIdParamRequest = z.infer<typeof BookingIdParamSchema>;
+
+/**
+ * Cancel Booking Request Schema
+ */
+export const CancelBookingSchema = z.object({
+  bookingId: z.string().min(1, "Booking ID is required"),
+  reason: z.string().min(1, "Reason is required"),
+});
+
+export type CancelBookingRequest = z.infer<typeof CancelBookingSchema>;
+
+/**
+ * Chat Params Schema
+ */
+export const ChatParamsSchema = z.object({
+  roomId: z.string().min(1, "Room ID is required"),
+});
+
+export type ChatParamsRequest = z.infer<typeof ChatParamsSchema>;
+
+/**
+ * Message Params Schema
+ */
+export const MessageParamsSchema = ChatParamsSchema.extend({
+  messageId: z.string().min(1, "Message ID is required"),
+});
+
+export type MessageParamsRequest = z.infer<typeof MessageParamsSchema>;
+
 /**
  * Update Booking Status Schema
  */
@@ -98,3 +128,9 @@ export const RideIdParamSchema = z.object({
 export const BookingIdParamSchema = z.object({
   bookingId: z.string().min(1, "Booking ID is required"),
 });
+/**
+ * Ride History Pagination Schema
+ */
+export const RideHistorySchema = UserBookingPaginationSchema;
+
+export type RideHistoryRequest = z.infer<typeof RideHistorySchema>;

@@ -1,30 +1,13 @@
 import { NextFunction, Request, Response } from "express";
 import { ZodHelper } from "../dto/common/ZodHelper";
-import { BookDriverSchema, GetEstimatedFareSchema, UserBookingPaginationSchema, AttachPaymentIntentSchema, BookingIdParamSchema, UpdateBookingStatusSchema, RideIdParamSchema } from "../dto/booking/BookingRequestDTO";
 import { container, inject, injectable } from "tsyringe";
-import {BookDriverInput } from "../../application/use_cases/User/BookDriver";
 import { AuthError } from "../../domain/errors/Autherror";
-
 import { AuthenticatedRequest } from "../../middleware/authMiddleware";
-
-import { AttachPaymentIntentIdToBooking } from "../../application/use_cases/User/AttachPaymentIntentIdToBooking";
-import { UpdateBookingStatus } from "../../application/use_cases/Driver/UpdateBookingstatus";
-import { GetAllBookings } from "../../application/use_cases/Admin/GetAllRides";
-import { CancelBookingInputUseCase } from "../../application/use_cases/User/CancelBooking";
 import { BookingStatus } from "../../domain/models/Booking";
-import {GetMessagesByBookingId } from "../../application/use_cases/GetRidechat";
 import { ERROR_MESSAGES } from "../../constants/ErrorMessages";
 import { HTTP_STATUS_CODES } from "../../constants/HttpStatusCode";
-import { GetRideHistory } from "../../application/use_cases/GetRideHistory";
-import { GenerateChatSignedUrl } from "../../application/use_cases/chatGetSignedUrl";
-import { WalletBallence } from "../../application/use_cases/User/WalletBallence";
-
-import { WalletPayment } from "../../application/use_cases/User/WalletRidePayment";
-import { GetDriverReviews } from "../../application/use_cases/Driver/DriverReview";
-import { DeleteMessageUseCase } from "../../application/use_cases/deleteMessage";
-
-import { GetBookingStatusSummary } from "../../application/use_cases/Driver/GetBookingStatusSummary";
-import { GetDriverEarningsSummary } from "../../application/use_cases/Driver/GetMonthlyEarningsReport";
+import { IGetRideHistoryUseCase } from "../../application/use_cases/User/interfaces/IGetRideHistoryUseCase";
+import { BookDriverSchema, GetEstimatedFareSchema, UserBookingPaginationSchema, AttachPaymentIntentSchema, BookingIdParamSchema, UpdateBookingStatusSchema, RideIdParamSchema, CancelBookingSchema, ChatParamsSchema, MessageParamsSchema, RideHistorySchema } from "../dto/booking/BookingRequestDTO";
 import { USECASE_TOKENS } from "../../constants/UseCaseTokens";
 import { IBookDriverUseCase } from "../../application/use_cases/User/interfaces/IBookDriverUseCase";
 import { IGetEstimatedFare } from "../../application/use_cases/User/interfaces/IGetEstimatedFare";
@@ -77,7 +60,9 @@ private bookDriverUseCase: IBookDriverUseCase,
     @inject(USECASE_TOKENS.GET_DRIVER_EARNINGS_SUMMARY_USECASE)
   private earningsSummaryUseCase: IGetDriverEarningsSummaryUseCase,
     @inject(USECASE_TOKENS.GET_DRIVER_DASHBOARD_STATS_USECASE)
-  private getDriverDashboardStatsUseCase: IGetDriverDashboardStatsUseCase
+  private getDriverDashboardStatsUseCase: IGetDriverDashboardStatsUseCase,
+    @inject(USECASE_TOKENS.GET_RIDE_HISTORY_USECASE)
+  private getRideHistoryUseCase: IGetRideHistoryUseCase
 
    ){}
    async bookDriver(req: AuthenticatedRequest, res: Response,next:NextFunction) {
@@ -206,19 +191,13 @@ private bookDriverUseCase: IBookDriverUseCase,
 
    async cancelBooking(req: Request, res: Response,next:NextFunction) {
     try {
-      const { bookingId, reason } = req.body;
+      // 1. DTO Validation
+      const validatedData = ZodHelper.validate(CancelBookingSchema, req.body);
 
-      if (!bookingId || !reason) {
-        res.status(400).json({ message: "bookingId and reason are required" });
-        return;
-      }
-
-     
-
-      await this.cancelBookingUseCase.execute({
-        bookingId,
-        reason,
-        status: BookingStatus.CANCELLED,
+      // 2. Execute
+      await this.cancelBookingUseCase.execute({ 
+        ...validatedData, 
+        status: BookingStatus.CANCELLED 
       });
 
       res.status(HTTP_STATUS_CODES.OK).json({ message: "Booking cancelled successfully" });
@@ -229,35 +208,31 @@ private bookDriverUseCase: IBookDriverUseCase,
 
    async getChatByBookingId(req: Request, res: Response,next:NextFunction) {
     try {
-      const { roomId } = req.params;
+      // 1. Param Validation
+      const { roomId } = ZodHelper.validate(ChatParamsSchema, req.params);
 
       if (!roomId) {
-     
-        throw new AuthError( "Booking ID is required" ,HTTP_STATUS_CODES.BAD_REQUEST)
+        throw new AuthError("Room ID is required",HTTP_STATUS_CODES.BAD_REQUEST)
       }
 
-    
+      // 2. Execute
       const chat = await this.getMessagesByBookingIdUseCase.execute({ bookingId: roomId });
 
-      if (!chat) {
-      
-        throw new AuthError( "Chat not found" ,HTTP_STATUS_CODES.NOT_FOUND)
-      }
-
-      res.status(HTTP_STATUS_CODES.OK).json(chat);
+      res.status(HTTP_STATUS_CODES.OK).json({ chat });
     } catch (error: any) {
       next(error)
     }
   }
 
-  async deleteMessage(req: Request, res: Response,next:NextFunction): Promise<void> {
+  async deleteMessage(req: Request, res: Response,next:NextFunction) {
     try {
-      const { roomId, messageId } = req.params;
+      // 1. Param Validation
+      const { roomId, messageId } = ZodHelper.validate(MessageParamsSchema, req.params);
 
- 
+      // 2. Execute
       await this.deleteMessageUseCase.execute(roomId, messageId);
 
-      res.status(HTTP_STATUS_CODES.OK).json({ message: 'Message deleted successfully' });
+      res.status(HTTP_STATUS_CODES.OK).json({ success: true, message: "Message deleted" });
     } catch (error) {
       next(error)
     }
@@ -266,14 +241,17 @@ private bookDriverUseCase: IBookDriverUseCase,
 
 
 
-  static async getRideHistory(req: AuthenticatedRequest, res: Response,next:NextFunction) {
+    async getRideHistory(req: AuthenticatedRequest, res: Response,next:NextFunction) {
     try {
       const id = req.user?.id!;
       const role = req.user?.role! as "user" | "driver";
-      const page = parseInt(req.query.page as string) || 1;
-      const limit = parseInt(req.query.limit as string) || 2;
-      const BookingHistory = container.resolve(GetRideHistory);
-      const ridehistory = await BookingHistory.execute(role, id, page, limit);
+      
+      // 1. Query Validation
+      const { page, limit } = ZodHelper.validate(RideHistorySchema, req.query);
+
+      // 2. Execute
+      const ridehistory = await this.getRideHistoryUseCase.execute(role, id, page, limit);
+
       res.status(HTTP_STATUS_CODES.OK).json(ridehistory);
     } catch (error: any) {
       next(error)

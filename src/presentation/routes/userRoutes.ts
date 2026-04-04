@@ -87,7 +87,7 @@ router
   .get(
     protectRoute(["user"]),
     checkBlockedMiddleware.handle.bind(checkBlockedMiddleware),
-    BookingController.getRideHistory
+    bookingController.getRideHistory.bind(bookingController)
   );
 
 
