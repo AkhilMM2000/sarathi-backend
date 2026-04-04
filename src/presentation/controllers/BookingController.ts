@@ -1,4 +1,6 @@
 import { NextFunction, Request, Response } from "express";
+import { ZodHelper } from "../dto/common/ZodHelper";
+import { BookDriverSchema } from "../dto/booking/BookingRequestDTO";
 import { container, inject, injectable } from "tsyringe";
 import {BookDriverInput } from "../../application/use_cases/User/BookDriver";
 import { AuthError } from "../../domain/errors/Autherror";
@@ -81,34 +83,17 @@ private bookDriverUseCase: IBookDriverUseCase,
    async bookDriver(req: AuthenticatedRequest, res: Response,next:NextFunction) {
     try {
       const userId = req.user?.id;
-
       if (!userId) {
-       
-    
         throw new AuthError(ERROR_MESSAGES.USER_ID_NOT_FOUND,HTTP_STATUS_CODES.UNAUTHORIZED)
       }
 
-      const {
-        driverId,
-        fromLocation,
-        toLocation,
-        startDate,
-        endDate,
-        estimatedKm,
-        bookingType,
-      }: BookDriverInput = req.body;
+      // 1. DTO Validation
+      const validatedData = ZodHelper.validate(BookDriverSchema, req.body);
 
-     
-
+      // 2. Execute
       const booking = await this.bookDriverUseCase.execute({
         userId,
-        driverId,
-        fromLocation,
-        toLocation,
-        startDate,
-        endDate,
-        estimatedKm,
-        bookingType,
+        ...validatedData
       });
 
       res.status(HTTP_STATUS_CODES.CREATED).json({ success: true, data: booking });

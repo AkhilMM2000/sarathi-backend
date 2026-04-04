@@ -1,17 +1,10 @@
 
 
 import { Booking } from "../../../../domain/models/Booking";
-import { BookingType } from "../../../../domain/models/Booking";
+import { BookDriverRequest } from "../../../../presentation/dto/booking/BookingRequestDTO";
 
-export interface BookDriverInput {
+export interface BookDriverInput extends BookDriverRequest {
   userId: string;
-  driverId: string;
-  fromLocation: string;
-  toLocation?: string;
-  startDate: Date;
-  endDate?: Date;
-  estimatedKm?: number;
-  bookingType: BookingType;
 }
 
 export interface IBookDriverUseCase {
