@@ -61,7 +61,6 @@ private verifyDriverPaymentAccount: IVerifyDriverPaymentAccount
       res.status(HTTP_STATUS_CODES.OK).json({ success: true, ...response });
     } catch (error: any) {
       if (error instanceof z.ZodError) {
-        console.log(error)
         res.status(HTTP_STATUS_CODES.BAD_REQUEST).json({
           success: false,
           errors: error.issues
@@ -177,14 +176,19 @@ private verifyDriverPaymentAccount: IVerifyDriverPaymentAccount
 
   async editDriverProfile(req:AuthenticatedRequest, res: Response,next:NextFunction): Promise<void> {
     try {
+      console.log(req.body,'driver data for edit ')
       // 1. DTO Validation
       const { driverId } = ZodHelper.validate(DriverIdParamSchema, req.params);
       const validatedData = ZodHelper.validate(EditDriverProfileSchema, req.body);
  
       // 2. Execute
+      // We remove _id from body if present to avoid type conflicts with params driverId
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { _id, ...updateData } = validatedData;
+      
       const updatedDriver = await this.editDriverProfileUseCase.execute(
         driverId,
-        validatedData
+        updateData as any
       );
         
       res.status(HTTP_STATUS_CODES.OK).json({success: true, driver: toDriverResponse(updatedDriver as any) });
