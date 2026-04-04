@@ -189,8 +189,12 @@ private verifyDriverPaymentAccount: IVerifyDriverPaymentAccount
         driverId,
         updateData
       );
+
+      if (!updatedDriver) {
+        throw new AuthError(ERROR_MESSAGES.DRIVER_NOT_FOUND, HTTP_STATUS_CODES.NOT_FOUND);
+      }
         
-      res.status(HTTP_STATUS_CODES.OK).json({success: true, driver: toDriverFullResponse(updatedDriver as any) });
+      res.status(HTTP_STATUS_CODES.OK).json({success: true, driver: toDriverFullResponse(updatedDriver) });
     } catch (error: any) {
       if (error instanceof z.ZodError) {
         res.status(HTTP_STATUS_CODES.BAD_REQUEST).json({

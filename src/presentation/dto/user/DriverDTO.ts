@@ -29,10 +29,19 @@ export interface DriverFullResponse extends DriverResponse {
 }
 
 /**
+ * Base Input for Driver Mappers
+ * Accept a partial driver where _id can be a string or ObjectId (anything with .toString())
+ */
+type DriverMapperInput = Omit<Partial<Driver>, "_id"> & {
+  _id?: string | { toString(): string };
+  distance?: number | null;
+};
+
+/**
  * Maps a single Driver (or partial Driver from application layer) 
  * to a safe Response DTO for the Public API
  */
-export const toDriverResponse = (driver: Omit<Partial<Driver>, "_id"> & { _id?: string | { toString(): string }; distance?: number | null }): DriverResponse => {
+export const toDriverResponse = (driver: DriverMapperInput): DriverResponse => {
   return {
     _id: driver._id?.toString() || "",
     name: driver.name || "",
@@ -53,7 +62,7 @@ export const toDriverResponse = (driver: Omit<Partial<Driver>, "_id"> & { _id?: 
  * Maps a single Driver to a full Response DTO (includes sensitive docs)
  * Only for self-viewing (Dashboard)
  */
-export const toDriverFullResponse = (driver: Omit<Partial<Driver>, "_id"> & { _id?: string | { toString(): string }; distance?: number | null }): DriverFullResponse => {
+export const toDriverFullResponse = (driver: DriverMapperInput): DriverFullResponse => {
   return {
     ...toDriverResponse(driver),
     aadhaarNumber: driver.aadhaarNumber || "",
@@ -66,6 +75,6 @@ export const toDriverFullResponse = (driver: Omit<Partial<Driver>, "_id"> & { _i
 /**
  * Maps an array of Drivers to safe Response DTOs
  */
-export const toDriverListResponse = (drivers: (Omit<Partial<Driver>, "_id"> & { _id?: string | { toString(): string }; distance?: number | null })[]): DriverResponse[] => {
+export const toDriverListResponse = (drivers: DriverMapperInput[]): DriverResponse[] => {
   return drivers.map(toDriverResponse);
 };
