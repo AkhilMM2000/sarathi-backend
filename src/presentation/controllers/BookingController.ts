@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import { ZodHelper } from "../dto/common/ZodHelper";
-import { BookDriverSchema, GetEstimatedFareSchema } from "../dto/booking/BookingRequestDTO";
+import { BookDriverSchema, GetEstimatedFareSchema, UserBookingPaginationSchema, AttachPaymentIntentSchema, BookingIdParamSchema } from "../dto/booking/BookingRequestDTO";
 import { container, inject, injectable } from "tsyringe";
 import {BookDriverInput } from "../../application/use_cases/User/BookDriver";
 import { AuthError } from "../../domain/errors/Autherror";
@@ -120,13 +120,13 @@ private bookDriverUseCase: IBookDriverUseCase,
     try {
       const userId = req.user?.id;
       if (!userId) {
-      
-      throw new AuthError(ERROR_MESSAGES.USER_ID_NOT_FOUND,HTTP_STATUS_CODES.BAD_REQUEST)
+        throw new AuthError(ERROR_MESSAGES.USER_ID_NOT_FOUND,HTTP_STATUS_CODES.BAD_REQUEST)
       }
-      const page = parseInt(req.query.page as string) || 1;
-      const limit = parseInt(req.query.limit as string) || 2;
 
-     ;
+      // 1. Query Validation
+      const { page, limit } = ZodHelper.validate(UserBookingPaginationSchema, req.query);
+
+      // 2. Execute
       const { data, total, totalPages } = await this.getUserBookingsUseCase.execute(
         userId,
         page,
@@ -141,24 +141,27 @@ private bookDriverUseCase: IBookDriverUseCase,
 
    async attachPaymentIntent(req: AuthenticatedRequest, res: Response,next:NextFunction) {
     try {
-      const { paymentIntentId, paymentStatus, walletDeduction } = req.body;
-      const { rideId } = req.params;
-     
- const userId = req.user?.id;
+      const userId = req.user?.id;
       if (!userId) {
-      
-      throw new AuthError(ERROR_MESSAGES.USER_ID_NOT_FOUND,HTTP_STATUS_CODES.BAD_REQUEST)
+        throw new AuthError(ERROR_MESSAGES.USER_ID_NOT_FOUND,HTTP_STATUS_CODES.BAD_REQUEST)
       }
-    
-      
-await this.attachPaymentIntentUseCase.execute(rideId,walletDeduction, paymentIntentId, paymentStatus,userId);
 
-      res
-        .status(HTTP_STATUS_CODES.OK)
-        .json({
-          success: true,
-          message: "PaymentIntent attached successfully",
-        });
+      // 1. Param & Body Validation
+      const { rideId } = ZodHelper.validate(BookingIdParamSchema, req.params);
+      const validatedData = ZodHelper.validate(AttachPaymentIntentSchema, req.body);
+     
+      // 2. Execute
+      await this.attachPaymentIntentUseCase.execute({
+        rideId,
+        userId,
+        ...validatedData,
+        paymentStatus: validatedData.paymentStatus as any // Cast safely to enum if needed, or let use case handle it
+      });
+
+      res.status(HTTP_STATUS_CODES.OK).json({
+        success: true,
+        message: "PaymentIntent attached successfully",
+      });
     } catch (error) {
      next(error)
     }

@@ -25,8 +25,15 @@ export class AttachPaymentIntentIdToBooking implements IAttachPaymentIntentIdToB
     private notificationService: INotificationService
   ) {}
 
-  async execute(bookingId: string,walletDeduction:number, paymentIntentId?: string,paymentstatus?:paymentStatus,userId?:string): Promise<void> {
-    const booking = await this.bookingRepo.findBookingById(bookingId);
+  async execute(params: {
+    rideId: string;
+    walletDeduction: number;
+    paymentIntentId: string;
+    paymentStatus: paymentStatus;
+    userId: string;
+  }): Promise<void> {
+    const { rideId, walletDeduction, paymentIntentId, paymentStatus: paymentstatus, userId } = params;
+    const booking = await this.bookingRepo.findBookingById(rideId);
     console.log(walletDeduction,'walletDeduction')
     if (!booking) {
       throw new AuthError(ERROR_MESSAGES.BOOKING_NOT_FOUND, HTTP_STATUS_CODES.NOT_FOUND);
@@ -62,10 +69,10 @@ booking.walletDeduction=walletDeduction;
     }
   }
 
-    await this.bookingRepo.updateBooking(bookingId, booking);
+    await this.bookingRepo.updateBooking(rideId, booking);
    console.log(booking.driverId.toString())
    if(paymentstatus=='COMPLETED'){
-   await this.notificationService.paymentNotification(booking.driverId.toString(),{status:paymentstatus,startDate:booking.startDate,bookingId})
+   await this.notificationService.paymentNotification(booking.driverId.toString(),{status:paymentstatus,startDate:booking.startDate,bookingId:rideId})
    }
 
   }

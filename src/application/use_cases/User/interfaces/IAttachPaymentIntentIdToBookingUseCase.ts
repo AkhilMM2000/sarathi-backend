@@ -1,9 +1,12 @@
+import { AttachPaymentIntentRequest } from "../../../../presentation/dto/booking/BookingRequestDTO";
+import { paymentStatus } from "../../../../domain/models/Booking";
+
+export interface AttachPaymentIntentParams extends AttachPaymentIntentRequest {
+  rideId: string;
+  userId: string;
+  paymentStatus: paymentStatus; // Override to use the enum
+}
+
 export interface IAttachPaymentIntentIdToBookingUseCase {
-  execute(
-    bookingId: string,
-    walletDeduction: number,
-    paymentIntentId?: string,
-    paymentstatus?: string,
-    userId?: string
-  ): Promise<void>;
+  execute(params: AttachPaymentIntentParams): Promise<void>;
 }
