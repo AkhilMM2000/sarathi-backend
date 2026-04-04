@@ -1,11 +1,5 @@
-// src/application/use_cases/User/interfaces/IGetEstimatedFare.ts
-import { BookingType } from "../../../../domain/models/Booking";
+import { GetEstimatedFareRequest } from "../../../../presentation/dto/booking/BookingRequestDTO";
 
 export interface IGetEstimatedFare {
-  execute(params: {
-    bookingType: BookingType;
-    estimatedKm?: number;
-    startDate: Date;
-    endDate?: Date;
-  }): Promise<number>;
+  execute(params: GetEstimatedFareRequest): Promise<number>;
 }

@@ -24,3 +24,15 @@ export const BookDriverSchema = z.object({
 });
 
 export type BookDriverRequest = z.infer<typeof BookDriverSchema>;
+
+/**
+ * Get Estimated Fare Request Schema
+ */
+export const GetEstimatedFareSchema = z.object({
+  bookingType: z.nativeEnum(BookingType),
+  estimatedKm: z.number().nonnegative().optional(),
+  startDate: z.coerce.date(),
+  endDate: z.coerce.date().optional(),
+});
+
+export type GetEstimatedFareRequest = z.infer<typeof GetEstimatedFareSchema>;

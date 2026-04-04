@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import { ZodHelper } from "../dto/common/ZodHelper";
-import { BookDriverSchema } from "../dto/booking/BookingRequestDTO";
+import { BookDriverSchema, GetEstimatedFareSchema } from "../dto/booking/BookingRequestDTO";
 import { container, inject, injectable } from "tsyringe";
 import {BookDriverInput } from "../../application/use_cases/User/BookDriver";
 import { AuthError } from "../../domain/errors/Autherror";
@@ -102,16 +102,13 @@ private bookDriverUseCase: IBookDriverUseCase,
        
     }
   }
-  async getEstimatedFare(req: Request, res: Response,next:NextFunction) {
+   async getEstimatedFare(req: Request, res: Response,next:NextFunction) {
     try {
-      const { bookingType, estimatedKm, startDate, endDate } = req.body;
+      // 1. DTO Validation
+      const validatedData = ZodHelper.validate(GetEstimatedFareSchema, req.body);
       
-      const fare = await this.getEstimatedFareUseCase.execute({
-        bookingType,
-        estimatedKm,
-        startDate: new Date(startDate),
-        endDate: endDate ? new Date(endDate) : undefined,
-      });
+      // 2. Execute
+      const fare = await this.getEstimatedFareUseCase.execute(validatedData);
 
       res.status(HTTP_STATUS_CODES.OK).json({ estimatedFare: fare });
     } catch (error: any) {

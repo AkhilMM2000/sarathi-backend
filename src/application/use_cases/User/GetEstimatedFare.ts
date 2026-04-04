@@ -3,13 +3,7 @@ import { IFareCalculatorService } from "../../services/FareCalculatorService";
 import { BookingType } from "../../../domain/models/Booking"; 
 import { TOKENS } from "../../../constants/Tokens";
 import { IGetEstimatedFare } from "./interfaces/IGetEstimatedFare";
-
-interface GetEstimatedFareParams {
-  bookingType: BookingType;
-  estimatedKm?: number;
-  startDate: Date;
-  endDate?: Date;
-}
+import { GetEstimatedFareRequest } from "../../../presentation/dto/booking/BookingRequestDTO";
 
 @injectable()
 export class GetEstimatedFare implements IGetEstimatedFare{
@@ -19,7 +13,7 @@ export class GetEstimatedFare implements IGetEstimatedFare{
   ) {}
 
 
-  async execute(params: GetEstimatedFareParams): Promise<number> {
+  async execute(params: GetEstimatedFareRequest): Promise<number> {
  
     return this.fareCalculatorService.calculate(params);
   }
