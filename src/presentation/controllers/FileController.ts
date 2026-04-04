@@ -1,31 +1,30 @@
+import { inject, injectable } from "tsyringe";
+import { NextFunction, Request, Response } from "express";
+import { USECASE_TOKENS } from "../../constants/UseCaseTokens";
+import { IGenerateSignedUrlUseCase } from "../../application/use_cases/Interfaces/IGenerateSignedUrlUseCase";
+import { ZodHelper } from "../dto/common/ZodHelper";
+import { GetSignedUrlSchema } from "../dto/common/FileRequestDTO";
+import { HTTP_STATUS_CODES } from "../../constants/HttpStatusCode";
 
-
- import { Request, Response } from "express";
-import { container } from "tsyringe";
- import { GenerateSignedUrl } from "../../application/use_cases/GenerateSignedUrl";
-
-
+@injectable()
 export class FileController {
- 
+  constructor(
+    @inject(USECASE_TOKENS.GENERATE_SIGNED_URL_USECASE)
+    private generateSignedUrlUseCase: IGenerateSignedUrlUseCase
+  ) {}
 
- async getSignedUrl(req: Request, res: Response) {
+  async getSignedUrl(req: Request, res: Response, next: NextFunction) {
     try {
-      const { fileType, fileName } = req.query;
+      // 1. DTO Validation
+      const { fileType, fileName } = ZodHelper.validate(GetSignedUrlSchema, req.query);
 
+      // 2. Execute
+      const signedUrlResponse = await this.generateSignedUrlUseCase.execute(fileType, fileName);
 
-      if (!fileType || !fileName) {
-        return res.status(400).json({ message: "File type and file name are required" });
-      }
-
-      const SignedUrl = container.resolve(GenerateSignedUrl);
-      const signedUrl = await SignedUrl.execute(fileType as string, fileName as string);
-      console.log(signedUrl);
-      
-      return res.status(201).json({ signedUrl });
+      return res.status(HTTP_STATUS_CODES.CREATED).json({ signedUrl: signedUrlResponse });
     } catch (error: any) {
-      return res.status(500).json({ message: error.message || "Failed to generate signed URL" });
+      next(error);
     }
   }
- 
 }
 
