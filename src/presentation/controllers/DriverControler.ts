@@ -144,9 +144,12 @@ private verifyDriverPaymentAccount: IVerifyDriverPaymentAccount
        throw new AuthError(ERROR_MESSAGES.DRIVER_ID_NOT_FOUND,HTTP_STATUS_CODES.BAD_REQUEST)
     }
       const driver = await this.getDriverProfileUsecase.execute(driverId);
+      if (!driver) {
+        throw new AuthError(ERROR_MESSAGES.DRIVER_NOT_FOUND, HTTP_STATUS_CODES.NOT_FOUND);
+      }
 
       // Return sanitized full profile for the driver's dashboard
-      res.status(HTTP_STATUS_CODES.OK).json({ success: true, driver: toDriverFullResponse(driver as any) });
+      res.status(HTTP_STATUS_CODES.OK).json({ success: true, driver: toDriverFullResponse(driver) });
     } catch (error) {
       next(error)
     }
@@ -159,9 +162,12 @@ private verifyDriverPaymentAccount: IVerifyDriverPaymentAccount
 
       // 2. Execute
       const user = await this.getUserDataUsecase.execute(id);
+      if (!user) {
+        throw new AuthError(ERROR_MESSAGES.USER_NOT_FOUND, HTTP_STATUS_CODES.NOT_FOUND);
+      }
       
       // 3. Response Mapping
-      res.status(HTTP_STATUS_CODES.OK).json({ success: true, user: toUserResponse(user as any) });
+      res.status(HTTP_STATUS_CODES.OK).json({ success: true, user: toUserResponse(user) });
     } catch (error: any) {
        if (error instanceof z.ZodError) {
         res.status(HTTP_STATUS_CODES.BAD_REQUEST).json({

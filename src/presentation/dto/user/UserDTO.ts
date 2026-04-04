@@ -132,11 +132,22 @@ export const VehicleIdParamSchema = z.object({
 });
 
 /**
+ * Base Input for User Mappers
+ * Accept a partial user where _id can be a string or ObjectId (anything with .toString())
+ */
+type UserMapperInput = Omit<Partial<User>, "_id"> & {
+  _id?: string | { toString(): string };
+};
+
+/**
  * User Response Mapper
  * Filters out sensitive database fields before sending as JSON
  */
-export const toUserResponse = (user: User) => {
+export const toUserResponse = (user: UserMapperInput) => {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { password, googleId, ...safeUser } = user;
-  return safeUser;
+  return {
+    ...safeUser,
+    _id: user._id?.toString() || "",
+  };
 };
