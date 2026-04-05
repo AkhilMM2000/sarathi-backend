@@ -114,7 +114,7 @@ export type UserBookingPaginationRequest = z.infer<typeof UserBookingPaginationS
  */
 export const AttachPaymentIntentSchema = z.object({
   paymentIntentId: z.string().min(1, "Payment Intent ID is required"),
-  paymentStatus: z.string().min(1, "Payment Status is required"),
+  paymentStatus: z.string().optional(),
   walletDeduction: z.coerce.number().nonnegative().optional().default(0),
 });
 

@@ -148,9 +148,11 @@ private bookDriverUseCase: IBookDriverUseCase,
         message: "PaymentIntent attached successfully",
       });
     } catch (error) {
+     
      next(error)
     }
   }
+
 
   
   async updateStatus(req: Request, res: Response,next:NextFunction) {
