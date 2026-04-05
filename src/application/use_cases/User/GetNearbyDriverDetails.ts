@@ -41,7 +41,7 @@ const paginatedResult= await this.driverRepository.findActiveDrivers(
     const drivers = paginatedResult.data;
 
     
-    
+
 
     
     // 3️⃣ Extract driver locations
@@ -67,6 +67,7 @@ const paginatedResult= await this.driverRepository.findActiveDrivers(
       driverLocations
       
     );
+    
 
     // 5️⃣ Add distance to driver
     const driversWithDistance = drivers.map((driver) => {

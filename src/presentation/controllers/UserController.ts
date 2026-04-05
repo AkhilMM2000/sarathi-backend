@@ -24,7 +24,7 @@ import { USECASE_TOKENS } from "../../constants/UseCaseTokens";
 import { IFindNearbyDriversUseCase } from "../../application/use_cases/User/interfaces/IFindNearbyDriversUseCase";
 import { IGetNearbyDriverDetailsUseCase } from "../../application/use_cases/Interfaces/IGetNearbyDriverDetailsUseCase";
 import { ZodHelper } from "../dto/common/ZodHelper";
-import { AddVehicleSchema, CreatePaymentIntentSchema, DriverIdParamSchema, EditVehicleSchema, FetchDriversSchema, LoginSchema, RegisterSchema, ResendOtpSchema, SubmitReviewSchema, toUserResponse, UpdateUserSchema, VehicleIdParamSchema, VerifyOtpSchema, WalletPaginationSchema } from "../dto/user/UserDTO";
+import { AddVehicleSchema, CreatePaymentIntentSchema, DriverIdParamSchema, EditVehicleSchema, FetchDriversSchema, GetNearbyDriverQuerySchema, LoginSchema, RegisterSchema, ResendOtpSchema, SubmitReviewSchema, toUserResponse, UpdateUserSchema, VehicleIdParamSchema, VerifyOtpSchema, WalletPaginationSchema } from "../dto/user/UserDTO";
 import { toDriverListResponse, toDriverResponse } from "../dto/user/DriverDTO";
 import { z } from "zod";
 
