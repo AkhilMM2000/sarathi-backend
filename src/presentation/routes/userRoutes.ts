@@ -47,7 +47,7 @@ router
 
 
 router.get("/nearby",protectRoute(['user']),checkBlockedMiddleware.handle.bind(checkBlockedMiddleware),userController.fetchDrivers.bind(userController))
-.get('/driver/:driverId',userController.getDriverDetails.bind(userController))
+.get('/driver/:driverId',protectRoute(['user']),checkBlockedMiddleware.handle.bind(checkBlockedMiddleware),userController.getDriverDetails.bind(userController))
 
 ;
 

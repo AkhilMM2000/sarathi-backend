@@ -26,7 +26,9 @@ export class GetNearbyDriverDetails
 
     // 1️⃣ Fetch the user's location from the database if not provided
     if (latitude === undefined || longitude === undefined) {
+      
       const user = await this.userRepository.getUserById(userId);
+     
       if (!user?.location) {
         throw new AuthError("User location not found. Please provide coordinates or update your profile.", HTTP_STATUS_CODES.BAD_REQUEST);
       }
@@ -67,7 +69,7 @@ const paginatedResult= await this.driverRepository.findActiveDrivers(
       driverLocations
       
     );
-    
+
 
     // 5️⃣ Add distance to driver
     const driversWithDistance = drivers.map((driver) => {

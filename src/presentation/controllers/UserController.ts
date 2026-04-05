@@ -390,7 +390,7 @@ export class UserController {
 
       // 3. Execute and map to safe Response DTO
       const driver = await this.getNearbyDriverDetailsUseCase.execute(userId!, driverId, lat, lng);
-console.log(driver,'driver response')
+
       res.status(HTTP_STATUS_CODES.OK).json(toDriverResponse(driver));
     } catch (error: any) {
       console.log(error,'error')
