@@ -125,7 +125,7 @@ router
     protectRoute(["user"]), 
     checkBlockedMiddleware.handle.bind(checkBlockedMiddleware),
      userController.WalletTransaction.bind(userController) 
-  ).get('/wallet/ballence',
+  ).get('/wallet/balance',
     protectRoute(["user"]), 
     checkBlockedMiddleware.handle.bind(checkBlockedMiddleware),
       bookingController.WalletBalance.bind(bookingController)
