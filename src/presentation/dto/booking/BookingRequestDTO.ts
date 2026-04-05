@@ -11,7 +11,7 @@ export const BookDriverSchema = z.object({
   toLocation: z.string().optional(),
   startDate: z.coerce.date(),
   endDate: z.coerce.date().optional(),
-  estimatedKm: z.number().nonnegative().optional(),
+  estimatedKm: z.coerce.number().nonnegative().optional(),
   bookingType: z.nativeEnum(BookingType),
 }).refine((data) => {
   if (data.endDate && data.startDate > data.endDate) {
@@ -61,7 +61,7 @@ export type MessageParamsRequest = z.infer<typeof MessageParamsSchema>;
 export const UpdateBookingStatusSchema = z.object({
   status: z.nativeEnum(BookingStatus),
   reason: z.string().optional(),
-  finalKm: z.number().nonnegative().optional(),
+  finalKm: z.coerce.number().nonnegative().optional(),
 }).refine((data) => {
   if (data.status === BookingStatus.REJECTED && !data.reason) {
     return false;
@@ -87,7 +87,7 @@ export type UpdateBookingStatusRequest = z.infer<typeof UpdateBookingStatusSchem
  */
 export const GetEstimatedFareSchema = z.object({
   bookingType: z.nativeEnum(BookingType),
-  estimatedKm: z.number().nonnegative().optional(),
+  estimatedKm: z.coerce.number().nonnegative().optional(),
   startDate: z.coerce.date(),
   endDate: z.coerce.date().optional(),
 });
@@ -115,7 +115,7 @@ export type UserBookingPaginationRequest = z.infer<typeof UserBookingPaginationS
 export const AttachPaymentIntentSchema = z.object({
   paymentIntentId: z.string().min(1, "Payment Intent ID is required"),
   paymentStatus: z.string().min(1, "Payment Status is required"),
-  walletDeduction: z.number().nonnegative().optional().default(0),
+  walletDeduction: z.coerce.number().nonnegative().optional().default(0),
 });
 
 export type AttachPaymentIntentRequest = z.infer<typeof AttachPaymentIntentSchema>;
@@ -153,7 +153,7 @@ export type GetChatSignatureRequest = z.infer<typeof GetChatSignatureSchema>;
  */
 export const WalletPaymentSchema = z.object({
   rideId: z.string().min(1, "Ride ID is required"),
-  amount: z.number().positive("Amount must be positive"),
+  amount: z.coerce.number().positive("Amount must be positive"),
 });
 
 export type WalletPaymentRequest = z.infer<typeof WalletPaymentSchema>;
