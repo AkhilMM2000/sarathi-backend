@@ -25,7 +25,15 @@ export class RefreshTokenUseCase implements IRefreshTokenUseCase {
     }
 
    
-      const decoded: any = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET as string);
+    let decoded: any;
+    try {
+      decoded = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET as string);
+    } catch (error: any) {
+      if (error.name === "TokenExpiredError") {
+        throw new AuthError("Refresh token expired. Please login again.", HTTP_STATUS_CODES.UNAUTHORIZED);
+      }
+      throw new AuthError("Invalid refresh token.", HTTP_STATUS_CODES.UNAUTHORIZED);
+    }
 
       let user: User | Driver | null = null;
 

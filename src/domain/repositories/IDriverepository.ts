@@ -4,7 +4,7 @@ import { PaginatedResult } from "./IBookingrepository";
 export interface IDriverRepository {
   create(driver: Driver): Promise<Driver>;
   findByEmail(email: string): Promise<Driver | null>;
-  getDrivers(): Promise<Driver[]>; 
+  getDrivers(page: number, limit: number): Promise<PaginatedResult<Driver>>;
   findDriverById(driverId: string): Promise<Driver | null>; 
   updateStatus(driverId: string, status: "pending" | "approved" | "rejected", reason?: string):Promise<Driver | null>; 
   blockOrUnblockDriver(driverId: string, isBlocked: boolean): Promise<void>;

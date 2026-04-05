@@ -26,6 +26,8 @@ export interface DriverFullResponse extends DriverResponse {
   licenseNumber: string;
   aadhaarImage: string;
   licenseImage: string;
+  stripeAccountId?: string;
+  activePayment?: boolean;
 }
 
 /**
@@ -69,6 +71,8 @@ export const toDriverFullResponse = (driver: DriverMapperInput): DriverFullRespo
     licenseNumber: driver.licenseNumber || "",
     aadhaarImage: driver.aadhaarImage || "",
     licenseImage: driver.licenseImage || "",
+    stripeAccountId: driver.stripeAccountId || "",
+    activePayment: driver.activePayment || false,
   };
 };
 

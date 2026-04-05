@@ -67,11 +67,11 @@ export const HandleBlockStatusSchema = z.object({
 });
 
 /**
- * Admin User Pagination Schema
+ * Generic Admin Pagination Schema
  */
-export const AdminUserPaginationSchema = z.object({
+export const AdminPaginationSchema = z.object({
   page: z.preprocess(coerceToSingle, z.coerce.number().min(1).default(1)),
   limit: z.preprocess(coerceToSingle, z.coerce.number().min(1).max(100).default(10)),
 });
 
-export type AdminUserPaginationRequest = z.infer<typeof AdminUserPaginationSchema>;
+export type AdminPaginationRequest = z.infer<typeof AdminPaginationSchema>;

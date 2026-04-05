@@ -14,7 +14,7 @@ import { IAdminChangeDriverStatusUseCase } from "../../application/use_cases/Adm
 import { IBlockOrUnblockDriverUseCase } from "../../application/use_cases/Admin/Interfaces/IBlockOrUnblockDriverUseCase";
 import { IGetVehiclesByUserUseCase } from "../../application/use_cases/User/interfaces/IGetVehiclesByUserUseCase";
 import { IGetAdminDashboardStatsUseCase } from "../../application/use_cases/Admin/Interfaces/IGetAdminDashboardStatsUseCase";
-import { AdminLoginSchema, UserIdParamSchema, UpdateUserStatusSchema, DriverIdParamSchema, ChangeDriverStatusSchema, HandleBlockStatusSchema, AdminUserPaginationSchema } from "../dto/admin/AdminRequestDTO";
+import { AdminLoginSchema, UserIdParamSchema, UpdateUserStatusSchema, DriverIdParamSchema, ChangeDriverStatusSchema, HandleBlockStatusSchema, AdminPaginationSchema } from "../dto/admin/AdminRequestDTO";
 
 @injectable()
 export class AdminController {
@@ -67,7 +67,7 @@ export class AdminController {
   async getAllUsers(req: Request, res: Response, next: NextFunction) {
     try {
       // 1. Request Validation (Optional pagination params)
-      const { page, limit } = ZodHelper.validate(AdminUserPaginationSchema, req.query);
+      const { page, limit } = ZodHelper.validate(AdminPaginationSchema, req.query);
 
       // 2. Execute
       const usersWithVehicleCount = await this.getAllUsersUseCase.execute();
@@ -103,14 +103,20 @@ export class AdminController {
     }
   }
 
-  async getAllDrivers(req: Request, res: Response,next:NextFunction) {
+  async getAllDrivers(req: Request, res: Response, next: NextFunction) {
     try {
-      // 2. Execute
-      const drivers = await this.getDriversUseCase.execute();
+      // 1. Request Validation (pagination params)
+      const { page, limit } = ZodHelper.validate(AdminPaginationSchema, req.query);
 
-      res.status(HTTP_STATUS_CODES.OK).json(drivers);
+      // 2. Execute
+      const paginatedDrivers = await this.getDriversUseCase.execute(page, limit);
+
+      res.status(HTTP_STATUS_CODES.OK).json({
+        success: true,
+        ...paginatedDrivers
+      });
     } catch (error) {
-      next(error)
+      next(error);
     }
   }
 

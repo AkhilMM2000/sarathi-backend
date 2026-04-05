@@ -8,7 +8,16 @@ export const errorHandler: ErrorRequestHandler = (err, req, res, _next) => {
       success: false,
       message: err.message,
     });
-    return; 
+    return;
+  }
+
+  // Handle jsonwebtoken library errors
+  if (err.name === "TokenExpiredError" || err.name === "JsonWebTokenError") {
+    res.status(401).json({
+      success: false,
+      message: err.name === "TokenExpiredError" ? "Session expired. Please login again." : "Invalid session token.",
+    });
+    return;
   }
 
   console.error("Unexpected error:", err);
