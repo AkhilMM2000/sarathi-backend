@@ -13,6 +13,8 @@ export interface DriverWithDistance {
 export interface IGetNearbyDriverDetailsUseCase {
   execute(
     userId: string,
-    driverId: string
+    driverId: string,
+    lat?: number,
+    lng?: number
   ): Promise<DriverWithDistance>;
 }

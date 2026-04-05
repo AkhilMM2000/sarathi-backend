@@ -20,12 +20,19 @@ export class GetNearbyDriverDetails
     private distanceService: GoogleDistanceService
   ) {}
 
-  async execute(userId: string, driverId: string): Promise<DriverWithDistance> {
-    const user = await this.userRepository.getUserById(userId);
-    if (!user?.location) {
-      throw new AuthError("User location not found", HTTP_STATUS_CODES.BAD_REQUEST);
+  async execute(userId: string, driverId: string, lat?: number, lng?: number): Promise<DriverWithDistance> {
+    let latitude = lat;
+    let longitude = lng;
+
+    // 1️⃣ Fetch the user's location from the database if not provided
+    if (latitude === undefined || longitude === undefined) {
+      const user = await this.userRepository.getUserById(userId);
+      if (!user?.location) {
+        throw new AuthError("User location not found. Please provide coordinates or update your profile.", HTTP_STATUS_CODES.BAD_REQUEST);
+      }
+      latitude = user.location.latitude;
+      longitude = user.location.longitude;
     }
-     const { latitude, longitude } = user.location;
 const paginatedResult= await this.driverRepository.findActiveDrivers(
       1,
       3,
@@ -33,6 +40,7 @@ const paginatedResult= await this.driverRepository.findActiveDrivers(
     );
     const drivers = paginatedResult.data;
 
+    
     
 
     

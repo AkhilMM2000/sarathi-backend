@@ -5,6 +5,8 @@ export interface IFindNearbyDriversUseCase {
     userId: string,
     page?: number,
     limit?: number,
-    placeKey?: string
+    placeKey?: string,
+    lat?: number,
+    lng?: number
   ): Promise<FindNearbyDriversResult>;
 }

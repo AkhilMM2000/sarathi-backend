@@ -71,6 +71,8 @@ export const FetchDriversSchema = z.object({
   page: z.preprocess(coerceToSingle, z.coerce.number().min(1).default(1)),
   limit: z.preprocess(coerceToSingle, z.coerce.number().min(1).max(50).default(10)),
   search: z.preprocess(coerceToSingle, z.string().optional().default("")),
+  lat: z.preprocess(coerceToSingle, z.coerce.number().optional()),
+  lng: z.preprocess(coerceToSingle, z.coerce.number().optional()),
 });
 
 /**
@@ -79,6 +81,14 @@ export const FetchDriversSchema = z.object({
  */
 export const DriverIdParamSchema = z.object({
   driverId: z.string().min(1, "Driver ID is required"),
+});
+
+/**
+ * Get Nearby Driver Details Query Schema
+ */
+export const GetNearbyDriverQuerySchema = z.object({
+  lat: z.preprocess(coerceToSingle, z.coerce.number().optional()),
+  lng: z.preprocess(coerceToSingle, z.coerce.number().optional()),
 });
 
 /**

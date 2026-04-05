@@ -346,14 +346,16 @@ export class UserController {
       }
 
       // 2. Query Validation (Automatic page/limit numeric coercion)
-      const { page, limit, search } = ZodHelper.validate(FetchDriversSchema, req.query);
+      const { page, limit, search, lat, lng } = ZodHelper.validate(FetchDriversSchema, req.query);
 
       // 3. Execute the use case
       const paginatedDrivers = await this.findNearbyDrivers.execute(
         userId,
         page,
         limit,
-        search
+        search,
+        lat,
+        lng
       );
 
       // 4. Map to safe Response DTOs
@@ -377,17 +379,21 @@ export class UserController {
   }
   async getDriverDetails(req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> {
     try {
+      
       // 1. Param Validation
       const { driverId } = ZodHelper.validate(DriverIdParamSchema, req.params);
 
-     
+      // 2. Query Validation (Optional coordinates)
+      const { lat, lng } = ZodHelper.validate(GetNearbyDriverQuerySchema, req.query);
+
       const userId = req.user?.id
 
       // 3. Execute and map to safe Response DTO
-      const driver = await this.getNearbyDriverDetailsUseCase.execute(userId!, driverId);
-
+      const driver = await this.getNearbyDriverDetailsUseCase.execute(userId!, driverId, lat, lng);
+console.log(driver,'driver response')
       res.status(HTTP_STATUS_CODES.OK).json(toDriverResponse(driver));
     } catch (error: any) {
+      console.log(error,'error')
       if (error instanceof z.ZodError) {
         res.status(HTTP_STATUS_CODES.BAD_REQUEST).json({
           success: false,

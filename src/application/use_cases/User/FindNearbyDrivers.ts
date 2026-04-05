@@ -17,18 +17,22 @@ export class FindNearbyDrivers implements IFindNearbyDriversUseCase{
     @inject(TOKENS.GOOGLE_DISTANCE_SERVICE) private distanceService: GoogleDistanceService
   ) {}
 
-   async execute(userId: string, page: number = 1, limit: number = 2, placeKey?: string): Promise<FindNearbyDriversResult> {
-    // 1️⃣ Fetch the user's location from the database
-    const user = await this.userRepository.getUserById(userId);
-    
-    if (!user) {
-      throw new AuthError(ERROR_MESSAGES.USER_NOT_FOUND, HTTP_STATUS_CODES.NOT_FOUND);
-    }
+   async execute(userId: string, page: number = 1, limit: number = 2, placeKey?: string, lat?: number, lng?: number): Promise<FindNearbyDriversResult> {
+    let latitude = lat;
+    let longitude = lng;
 
-    if (!user.location) {
-      throw new AuthError(ERROR_MESSAGES.LOCATION_NOTFOUND, HTTP_STATUS_CODES.BAD_REQUEST);
+    // 1️⃣ Fetch the user's location from the database if not provided
+    if (latitude === undefined || longitude === undefined) {
+      const user = await this.userRepository.getUserById(userId);
+      if (!user) {
+        throw new AuthError(ERROR_MESSAGES.USER_NOT_FOUND, HTTP_STATUS_CODES.NOT_FOUND);
+      }
+      if (!user.location) {
+        throw new AuthError(ERROR_MESSAGES.LOCATION_NOTFOUND, HTTP_STATUS_CODES.BAD_REQUEST);
+      }
+      latitude = user.location.latitude;
+      longitude = user.location.longitude;
     }
- const { latitude, longitude } = user.location;
     // 2️⃣ Use paginated driver fetching from repository
     const paginatedResult= await this.driverRepository.findActiveDrivers(
       page,

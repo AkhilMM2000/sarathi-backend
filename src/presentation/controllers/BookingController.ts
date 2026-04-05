@@ -71,7 +71,7 @@ private bookDriverUseCase: IBookDriverUseCase,
       if (!userId) {
         throw new AuthError(ERROR_MESSAGES.USER_ID_NOT_FOUND,HTTP_STATUS_CODES.UNAUTHORIZED)
       }
-
+  console.log(req.body,'booking data ')
       // 1. DTO Validation
       const validatedData = ZodHelper.validate(BookDriverSchema, req.body);
 
