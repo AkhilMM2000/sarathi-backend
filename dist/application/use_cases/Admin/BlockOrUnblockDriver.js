@@ -16,6 +16,7 @@ exports.BlockOrUnblockDriver = void 0;
 const tsyringe_1 = require("tsyringe");
 const Autherror_1 = require("../../../domain/errors/Autherror");
 const Tokens_1 = require("../../../constants/Tokens");
+const HttpStatusCode_1 = require("../../../constants/HttpStatusCode");
 let BlockOrUnblockDriver = class BlockOrUnblockDriver {
     constructor(driverRepository) {
         this.driverRepository = driverRepository;
@@ -23,7 +24,7 @@ let BlockOrUnblockDriver = class BlockOrUnblockDriver {
     async execute(driverId, isBlock) {
         const driver = await this.driverRepository.findDriverById(driverId);
         if (!driver) {
-            throw new Autherror_1.AuthError("Driver not found", 404);
+            throw new Autherror_1.AuthError("Driver not found", HttpStatusCode_1.HTTP_STATUS_CODES.NOT_FOUND);
         }
         await this.driverRepository.blockOrUnblockDriver(driverId, isBlock);
     }

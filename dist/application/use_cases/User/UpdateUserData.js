@@ -16,18 +16,20 @@ exports.UpdateUserData = void 0;
 const tsyringe_1 = require("tsyringe");
 const Autherror_1 = require("../../../domain/errors/Autherror");
 const Tokens_1 = require("../../../constants/Tokens");
+const ErrorMessages_1 = require("../../../constants/ErrorMessages");
+const HttpStatusCode_1 = require("../../../constants/HttpStatusCode");
 let UpdateUserData = class UpdateUserData {
     constructor(userRepository) {
         this.userRepository = userRepository;
     }
     async execute(userId, updateData) {
         if (!userId) {
-            throw new Autherror_1.AuthError("User ID is required", 400);
+            throw new Autherror_1.AuthError(ErrorMessages_1.ERROR_MESSAGES.USER_ID_NOT_FOUND, HttpStatusCode_1.HTTP_STATUS_CODES.BAD_REQUEST);
         }
         console.log(updateData);
         const user = await this.userRepository.getUserById(userId);
         if (!user) {
-            throw new Autherror_1.AuthError("User not found", 404);
+            throw new Autherror_1.AuthError(ErrorMessages_1.ERROR_MESSAGES.USER_NOT_FOUND, HttpStatusCode_1.HTTP_STATUS_CODES.NOT_FOUND);
         }
         const updatedUser = await this.userRepository.updateUser(userId, updateData);
         return updatedUser;

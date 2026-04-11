@@ -10,6 +10,11 @@ exports.ERROR_MESSAGES = {
     INTERNAL_SERVER_ERROR: "Internal server error.",
     // Authentication / Authorization
     AUTH_FAILED: "Authentication failed.",
+    NOT_AUTHORIZED_ADMIN: "Not authorized as admin",
+    ROLE_REQUIRED: "role is required",
+    INVALID_ROLE: "Invalid role",
+    INCORRECT_CURRENT_PASSWORD: "incorrect current password",
+    REFRESHTOKEN_NOTFOUND: "No refresh token found",
     INVALID_TOKEN: "Invalid or expired token.",
     PENDING_NOTFOUND: "No pending registration found. Please sign up again.",
     ACCESS_DENIED: "Access denied.",
@@ -23,7 +28,9 @@ exports.ERROR_MESSAGES = {
     MOBILE_ALREADY_REGISTERED: "Mobile number is already registered.",
     OTP_EXPIRED: "OTP has expired.",
     OTP_INVALID: "Invalid OTP provided.",
+    LOCATION_NOTFOUND: "User location not found",
     ACCOUNT_NOT_VERIFIED: "Account not verified. Please verify first.",
+    ACCOUNT_NOTFOUND: "account not found",
     EMAIL_OR_MOBILE_EXIST: "User already exists with this email or mobile",
     // Driver
     DRIVER_NOT_FOUND: "Driver not found.",
@@ -32,6 +39,9 @@ exports.ERROR_MESSAGES = {
     DRIVER_PENDING_APPROVAL: "Driver account is pending admin approval.",
     DRIVER_REJECTED: "Driver application was rejected by admin.",
     DRIVER_NOT_AVAILABLE: "Driver is not available at the moment.",
+    //vehicle related
+    VIHICLE_ID_MISS: "Vehicle ID is required",
+    VEHICLE_UPDATE_FAILE: "Vehicle not found or update failed",
     // Wallet
     WALLET_NOT_FOUND: "Wallet not found.",
     WALLET_ALREADY_EXISTS: "Wallet already exists for this user.",

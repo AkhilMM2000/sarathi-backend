@@ -12,9 +12,10 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
     return function (target, key) { decorator(target, key, paramIndex); }
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.GetUserBookings = void 0;
+exports.GetUserBookingsUseCase = void 0;
 const tsyringe_1 = require("tsyringe");
-let GetUserBookings = class GetUserBookings {
+const Tokens_1 = require("../../../constants/Tokens");
+let GetUserBookingsUseCase = class GetUserBookingsUseCase {
     constructor(bookingRepo) {
         this.bookingRepo = bookingRepo;
     }
@@ -22,10 +23,10 @@ let GetUserBookings = class GetUserBookings {
         return await this.bookingRepo.findBookingsByUser(userId, page, limit);
     }
 };
-exports.GetUserBookings = GetUserBookings;
-exports.GetUserBookings = GetUserBookings = __decorate([
+exports.GetUserBookingsUseCase = GetUserBookingsUseCase;
+exports.GetUserBookingsUseCase = GetUserBookingsUseCase = __decorate([
     (0, tsyringe_1.injectable)(),
-    __param(0, (0, tsyringe_1.inject)("IBookingRepository")),
+    __param(0, (0, tsyringe_1.inject)(Tokens_1.TOKENS.IBOOKING_REPO)),
     __metadata("design:paramtypes", [Object])
-], GetUserBookings);
+], GetUserBookingsUseCase);
 //# sourceMappingURL=GetUserbooking.js.map

@@ -14,6 +14,7 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ChatService = void 0;
 const tsyringe_1 = require("tsyringe");
+const Tokens_1 = require("../../constants/Tokens");
 let ChatService = class ChatService {
     constructor(chatRepository) {
         this.chatRepository = chatRepository;
@@ -34,7 +35,7 @@ let ChatService = class ChatService {
 exports.ChatService = ChatService;
 exports.ChatService = ChatService = __decorate([
     (0, tsyringe_1.injectable)(),
-    __param(0, (0, tsyringe_1.inject)('IChatRepository')),
+    __param(0, (0, tsyringe_1.inject)(Tokens_1.TOKENS.CHAT_REPO)),
     __metadata("design:paramtypes", [Object])
 ], ChatService);
 //# sourceMappingURL=chatService.js.map

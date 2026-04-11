@@ -38,11 +38,7 @@ let WalletPayment = class WalletPayment {
             if (!driver?.stripeAccountId) {
                 throw new Autherror_1.AuthError("stripe connected account not found", HttpStatusCode_1.HTTP_STATUS_CODES.NOT_FOUND);
             }
-            //  await this.stripeService.transferToDriverFromWallet(
-            //         Ride?.driverId.toString(),
-            //         amount,
-            //         driver?.stripeAccountId
-            //       );
+            await this.stripeService.transferToDriverFromWallet(Ride?.driverId.toString(), amount, driver?.stripeAccountId);
             await this.bookingRepo.updateBooking(rideId, { ...Payment, walletDeduction: amount, driver_fee: Math.floor(amount * 0.9) });
             await this.walletRepository.debitAmount(userId, amount, `ride on ${Ride?.startDate}`);
         }
@@ -54,9 +50,9 @@ let WalletPayment = class WalletPayment {
 exports.WalletPayment = WalletPayment;
 exports.WalletPayment = WalletPayment = __decorate([
     (0, tsyringe_1.injectable)(),
-    __param(0, (0, tsyringe_1.inject)("IWalletRepository")),
-    __param(1, (0, tsyringe_1.inject)("IBookingRepository")),
-    __param(2, (0, tsyringe_1.inject)("StripePaymentService")),
+    __param(0, (0, tsyringe_1.inject)(Tokens_1.TOKENS.WALLET_REPO)),
+    __param(1, (0, tsyringe_1.inject)(Tokens_1.TOKENS.IBOOKING_REPO)),
+    __param(2, (0, tsyringe_1.inject)(Tokens_1.TOKENS.STRIPE_PAYMENT_SERVICE)),
     __param(3, (0, tsyringe_1.inject)(Tokens_1.TOKENS.IDRIVER_REPO)),
     __metadata("design:paramtypes", [Object, Object, Object, Object])
 ], WalletPayment);

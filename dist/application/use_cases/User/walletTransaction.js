@@ -12,44 +12,34 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
     return function (target, key) { decorator(target, key, paramIndex); }
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.walletTransaction = void 0;
+exports.WalletTransactionUseCase = void 0;
 const Autherror_1 = require("../../../domain/errors/Autherror");
 const tsyringe_1 = require("tsyringe");
 const HttpStatusCode_1 = require("../../../constants/HttpStatusCode");
-let walletTransaction = class walletTransaction {
+const Tokens_1 = require("../../../constants/Tokens");
+let WalletTransactionUseCase = class WalletTransactionUseCase {
     constructor(walletRepository) {
         this.walletRepository = walletRepository;
     }
     async getTransactionHistory(userId, page, limit) {
-        try {
-            const wallet = await this.walletRepository.getWalletByUserId(userId);
-            if (!wallet) {
-                throw new Autherror_1.AuthError("Wallet not found.", HttpStatusCode_1.HTTP_STATUS_CODES.NOT_FOUND);
-            }
-            const transactions = await this.walletRepository.getTransactions(userId, page, limit);
-            return transactions;
+        const wallet = await this.walletRepository.getWalletByUserId(userId);
+        if (!wallet) {
+            throw new Autherror_1.AuthError("Wallet not found.", HttpStatusCode_1.HTTP_STATUS_CODES.NOT_FOUND);
         }
-        catch (error) {
-            throw new Autherror_1.AuthError("Failed to get transaction history: " + error.message, HttpStatusCode_1.HTTP_STATUS_CODES.INTERNAL_SERVER_ERROR);
-        }
+        return await this.walletRepository.getTransactions(userId, page, limit);
     }
-    async getWalletBallence(userId) {
-        try {
-            const wallet = await this.walletRepository.getWalletByUserId(userId);
-            if (!wallet) {
-                throw new Autherror_1.AuthError("Wallet not found.", HttpStatusCode_1.HTTP_STATUS_CODES.NOT_FOUND);
-            }
-            return wallet.balance;
+    async getWalletBalance(userId) {
+        const wallet = await this.walletRepository.getWalletByUserId(userId);
+        if (!wallet) {
+            throw new Autherror_1.AuthError("Wallet not found.", HttpStatusCode_1.HTTP_STATUS_CODES.NOT_FOUND);
         }
-        catch (error) {
-            throw new Autherror_1.AuthError("Failed to get transaction by ID: " + error.message, HttpStatusCode_1.HTTP_STATUS_CODES.INTERNAL_SERVER_ERROR);
-        }
+        return wallet.balance;
     }
 };
-exports.walletTransaction = walletTransaction;
-exports.walletTransaction = walletTransaction = __decorate([
+exports.WalletTransactionUseCase = WalletTransactionUseCase;
+exports.WalletTransactionUseCase = WalletTransactionUseCase = __decorate([
     (0, tsyringe_1.injectable)(),
-    __param(0, (0, tsyringe_1.inject)("IWalletRepository")),
+    __param(0, (0, tsyringe_1.inject)(Tokens_1.TOKENS.WALLET_REPO)),
     __metadata("design:paramtypes", [Object])
-], walletTransaction);
+], WalletTransactionUseCase);
 //# sourceMappingURL=walletTransaction.js.map

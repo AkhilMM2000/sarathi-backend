@@ -16,17 +16,19 @@ exports.GetDriverProfile = void 0;
 const tsyringe_1 = require("tsyringe");
 const Autherror_1 = require("../../../domain/errors/Autherror");
 const Tokens_1 = require("../../../constants/Tokens");
+const ErrorMessages_1 = require("../../../constants/ErrorMessages");
+const HttpStatusCode_1 = require("../../../constants/HttpStatusCode");
 let GetDriverProfile = class GetDriverProfile {
     constructor(driverRepository) {
         this.driverRepository = driverRepository;
     }
     async execute(driverId) {
         if (!driverId) {
-            throw new Autherror_1.AuthError("Driver ID is required", 400);
+            throw new Autherror_1.AuthError(ErrorMessages_1.ERROR_MESSAGES.DRIVER_ID_NOT_FOUND, HttpStatusCode_1.HTTP_STATUS_CODES.BAD_REQUEST);
         }
         const driver = await this.driverRepository.findDriverById(driverId);
         if (!driver) {
-            throw new Autherror_1.AuthError("Driver not found", 404);
+            throw new Autherror_1.AuthError(ErrorMessages_1.ERROR_MESSAGES.DRIVER_NOT_FOUND, HttpStatusCode_1.HTTP_STATUS_CODES.NOT_FOUND);
         }
         return driver;
     }

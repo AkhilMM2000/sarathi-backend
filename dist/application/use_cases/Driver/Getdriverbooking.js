@@ -14,6 +14,7 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.GetUserBookings = void 0;
 const tsyringe_1 = require("tsyringe");
+const Tokens_1 = require("../../../constants/Tokens");
 let GetUserBookings = class GetUserBookings {
     constructor(bookingRepo) {
         this.bookingRepo = bookingRepo;
@@ -25,7 +26,7 @@ let GetUserBookings = class GetUserBookings {
 exports.GetUserBookings = GetUserBookings;
 exports.GetUserBookings = GetUserBookings = __decorate([
     (0, tsyringe_1.injectable)(),
-    __param(0, (0, tsyringe_1.inject)("IBookingRepository")),
+    __param(0, (0, tsyringe_1.inject)(Tokens_1.TOKENS.IBOOKING_REPO)),
     __metadata("design:paramtypes", [Object])
 ], GetUserBookings);
 //# sourceMappingURL=Getdriverbooking.js.map

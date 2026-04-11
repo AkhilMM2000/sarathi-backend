@@ -16,6 +16,8 @@ exports.AttachPaymentIntentIdToBooking = void 0;
 const tsyringe_1 = require("tsyringe");
 const Autherror_1 = require("../../../domain/errors/Autherror");
 const Tokens_1 = require("../../../constants/Tokens");
+const HttpStatusCode_1 = require("../../../constants/HttpStatusCode");
+const ErrorMessages_1 = require("../../../constants/ErrorMessages");
 let AttachPaymentIntentIdToBooking = class AttachPaymentIntentIdToBooking {
     constructor(bookingRepo, walletRepository, userRepository, stripeService, notificationService) {
         this.bookingRepo = bookingRepo;
@@ -28,7 +30,7 @@ let AttachPaymentIntentIdToBooking = class AttachPaymentIntentIdToBooking {
         const booking = await this.bookingRepo.findBookingById(bookingId);
         console.log(walletDeduction, 'walletDeduction');
         if (!booking) {
-            throw new Autherror_1.AuthError('Booking not found', 404);
+            throw new Autherror_1.AuthError(ErrorMessages_1.ERROR_MESSAGES.BOOKING_NOT_FOUND, HttpStatusCode_1.HTTP_STATUS_CODES.NOT_FOUND);
         }
         if (walletDeduction && walletDeduction > 0) {
             await this.walletRepository.debitAmount(booking.userId.toString(), walletDeduction, `ride booked for ${booking.startDate}`);
@@ -48,7 +50,7 @@ let AttachPaymentIntentIdToBooking = class AttachPaymentIntentIdToBooking {
         if (paymentstatus == 'COMPLETED' && userId) {
             const user = await this.userRepository.getUserById(userId);
             if (!user) {
-                throw new Autherror_1.AuthError('User not found', 404);
+                throw new Autherror_1.AuthError(ErrorMessages_1.ERROR_MESSAGES.USER_NOT_FOUND, HttpStatusCode_1.HTTP_STATUS_CODES.NOT_FOUND);
             }
         }
         await this.bookingRepo.updateBooking(bookingId, booking);
@@ -61,11 +63,11 @@ let AttachPaymentIntentIdToBooking = class AttachPaymentIntentIdToBooking {
 exports.AttachPaymentIntentIdToBooking = AttachPaymentIntentIdToBooking;
 exports.AttachPaymentIntentIdToBooking = AttachPaymentIntentIdToBooking = __decorate([
     (0, tsyringe_1.injectable)(),
-    __param(0, (0, tsyringe_1.inject)("IBookingRepository")),
-    __param(1, (0, tsyringe_1.inject)("IWalletRepository")),
+    __param(0, (0, tsyringe_1.inject)(Tokens_1.TOKENS.IBOOKING_REPO)),
+    __param(1, (0, tsyringe_1.inject)(Tokens_1.TOKENS.WALLET_REPO)),
     __param(2, (0, tsyringe_1.inject)(Tokens_1.TOKENS.IUSER_REPO)),
-    __param(3, (0, tsyringe_1.inject)('StripePaymentService')),
-    __param(4, (0, tsyringe_1.inject)("INotificationService")),
+    __param(3, (0, tsyringe_1.inject)(Tokens_1.TOKENS.PAYMENT_SERVICE)),
+    __param(4, (0, tsyringe_1.inject)(Tokens_1.TOKENS.NOTIFICATION_SERVICE)),
     __metadata("design:paramtypes", [Object, Object, Object, Object, Object])
 ], AttachPaymentIntentIdToBooking);
 //# sourceMappingURL=AttachPaymentIntentIdToBooking.js.map

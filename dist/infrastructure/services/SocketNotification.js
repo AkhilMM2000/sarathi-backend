@@ -12,8 +12,8 @@ const tsyringe_1 = require("tsyringe");
 const socket_1 = require("../socket/socket");
 const redisconfig_1 = require("../../config/redisconfig");
 let SocketNotificationService = class SocketNotificationService {
-    constructor() {
-        this.io = (0, socket_1.getIO)();
+    get io() {
+        return (0, socket_1.getIO)(); // <-- Lazy getter, now getIO() is called ONLY when socket is ready
     }
     async sendBookingNotification(driverId, data) {
         const socketId = await redisconfig_1.redis.get(`driver:socket:${driverId}`);

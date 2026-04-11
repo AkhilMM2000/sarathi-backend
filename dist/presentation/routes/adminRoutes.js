@@ -4,32 +4,35 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
-const AdminController_1 = require("../controllers/AdminController");
 const authMiddleware_1 = require("../../middleware/authMiddleware");
-const BookingController_1 = require("../controllers/BookingController");
+const tsyringe_1 = require("tsyringe");
+const Tokens_1 = require("../../constants/Tokens");
 const router = express_1.default.Router();
-router.post("/login", AdminController_1.AdminController.login);
+const bookingController = tsyringe_1.container.resolve(Tokens_1.TOKENS.BOOKING_CONTROLLER);
+const adminController = tsyringe_1.container.resolve(Tokens_1.TOKENS.ADMIN_CONTROLLER);
+router.post("/login", adminController.login.bind(adminController));
+router.get("/dashboard", (0, authMiddleware_1.protectRoute)(["admin"]), adminController.getDashboardStats.bind(adminController));
 // User Management
 router
     .route("/user")
-    .get((0, authMiddleware_1.protectRoute)(["admin"]), AdminController_1.AdminController.getAllUsers);
+    .get((0, authMiddleware_1.protectRoute)(["admin"]), adminController.getAllUsers.bind(adminController));
 router
     .route("/update-user-status/:userId")
-    .put((0, authMiddleware_1.protectRoute)(["admin"]), AdminController_1.AdminController.updateUserStatus);
+    .put((0, authMiddleware_1.protectRoute)(["admin"]), adminController.updateUserStatus.bind(adminController));
 // Driver Management
 router
     .route("/driver")
-    .get((0, authMiddleware_1.protectRoute)(["admin"]), AdminController_1.AdminController.getAllDrivers);
+    .get((0, authMiddleware_1.protectRoute)(["admin"]), adminController.getAllDrivers.bind(adminController));
 router
     .route("/driver/status/:driverId")
-    .put((0, authMiddleware_1.protectRoute)(["admin"]), AdminController_1.AdminController.changeDriverStatus);
+    .put((0, authMiddleware_1.protectRoute)(["admin"]), adminController.changeDriverStatus.bind(adminController));
 router
     .route("/driver/blockstatus/:driverId")
-    .patch((0, authMiddleware_1.protectRoute)(["admin"]), AdminController_1.AdminController.handleBlockStatus);
+    .patch((0, authMiddleware_1.protectRoute)(["admin"]), adminController.handleBlockStatus.bind(adminController));
 // Vehicle Management
 router
     .route("/vehicles/:userId")
-    .get((0, authMiddleware_1.protectRoute)(["admin"]), AdminController_1.AdminController.getVehiclesByUser);
-router.get("/bookings", BookingController_1.BookingController.getAllBookings);
+    .get((0, authMiddleware_1.protectRoute)(["admin"]), adminController.getVehiclesByUser.bind(adminController));
+router.get("/bookings", bookingController.getAllBookings.bind(bookingController));
 exports.default = router;
 //# sourceMappingURL=adminRoutes.js.map

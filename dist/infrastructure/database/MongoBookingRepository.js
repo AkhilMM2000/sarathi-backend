@@ -5,6 +5,9 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
@@ -15,20 +18,16 @@ const tsyringe_1 = require("tsyringe");
 const Autherror_1 = require("../../domain/errors/Autherror");
 const HttpStatusCode_1 = require("../../constants/HttpStatusCode");
 const mongoose_1 = __importDefault(require("mongoose"));
-let MongoBookingRepository = class MongoBookingRepository {
+const BaseRepository_1 = require("./BaseRepository");
+let MongoBookingRepository = class MongoBookingRepository extends BaseRepository_1.BaseRepository {
+    constructor() {
+        super(Bookingschema_1.default);
+    }
     async createBooking(booking) {
-        try {
-            const created = await Bookingschema_1.default.create(booking);
-            return created.toObject();
-        }
-        catch (err) {
-            console.error("MongoBookingRepository.createBooking error:", err);
-            throw new Autherror_1.AuthError(`Failed to create booking. Please try again.${err.message}`, 500);
-        }
+        return super.create(booking);
     }
     async findBookingById(id) {
-        const booking = await Bookingschema_1.default.findById(id);
-        return booking ? booking.toObject() : null;
+        return super.findById(id);
     }
     async GetAllBookings(page, limit) {
         try {
@@ -100,14 +99,7 @@ let MongoBookingRepository = class MongoBookingRepository {
         };
     }
     async updateBooking(id, updates) {
-        try {
-            const updated = await Bookingschema_1.default.findByIdAndUpdate(id, updates, { new: true });
-            return updated ? updated.toObject() : null;
-        }
-        catch (error) {
-            console.error('Error updating booking:', error.message);
-            throw new Autherror_1.AuthError(`${error.message}`, 500);
-        }
+        return super.update(id, updates);
     }
     async checkDriverAvailability(driverId, start, end) {
         // If no end date provided, assume it's a one-day booking
@@ -139,7 +131,6 @@ let MongoBookingRepository = class MongoBookingRepository {
             throw new Autherror_1.AuthError(`failed to check availability of driver ${error.message}`, 500);
         }
     }
-    /////////////////////////current working
     async findBookingsByUser(userId, page, limit) {
         try {
             const skip = (page - 1) * limit;
@@ -314,9 +305,140 @@ let MongoBookingRepository = class MongoBookingRepository {
             throw new Autherror_1.AuthError('Failed to fetch earnings summary', HttpStatusCode_1.HTTP_STATUS_CODES.INTERNAL_SERVER_ERROR);
         }
     }
+    async getDriverDashboardStats(driverId) {
+        try {
+            const now = new Date();
+            const todayStart = new Date(now);
+            todayStart.setHours(0, 0, 0, 0);
+            const weekStart = new Date(now);
+            const day = weekStart.getDay();
+            const diff = weekStart.getDate() - day + (day === 0 ? -6 : 1);
+            weekStart.setDate(diff);
+            weekStart.setHours(0, 0, 0, 0);
+            const result = await Bookingschema_1.default.aggregate([
+                { $match: { driverId: new mongoose_1.default.Types.ObjectId(driverId) } },
+                {
+                    $facet: {
+                        earnings: [
+                            { $match: { paymentStatus: 'COMPLETED' } },
+                            {
+                                $group: {
+                                    _id: null,
+                                    total: { $sum: "$driver_fee" },
+                                    today: {
+                                        $sum: {
+                                            $cond: [
+                                                { $gte: ["$createdAt", todayStart] },
+                                                "$driver_fee",
+                                                0
+                                            ]
+                                        }
+                                    },
+                                    thisWeek: {
+                                        $sum: {
+                                            $cond: [
+                                                { $gte: ["$createdAt", weekStart] },
+                                                "$driver_fee",
+                                                0
+                                            ]
+                                        }
+                                    }
+                                }
+                            }
+                        ],
+                        rideStats: [
+                            {
+                                $group: {
+                                    _id: "$status",
+                                    count: { $sum: 1 }
+                                }
+                            }
+                        ]
+                    }
+                }
+            ]);
+            return result[0] || { earnings: [], rideStats: [] };
+        }
+        catch (error) {
+            console.error('Error in getDriverDashboardStats:', error.message);
+            throw new Autherror_1.AuthError('Failed to fetch dashboard stats', HttpStatusCode_1.HTTP_STATUS_CODES.INTERNAL_SERVER_ERROR);
+        }
+    }
+    async getAdminDashboardStats() {
+        try {
+            const now = new Date();
+            const startOfToday = new Date(now);
+            startOfToday.setHours(0, 0, 0, 0);
+            const startOfWeek = new Date(now);
+            const day = startOfWeek.getDay();
+            const diff = startOfWeek.getDate() - day + (day === 0 ? -6 : 1);
+            startOfWeek.setDate(diff);
+            startOfWeek.setHours(0, 0, 0, 0);
+            const result = await Bookingschema_1.default.aggregate([
+                {
+                    $facet: {
+                        finance: [
+                            { $match: { paymentStatus: 'COMPLETED' } },
+                            {
+                                $group: {
+                                    _id: null,
+                                    totalPlatformProfit: { $sum: "$platform_fee" },
+                                    totalRevenue: { $sum: "$finalFare" },
+                                    totalDriverPayout: { $sum: "$driver_fee" },
+                                    todayPlatformProfit: {
+                                        $sum: {
+                                            $cond: [
+                                                { $gte: ["$createdAt", startOfToday] },
+                                                "$platform_fee",
+                                                0
+                                            ]
+                                        }
+                                    },
+                                    weekPlatformProfit: {
+                                        $sum: {
+                                            $cond: [
+                                                { $gte: ["$createdAt", startOfWeek] },
+                                                "$platform_fee",
+                                                0
+                                            ]
+                                        }
+                                    }
+                                }
+                            }
+                        ],
+                        rideStats: [
+                            {
+                                $group: {
+                                    _id: "$status",
+                                    count: { $sum: 1 }
+                                }
+                            }
+                        ],
+                        earningsTrend: [
+                            { $match: { paymentStatus: 'COMPLETED' } },
+                            {
+                                $group: {
+                                    _id: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } },
+                                    earnings: { $sum: "$platform_fee" }
+                                }
+                            },
+                            { $sort: { _id: 1 } },
+                            { $limit: 30 }
+                        ]
+                    }
+                }
+            ]);
+            return result[0];
+        }
+        catch (error) {
+            console.error('Error in getAdminDashboardStats:', error.message);
+            throw new Autherror_1.AuthError('Failed to fetch admin dashboard stats', HttpStatusCode_1.HTTP_STATUS_CODES.INTERNAL_SERVER_ERROR);
+        }
+    }
 };
 exports.MongoBookingRepository = MongoBookingRepository;
 exports.MongoBookingRepository = MongoBookingRepository = __decorate([
-    (0, tsyringe_1.injectable)()
+    (0, tsyringe_1.injectable)(),
+    __metadata("design:paramtypes", [])
 ], MongoBookingRepository);
 //# sourceMappingURL=MongoBookingRepository.js.map

@@ -17,6 +17,8 @@ const tsyringe_1 = require("tsyringe");
 const GoogleDistanceService_1 = require("../../services/GoogleDistanceService");
 const Autherror_1 = require("../../../domain/errors/Autherror");
 const Tokens_1 = require("../../../constants/Tokens");
+const ErrorMessages_1 = require("../../../constants/ErrorMessages");
+const HttpStatusCode_1 = require("../../../constants/HttpStatusCode");
 let FindNearbyDrivers = class FindNearbyDrivers {
     constructor(driverRepository, userRepository, distanceService) {
         this.driverRepository = driverRepository;
@@ -27,10 +29,10 @@ let FindNearbyDrivers = class FindNearbyDrivers {
         // 1️⃣ Fetch the user's location from the database
         const user = await this.userRepository.getUserById(userId);
         if (!user) {
-            throw new Autherror_1.AuthError("User not found", 404);
+            throw new Autherror_1.AuthError(ErrorMessages_1.ERROR_MESSAGES.USER_NOT_FOUND, HttpStatusCode_1.HTTP_STATUS_CODES.NOT_FOUND);
         }
         if (!user.location) {
-            throw new Autherror_1.AuthError("User location not found", 400);
+            throw new Autherror_1.AuthError(ErrorMessages_1.ERROR_MESSAGES.LOCATION_NOTFOUND, HttpStatusCode_1.HTTP_STATUS_CODES.BAD_REQUEST);
         }
         const { latitude, longitude } = user.location;
         // 2️⃣ Use paginated driver fetching from repository
@@ -65,6 +67,7 @@ let FindNearbyDrivers = class FindNearbyDrivers {
                 distance: driverId ? distances[driverId] || null : null,
             };
         });
+        console.log(driversWithDistance, 'driverwith distance');
         // 6️⃣ Sort & return with pagination info
         return {
             ...paginatedResult,
@@ -77,7 +80,7 @@ exports.FindNearbyDrivers = FindNearbyDrivers = __decorate([
     (0, tsyringe_1.injectable)(),
     __param(0, (0, tsyringe_1.inject)(Tokens_1.TOKENS.IDRIVER_REPO)),
     __param(1, (0, tsyringe_1.inject)(Tokens_1.TOKENS.IUSER_REPO)),
-    __param(2, (0, tsyringe_1.inject)("GoogleDistanceService")),
+    __param(2, (0, tsyringe_1.inject)(Tokens_1.TOKENS.GOOGLE_DISTANCE_SERVICE)),
     __metadata("design:paramtypes", [Object, Object, GoogleDistanceService_1.GoogleDistanceService])
 ], FindNearbyDrivers);
 //# sourceMappingURL=FindNearbyDrivers.js.map

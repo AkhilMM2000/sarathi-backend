@@ -18,6 +18,8 @@ const Autherror_1 = require("../../../domain/errors/Autherror");
 const tsyringe_1 = require("tsyringe");
 const Emailservice_1 = require("../../services/Emailservice");
 const Tokens_1 = require("../../../constants/Tokens");
+const ErrorMessages_1 = require("../../../constants/ErrorMessages");
+const HttpStatusCode_1 = require("../../../constants/HttpStatusCode");
 let ForgotPasswordUseCase = class ForgotPasswordUseCase {
     constructor(store, userRepository, driverRepository, emailService) {
         this.store = store;
@@ -31,12 +33,12 @@ let ForgotPasswordUseCase = class ForgotPasswordUseCase {
         if (role == 'user') {
             user = await this.userRepository.findByEmail(email);
             if (!user)
-                throw new Autherror_1.AuthError('User not found', 404);
+                throw new Autherror_1.AuthError(ErrorMessages_1.ERROR_MESSAGES.USER_NOT_FOUND, HttpStatusCode_1.HTTP_STATUS_CODES.NOT_FOUND);
         }
         if (role == 'driver') {
             user = await this.driverRepository.findByEmail(email);
             if (!user)
-                throw new Autherror_1.AuthError('Driver not found', 404);
+                throw new Autherror_1.AuthError(ErrorMessages_1.ERROR_MESSAGES.DRIVER_NOT_FOUND, HttpStatusCode_1.HTTP_STATUS_CODES.NOT_FOUND);
         }
         // Generate token
         const token = (0, uuid_1.v4)();
@@ -44,14 +46,8 @@ let ForgotPasswordUseCase = class ForgotPasswordUseCase {
             this.store.addTokenUser(role, token, user._id.toString());
         // Create reset link
         const resetLink = `${process.env.FRONTEND_URL}/reset-password?token=${token}&role=${role}`;
-        console.log(resetLink);
-        // Send reset email
-        // Use Nodemailer or similar service
         if (user?.email)
             await this.emailService.sendForgotPasswordLink(user?.email, resetLink);
-        return {
-            message: `check ${role} mail for reset password`
-        };
     }
 };
 exports.ForgotPasswordUseCase = ForgotPasswordUseCase;

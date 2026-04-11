@@ -5,28 +5,31 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.MongoDriverReviewRepository = void 0;
-// infrastructure/database/MongoDriverReviewRepository.ts
 const tsyringe_1 = require("tsyringe");
 const DriverReviewschema_1 = __importDefault(require("./modals/DriverReviewschema"));
 const DriverReviewMapper_1 = require("./mappers/DriverReviewMapper");
 const Autherror_1 = require("../../domain/errors/Autherror");
 const HttpStatusCode_1 = require("../../constants/HttpStatusCode");
-let MongoDriverReviewRepository = class MongoDriverReviewRepository {
+const BaseRepository_1 = require("./BaseRepository");
+let MongoDriverReviewRepository = class MongoDriverReviewRepository extends BaseRepository_1.BaseRepository {
+    constructor() {
+        super(DriverReviewschema_1.default);
+    }
     async createReview(review) {
         const data = (0, DriverReviewMapper_1.toPersistence)({ ...review, createdAt: new Date() });
         const created = await DriverReviewschema_1.default.create(data);
         return (0, DriverReviewMapper_1.toDomain)(created);
     }
     async hasUserAlreadyReviewed(driverId, userId) {
-        const existing = await DriverReviewschema_1.default.findOne({
-            driverId: driverId,
-            userId: userId,
-        });
+        const existing = await super.findOne({ driverId, userId });
         return !!existing;
     }
     async getReviewsByDriverId(driverId, page, limit) {
@@ -55,6 +58,7 @@ let MongoDriverReviewRepository = class MongoDriverReviewRepository {
 };
 exports.MongoDriverReviewRepository = MongoDriverReviewRepository;
 exports.MongoDriverReviewRepository = MongoDriverReviewRepository = __decorate([
-    (0, tsyringe_1.injectable)()
+    (0, tsyringe_1.injectable)(),
+    __metadata("design:paramtypes", [])
 ], MongoDriverReviewRepository);
 //# sourceMappingURL=MongoDriverReviewRepository.js.map

@@ -16,21 +16,17 @@ exports.BlockUserUseCase = void 0;
 const tsyringe_1 = require("tsyringe");
 const Autherror_1 = require("../../../domain/errors/Autherror");
 const Tokens_1 = require("../../../constants/Tokens");
+const HttpStatusCode_1 = require("../../../constants/HttpStatusCode");
 let BlockUserUseCase = class BlockUserUseCase {
     constructor(userRepository) {
         this.userRepository = userRepository;
     }
     async execute(userId, status) {
-        try {
-            const blockedUser = await this.userRepository.blockOrUnblockUser(userId, status);
-            if (!blockedUser) {
-                throw new Autherror_1.AuthError("User not found or already blocked", 404);
-            }
-            return blockedUser;
+        const blockedUser = await this.userRepository.blockOrUnblockUser(userId, status);
+        if (!blockedUser) {
+            throw new Autherror_1.AuthError("User not found or already blocked", HttpStatusCode_1.HTTP_STATUS_CODES.NOT_FOUND);
         }
-        catch (error) {
-            throw new Autherror_1.AuthError("Failed to block user", 500);
-        }
+        return blockedUser;
     }
 };
 exports.BlockUserUseCase = BlockUserUseCase;

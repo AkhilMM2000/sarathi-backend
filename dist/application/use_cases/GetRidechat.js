@@ -14,6 +14,7 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.GetMessagesByBookingId = void 0;
 const tsyringe_1 = require("tsyringe");
+const Tokens_1 = require("../../constants/Tokens");
 let GetMessagesByBookingId = class GetMessagesByBookingId {
     constructor(chatRepository) {
         this.chatRepository = chatRepository;
@@ -27,7 +28,7 @@ let GetMessagesByBookingId = class GetMessagesByBookingId {
 exports.GetMessagesByBookingId = GetMessagesByBookingId;
 exports.GetMessagesByBookingId = GetMessagesByBookingId = __decorate([
     (0, tsyringe_1.injectable)(),
-    __param(0, (0, tsyringe_1.inject)('IChatRepository')),
+    __param(0, (0, tsyringe_1.inject)(Tokens_1.TOKENS.CHAT_REPO)),
     __metadata("design:paramtypes", [Object])
 ], GetMessagesByBookingId);
 //# sourceMappingURL=GetRidechat.js.map

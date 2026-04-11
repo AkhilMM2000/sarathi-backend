@@ -14,6 +14,7 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.GenerateSignedUrl = void 0;
 const tsyringe_1 = require("tsyringe");
+const Tokens_1 = require("../../constants/Tokens");
 let GenerateSignedUrl = class GenerateSignedUrl {
     constructor(fileStorageService) {
         this.fileStorageService = fileStorageService;
@@ -28,7 +29,7 @@ let GenerateSignedUrl = class GenerateSignedUrl {
 exports.GenerateSignedUrl = GenerateSignedUrl;
 exports.GenerateSignedUrl = GenerateSignedUrl = __decorate([
     (0, tsyringe_1.injectable)(),
-    __param(0, (0, tsyringe_1.inject)("IFileStorageService")),
+    __param(0, (0, tsyringe_1.inject)(Tokens_1.TOKENS.FILE_SERVICE)),
     __metadata("design:paramtypes", [Object])
 ], GenerateSignedUrl);
 //# sourceMappingURL=GenerateSignedUrl.js.map
