@@ -22,7 +22,6 @@ const WalletService_1 = require("../../application/services/WalletService");
 const ReferralCodeService_1 = require("../../application/services/ReferralCodeService");
 const SocketNotification_1 = require("../services/SocketNotification");
 const MongoDriverReviewRepository_1 = require("../database/MongoDriverReviewRepository");
-const rideAssignmentQueue_1 = require("../queues/rideAssignmentQueue");
 const GoogleMapService_1 = require("../services/GoogleMapService");
 const Tokens_1 = require("../../constants/Tokens");
 const Hashservice_1 = require("../services/Hashservice");
@@ -54,7 +53,6 @@ tsyringe_1.container.registerSingleton(Tokens_1.TOKENS.WALLET_REPO, WalletReposi
 tsyringe_1.container.registerSingleton(Tokens_1.TOKENS.NOTIFICATION_SERVICE, SocketNotification_1.SocketNotificationService);
 //user rate Driver
 tsyringe_1.container.registerSingleton(Tokens_1.TOKENS.DRIVER_REVIEW_REPO, MongoDriverReviewRepository_1.MongoDriverReviewRepository);
-tsyringe_1.container.registerSingleton('IRideAssignmentQueue', rideAssignmentQueue_1.RideAssignmentQueue);
 tsyringe_1.container.register('IGoogleMapService', {
     useClass: GoogleMapService_1.GoogleMapService,
 });

@@ -35,8 +35,7 @@ import { INotificationService } from "../../application/services/NotificationSer
 import { SocketNotificationService } from "../services/SocketNotification";
 import { IDriverReviewRepository } from "../../domain/repositories/IDriverReviewRepository";
 import { MongoDriverReviewRepository } from "../database/MongoDriverReviewRepository";
-import { IRideAssignmentQueue } from "../../domain/services/IRideAssignmentQueue";
-import { RideAssignmentQueue } from "../queues/rideAssignmentQueue";
+
 import { IGoogleMapService } from "../../domain/services/IGoogleMapService";
 import { GoogleMapService } from "../services/GoogleMapService";
 import { TOKENS } from "../../constants/Tokens";
@@ -96,7 +95,6 @@ container.registerSingleton<IRedisrepository>(
   MongoDriverReviewRepository
 );
  
-container.registerSingleton<IRideAssignmentQueue>('IRideAssignmentQueue', RideAssignmentQueue);
 
 container.register<IGoogleMapService>('IGoogleMapService', {
   useClass: GoogleMapService,
