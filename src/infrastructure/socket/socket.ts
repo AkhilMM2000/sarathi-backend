@@ -11,6 +11,7 @@ export const initializeSocket = (server: HttpServer): void => {
  io = new Server(server, {
     cors: {
       origin: process.env.FRONTEND_URL,
+      credentials: true,
     },
   });
 

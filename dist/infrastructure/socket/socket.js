@@ -11,6 +11,7 @@ const initializeSocket = (server) => {
     io = new socket_io_1.Server(server, {
         cors: {
             origin: process.env.FRONTEND_URL,
+            credentials: true,
         },
     });
     io.on('connection', (socket) => {

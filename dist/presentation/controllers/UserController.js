@@ -61,7 +61,7 @@ let UserController = class UserController {
             res.cookie(`userRefreshToken`, refreshToken, {
                 httpOnly: true,
                 secure: process.env.NODE_ENV === "production",
-                sameSite: "lax",
+                sameSite: "none",
                 maxAge: 7 * 24 * 60 * 60 * 1000,
             });
             res
@@ -94,7 +94,7 @@ let UserController = class UserController {
             res.cookie(refreshTokenKey, refreshToken, {
                 httpOnly: true,
                 secure: process.env.NODE_ENV === "production",
-                sameSite: "lax",
+                sameSite: "none",
                 maxAge: 7 * 24 * 60 * 60 * 1000,
             });
             res.status(HttpStatusCode_1.HTTP_STATUS_CODES.OK).json({

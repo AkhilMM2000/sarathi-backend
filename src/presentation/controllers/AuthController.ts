@@ -120,7 +120,7 @@ export class AuthController {
       res.clearCookie(`${role}RefreshToken`, {
         httpOnly: true,
         secure: true,
-        sameSite: "strict",
+        sameSite: "none",
       });
 
       res

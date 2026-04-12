@@ -93,7 +93,7 @@ let AuthController = class AuthController {
             res.clearCookie(`${role}RefreshToken`, {
                 httpOnly: true,
                 secure: true,
-                sameSite: "strict",
+                sameSite: "none",
             });
             res
                 .status(HttpStatusCode_1.HTTP_STATUS_CODES.OK)
