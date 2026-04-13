@@ -8,11 +8,13 @@ import { UpdateUserData } from '../../application/use_cases/User/UpdateUserData'
 import { EditDriverProfile } from '../../application/use_cases/Driver/EditDriverProfile';
 let io: Server;
 export const initializeSocket = (server: HttpServer): void => {
- io = new Server(server, {
+  io = new Server(server, {
     cors: {
       origin: process.env.FRONTEND_URL,
+      methods: ["GET", "POST"],
       credentials: true,
     },
+    transports: ['websocket', 'polling']
   });
 
   io.on('connection', (socket: Socket) => {
