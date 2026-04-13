@@ -316,6 +316,7 @@ await this.attachPaymentIntentUseCase.execute(rideId,walletDeduction, paymentInt
        next(error)
     }
   }
+  
 async Walletballence(req: AuthenticatedRequest, res: Response,next:NextFunction) {
    try {
 const userId = req.user?.id!;

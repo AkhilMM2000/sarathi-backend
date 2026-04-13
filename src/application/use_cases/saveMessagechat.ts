@@ -64,7 +64,8 @@ export class SaveMessageUseCase {
     }
 
     await this.chatService.addParticipantIfNeeded(chat._id!.toString(), senderObjectId, senderRole);
-   return  await this.chatRepository.addMessageToChat(bookingId, newMessage);
+    
+    return await this.chatRepository.addMessageToChat(bookingId, newMessage);
 
    
   }
