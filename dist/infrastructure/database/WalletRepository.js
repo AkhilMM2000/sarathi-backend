@@ -39,6 +39,9 @@ var __importStar = (this && this.__importStar) || (function () {
         return result;
     };
 })();
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.MongoWalletRepository = void 0;
 const Walletschema_1 = require("./modals/Walletschema");
@@ -47,28 +50,22 @@ const mongoose_1 = __importStar(require("mongoose"));
 const tsyringe_1 = require("tsyringe");
 const HttpStatusCode_1 = require("../../constants/HttpStatusCode");
 const ErrorMessages_1 = require("../../constants/ErrorMessages");
-let MongoWalletRepository = class MongoWalletRepository {
+const BaseRepository_1 = require("./BaseRepository");
+let MongoWalletRepository = class MongoWalletRepository extends BaseRepository_1.BaseRepository {
+    constructor() {
+        super(Walletschema_1.WalletModel);
+    }
     async createWallet(userId) {
-        try {
-            const newWallet = await Walletschema_1.WalletModel.create({
-                userId: new mongoose_1.Types.ObjectId(userId),
-                balance: 0,
-                transactions: [],
-            });
-            return this.toIWallet(newWallet);
-        }
-        catch (error) {
-            throw new Autherror_1.AuthError('Failed to create wallet.');
-        }
+        const newWallet = await super.create({
+            userId: userId,
+            balance: 0,
+            transactions: [],
+        });
+        return this.toIWallet(newWallet);
     }
     async getWalletByUserId(userId) {
-        try {
-            const wallet = await Walletschema_1.WalletModel.findOne({ userId: new mongoose_1.Types.ObjectId(userId) });
-            return wallet ? this.toIWallet(wallet) : null;
-        }
-        catch (error) {
-            throw new Autherror_1.AuthError('Failed to fetch wallet.', HttpStatusCode_1.HTTP_STATUS_CODES.INTERNAL_SERVER_ERROR);
-        }
+        const wallet = await super.findOne({ userId });
+        return wallet ? this.toIWallet(wallet) : null;
     }
     async walletBalance(userId) {
         try {
@@ -159,6 +156,7 @@ let MongoWalletRepository = class MongoWalletRepository {
 };
 exports.MongoWalletRepository = MongoWalletRepository;
 exports.MongoWalletRepository = MongoWalletRepository = __decorate([
-    (0, tsyringe_1.injectable)()
+    (0, tsyringe_1.injectable)(),
+    __metadata("design:paramtypes", [])
 ], MongoWalletRepository);
 //# sourceMappingURL=WalletRepository.js.map

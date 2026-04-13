@@ -14,30 +14,33 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.UserController = void 0;
 const tsyringe_1 = require("tsyringe");
-const Login_1 = require("../../application/use_cases/Login");
-const AddVehicle_1 = require("../../application/use_cases/AddVehicle");
-const EditVehicle_1 = require("../../application/use_cases/EditVehicle");
 const Autherror_1 = require("../../domain/errors/Autherror");
-const UpdateUserData_1 = require("../../application/use_cases/User/UpdateUserData");
-const GetVehiclesByUser_1 = require("../../application/use_cases/Admin/GetVehiclesByUser");
-const FindNearbyDrivers_1 = require("../../application/use_cases/User/FindNearbyDrivers");
-const CreatePaymentIntent_1 = require("../../application/use_cases/User/CreatePaymentIntent");
-const Getdriverprofile_1 = require("../../application/use_cases/Driver/Getdriverprofile");
 const ErrorMessages_1 = require("../../constants/ErrorMessages");
-const walletTransaction_1 = require("../../application/use_cases/User/walletTransaction");
 const HttpStatusCode_1 = require("../../constants/HttpStatusCode");
-const SubmitRating_1 = require("../../application/use_cases/User/SubmitRating");
 const Tokens_1 = require("../../constants/Tokens");
 const Info_Messages_1 = require("../../constants/Info_Messages");
+const UseCaseTokens_1 = require("../../constants/UseCaseTokens");
 let UserController = class UserController {
-    constructor(registerUsecase, getUserDataUsecase, verifyOtpUsecase, resendOtpUsecase) {
+    constructor(registerUsecase, getUserDataUsecase, verifyOtpUsecase, resendOtpUsecase, loginUsecase, addVehicleUsecase, editVehicleUsecase, getVehiclebyUserUsecase, updateuserUsecase, findNearbyDrivers, createPaymentUsecase, getDriverProfileUsecase, walletTransactionUsecase, submitReviewUsecase, getNearbyDriverDetailsUseCase) {
         this.registerUsecase = registerUsecase;
         this.getUserDataUsecase = getUserDataUsecase;
         this.verifyOtpUsecase = verifyOtpUsecase;
         this.resendOtpUsecase = resendOtpUsecase;
+        this.loginUsecase = loginUsecase;
+        this.addVehicleUsecase = addVehicleUsecase;
+        this.editVehicleUsecase = editVehicleUsecase;
+        this.getVehiclebyUserUsecase = getVehiclebyUserUsecase;
+        this.updateuserUsecase = updateuserUsecase;
+        this.findNearbyDrivers = findNearbyDrivers;
+        this.createPaymentUsecase = createPaymentUsecase;
+        this.getDriverProfileUsecase = getDriverProfileUsecase;
+        this.walletTransactionUsecase = walletTransactionUsecase;
+        this.submitReviewUsecase = submitReviewUsecase;
+        this.getNearbyDriverDetailsUseCase = getNearbyDriverDetailsUseCase;
     }
     async register(req, res, next) {
         try {
+            console.log(req.body);
             const user = await this.registerUsecase.execute(req.body);
             res
                 .status(HttpStatusCode_1.HTTP_STATUS_CODES.CREATED)
@@ -58,6 +61,7 @@ let UserController = class UserController {
             res.cookie(`userRefreshToken`, refreshToken, {
                 httpOnly: true,
                 secure: process.env.NODE_ENV === "production",
+                sameSite: "none",
                 maxAge: 7 * 24 * 60 * 60 * 1000,
             });
             res
@@ -73,18 +77,19 @@ let UserController = class UserController {
             const { email, role } = req.body;
             console.log(email, role);
             const result = await this.resendOtpUsecase.execute(email, role);
-            res.status(HttpStatusCode_1.HTTP_STATUS_CODES.OK).json({ success: true, message: result.message });
+            res
+                .status(HttpStatusCode_1.HTTP_STATUS_CODES.OK)
+                .json({ success: true, message: result.message });
         }
         catch (error) {
             next(error);
         }
     }
-    static async login(req, res) {
+    async login(req, res, next) {
         try {
-            const login = tsyringe_1.container.resolve(Login_1.Login);
             const { email, password, role } = req.body;
             console.log(req.body);
-            const { accessToken, refreshToken } = await login.execute(email, password, role);
+            const { accessToken, refreshToken } = await this.loginUsecase.execute(email, password, role);
             const refreshTokenKey = `${role}RefreshToken`;
             res.cookie(refreshTokenKey, refreshToken, {
                 httpOnly: true,
@@ -92,89 +97,50 @@ let UserController = class UserController {
                 sameSite: "none",
                 maxAge: 7 * 24 * 60 * 60 * 1000,
             });
-            res.status(200).json({
+            res.status(HttpStatusCode_1.HTTP_STATUS_CODES.OK).json({
                 accessToken,
                 role,
             });
         }
         catch (error) {
-            if (error instanceof Autherror_1.AuthError) {
-                res.status(error.statusCode).json({
-                    success: false,
-                    error: error.message,
-                });
-                return;
-            }
-            res.status(500).json({ success: false, error: "Something went wrong" });
-            return;
+            next(error);
         }
     }
-    static async addVehicle(req, res) {
+    async addVehicle(req, res, next) {
         try {
             const vehicleData = req.body;
-            const addVehicleUseCase = tsyringe_1.container.resolve(AddVehicle_1.AddVehicle);
-            const vehicle = await addVehicleUseCase.execute({
+            const vehicle = await this.addVehicleUsecase.execute({
                 ...vehicleData,
                 userId: req.user?.id,
             });
-            res.status(201).json({ success: true, data: vehicle });
+            res.status(HttpStatusCode_1.HTTP_STATUS_CODES.OK).json({ success: true, data: vehicle });
         }
         catch (error) {
-            if (error instanceof Autherror_1.AuthError) {
-                res
-                    .status(error.statusCode)
-                    .json({ success: false, message: error.message });
-            }
-            else {
-                res
-                    .status(500)
-                    .json({ success: false, message: "Internal Server Error" });
-            }
+            next(error);
         }
     }
-    static async editVehicle(req, res) {
+    async editVehicle(req, res, next) {
         try {
             const { vehicleId } = req.params;
             const updateData = req.body;
             console.log(updateData);
-            const editVehicleUseCase = tsyringe_1.container.resolve(EditVehicle_1.EditVehicle);
-            const updatedVehicle = await editVehicleUseCase.execute(vehicleId, updateData);
-            res.status(200).json({ success: true, data: updatedVehicle });
+            const updatedVehicle = await this.editVehicleUsecase.execute(vehicleId, updateData);
+            res
+                .status(HttpStatusCode_1.HTTP_STATUS_CODES.OK)
+                .json({ success: true, data: updatedVehicle });
         }
         catch (error) {
-            if (error instanceof Autherror_1.AuthError) {
-                res
-                    .status(error.statusCode)
-                    .json({ success: false, message: error.message });
-            }
-            res
-                .status(500)
-                .json({ success: false, message: "Internal Server Error" });
+            next(error);
         }
     }
-    static async getAllVehicle(req, res) {
+    async getAllVehicle(req, res, next) {
         try {
             const userId = req.user?.id;
-            // Check if userId is missing or not a string
-            if (!userId || typeof userId !== "string") {
-                res
-                    .status(400)
-                    .json({ success: false, message: "Invalid or missing user ID" });
-                return;
-            }
-            const getVehiclesByUser = tsyringe_1.container.resolve(GetVehiclesByUser_1.GetVehiclesByUser);
-            const vehicles = await getVehiclesByUser.execute(userId);
-            res.status(200).json({ success: true, data: vehicles });
+            const vehicles = await this.getVehiclebyUserUsecase.execute(userId);
+            res.status(HttpStatusCode_1.HTTP_STATUS_CODES.OK).json({ success: true, data: vehicles });
         }
         catch (error) {
-            if (error instanceof Autherror_1.AuthError) {
-                res
-                    .status(error.statusCode)
-                    .json({ success: false, message: error.message });
-            }
-            res
-                .status(500)
-                .json({ success: false, message: "Internal Server Error" });
+            next(error);
         }
     }
     async getUserData(req, res, next) {
@@ -190,64 +156,58 @@ let UserController = class UserController {
             next(error);
         }
     }
-    static async updateUser(req, res) {
+    async updateUser(req, res, next) {
         try {
             const userId = req.params.id;
             const updateData = req.body;
             if (!userId) {
-                res
-                    .status(400)
-                    .json({ success: false, message: "User ID is required" });
-                return;
+                throw new Autherror_1.AuthError(ErrorMessages_1.ERROR_MESSAGES.USER_ID_NOT_FOUND, HttpStatusCode_1.HTTP_STATUS_CODES.BAD_REQUEST);
             }
-            const updateUserData = tsyringe_1.container.resolve(UpdateUserData_1.UpdateUserData);
-            const updatedUser = await updateUserData.execute(userId, updateData);
-            res.status(200).json({ success: true, user: updatedUser });
+            const updatedUser = await this.updateuserUsecase.execute(userId, updateData);
+            res
+                .status(HttpStatusCode_1.HTTP_STATUS_CODES.OK)
+                .json({ success: true, user: updatedUser });
         }
         catch (error) {
-            res
-                .status(error.statusCode || 500)
-                .json({ success: false, message: error.message });
-            return;
+            next(error);
         }
     }
-    static async fetchDrivers(req, res) {
+    async fetchDrivers(req, res, next) {
         try {
             const userId = req.user?.id;
+            const { page = "1", limit = "10", search = "" } = req.query;
             if (!userId) {
-                res.status(400).json({ message: ErrorMessages_1.ERROR_MESSAGES.USER_ID_NOT_FOUND });
-                return;
+                throw new Autherror_1.AuthError(ErrorMessages_1.ERROR_MESSAGES.USER_ID_NOT_FOUND, HttpStatusCode_1.HTTP_STATUS_CODES.BAD_REQUEST);
             }
-            // Resolve the use case
-            const findNearbyDrivers = tsyringe_1.container.resolve(FindNearbyDrivers_1.FindNearbyDrivers);
             // Execute the use case and fetch drivers
-            const drivers = await findNearbyDrivers.execute(userId);
+            const drivers = await this.findNearbyDrivers.execute(userId, Number(page), Number(limit), String(search));
             console.log(drivers, "got it ");
-            res.status(200).json({ success: true, drivers });
+            res.status(HttpStatusCode_1.HTTP_STATUS_CODES.OK).json({ success: true, drivers });
         }
         catch (error) {
-            if (error instanceof Autherror_1.AuthError) {
-                res
-                    .status(error.statusCode)
-                    .json({ success: false, error: error.message });
-                return;
-            }
-            console.error("Error fetching user data:", error);
-            res
-                .status(500)
-                .json({ success: false, error: ErrorMessages_1.ERROR_MESSAGES.INTERNAL_SERVER_ERROR });
+            next(error);
         }
     }
-    static async createPaymentIntent(req, res) {
+    async getDriverDetails(req, res, next) {
+        try {
+            const userId = '67e7b4415e9af0fdf18ad833';
+            const { driverId } = req.params;
+            console.log(driverId, 'got ');
+            const driver = await this.getNearbyDriverDetailsUseCase.execute(userId, driverId);
+            res.status(HttpStatusCode_1.HTTP_STATUS_CODES.OK).json(driver);
+        }
+        catch (err) {
+            next(err);
+        }
+    }
+    async createPaymentIntent(req, res, next) {
         const { amount, driverId } = req.body;
         console.log(req.body);
         if (!amount || !driverId) {
-            res.status(400).json({ message: "Missing required fields" });
-            return;
+            throw new Autherror_1.AuthError("missing amount or driverinfo", HttpStatusCode_1.HTTP_STATUS_CODES.BAD_REQUEST);
         }
         try {
-            const createPaymentIntent = tsyringe_1.container.resolve(CreatePaymentIntent_1.CreatePaymentIntent);
-            const result = await createPaymentIntent.execute({
+            const result = await this.createPaymentUsecase.execute({
                 amount,
                 driverId,
             });
@@ -257,19 +217,10 @@ let UserController = class UserController {
             });
         }
         catch (error) {
-            if (error instanceof Autherror_1.AuthError) {
-                res
-                    .status(error.statusCode)
-                    .json({ success: false, error: error.message });
-                return;
-            }
-            console.error("Error fetching user data:", error);
-            res
-                .status(500)
-                .json({ success: false, error: ErrorMessages_1.ERROR_MESSAGES.INTERNAL_SERVER_ERROR });
+            next(error);
         }
     }
-    static async getDriverById(req, res) {
+    async getDriverById(req, res, next) {
         try {
             const driverId = req.params.id;
             if (!driverId) {
@@ -278,52 +229,31 @@ let UserController = class UserController {
                     .json({ success: false, error: ErrorMessages_1.ERROR_MESSAGES.DRIVER_ID_NOT_FOUND });
                 return;
             }
-            const getDriverProfile = tsyringe_1.container.resolve(Getdriverprofile_1.GetDriverProfile);
-            const driver = await getDriverProfile.execute(driverId);
-            res.status(200).json({ success: true, driver });
+            const driver = await this.getDriverProfileUsecase.execute(driverId);
+            res.status(HttpStatusCode_1.HTTP_STATUS_CODES.OK).json({ success: true, driver });
         }
         catch (error) {
-            if (error instanceof Autherror_1.AuthError) {
-                res.status(error.statusCode).json({
-                    success: false,
-                    error: error.message,
-                });
-                return;
-            }
+            next(error);
         }
     }
-    static async WalletTransaction(req, res) {
+    async WalletTransaction(req, res, next) {
         try {
             const { page, limit } = req.query;
             const userId = req.user?.id;
             if (!userId) {
-                res
-                    .status(HttpStatusCode_1.HTTP_STATUS_CODES.BAD_REQUEST)
-                    .json({ success: false, error: ErrorMessages_1.ERROR_MESSAGES.USER_ID_NOT_FOUND });
-                return;
+                throw new Autherror_1.AuthError(ErrorMessages_1.ERROR_MESSAGES.USER_ID_NOT_FOUND, HttpStatusCode_1.HTTP_STATUS_CODES.BAD_REQUEST);
             }
-            const getWalletTransaction = tsyringe_1.container.resolve(walletTransaction_1.walletTransaction);
-            const transactionHistory = await getWalletTransaction.getTransactionHistory(userId, Number(page), Number(limit));
-            const ballence = await getWalletTransaction.getWalletBallence(userId);
+            const transactionHistory = await this.walletTransactionUsecase.getTransactionHistory(userId, Number(page), Number(limit));
+            const ballence = await this.walletTransactionUsecase.getWalletBalance(userId);
             res
                 .status(HttpStatusCode_1.HTTP_STATUS_CODES.OK)
                 .json({ success: true, transactionHistory, ballence });
         }
         catch (error) {
-            if (error instanceof Autherror_1.AuthError) {
-                res.status(error.statusCode).json({
-                    success: false,
-                    error: error.message,
-                });
-                return;
-            }
-            res
-                .status(HttpStatusCode_1.HTTP_STATUS_CODES.INTERNAL_SERVER_ERROR)
-                .json({ success: false, error: "Something went wrong" });
-            return;
+            next(error);
         }
     }
-    static async submitReview(req, res) {
+    async submitReview(req, res, next) {
         try {
             const { driverId, rideId, rating, review } = req.body;
             const userId = req.user?.id;
@@ -331,11 +261,9 @@ let UserController = class UserController {
                 throw new Autherror_1.AuthError("All fields are required", HttpStatusCode_1.HTTP_STATUS_CODES.BAD_REQUEST);
             }
             if (!userId) {
-                res.status(401).json({ message: "Unauthorized" });
-                return;
+                throw new Autherror_1.AuthError(ErrorMessages_1.ERROR_MESSAGES.USER_ID_NOT_FOUND, HttpStatusCode_1.HTTP_STATUS_CODES.UNAUTHORIZED);
             }
-            const useCase = tsyringe_1.container.resolve(SubmitRating_1.SubmitDriverReview);
-            const createdReview = await useCase.execute({
+            const createdReview = await this.submitReviewUsecase.execute({
                 driverId,
                 userId,
                 rideId,
@@ -343,31 +271,32 @@ let UserController = class UserController {
                 review,
             });
             res
-                .status(201)
+                .status(HttpStatusCode_1.HTTP_STATUS_CODES.CREATED)
                 .json({ message: "Review submitted", review: createdReview });
         }
         catch (error) {
-            console.log(error);
-            if (error instanceof Autherror_1.AuthError) {
-                res.status(error.statusCode).json({
-                    success: false,
-                    error: error.message,
-                });
-                return;
-            }
-            res
-                .status(HttpStatusCode_1.HTTP_STATUS_CODES.INTERNAL_SERVER_ERROR)
-                .json({ success: false, error: "Something went wrong" });
-            return;
+            next(error);
         }
     }
 };
 exports.UserController = UserController;
 exports.UserController = UserController = __decorate([
+    (0, tsyringe_1.injectable)(),
     __param(0, (0, tsyringe_1.inject)(Tokens_1.TOKENS.REGISTER_USER_USECASE)),
     __param(1, (0, tsyringe_1.inject)(Tokens_1.TOKENS.GET_USER_DATA_USECASE)),
     __param(2, (0, tsyringe_1.inject)(Tokens_1.TOKENS.VERIFY_OTP_USECAE)),
     __param(3, (0, tsyringe_1.inject)(Tokens_1.TOKENS.RESEND_OTP_USECASE)),
-    __metadata("design:paramtypes", [Object, Object, Object, Object])
+    __param(4, (0, tsyringe_1.inject)(Tokens_1.TOKENS.LOGIN_USECASE)),
+    __param(5, (0, tsyringe_1.inject)(Tokens_1.TOKENS.ADD_VEHICLE_USECASE)),
+    __param(6, (0, tsyringe_1.inject)(Tokens_1.TOKENS.EDIT_VEHICLE_USECASE)),
+    __param(7, (0, tsyringe_1.inject)(Tokens_1.TOKENS.GET_VEHICLES_BY_USER_USECASE)),
+    __param(8, (0, tsyringe_1.inject)(Tokens_1.TOKENS.UPDATE_USER_USECASE)),
+    __param(9, (0, tsyringe_1.inject)(UseCaseTokens_1.USECASE_TOKENS.FIND_NEARBY_DRIVERS_USECASE)),
+    __param(10, (0, tsyringe_1.inject)(Tokens_1.TOKENS.CREATE_PAYMENT_INTENT_USECASE)),
+    __param(11, (0, tsyringe_1.inject)(Tokens_1.TOKENS.GET_DRIVER_PROFILE_USECASE)),
+    __param(12, (0, tsyringe_1.inject)(Tokens_1.TOKENS.WALLET_TRANSACTION_USECASE)),
+    __param(13, (0, tsyringe_1.inject)(Tokens_1.TOKENS.SUBMIT_REVIEW_USECASE)),
+    __param(14, (0, tsyringe_1.inject)(UseCaseTokens_1.USECASE_TOKENS.GET_NEARBY_DRIVER_DETAILS_USECASE)),
+    __metadata("design:paramtypes", [Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, Object])
 ], UserController);
 //# sourceMappingURL=UserController.js.map

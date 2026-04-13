@@ -30,7 +30,7 @@ let OnboardDriverUseCase = class OnboardDriverUseCase {
 exports.OnboardDriverUseCase = OnboardDriverUseCase;
 exports.OnboardDriverUseCase = OnboardDriverUseCase = __decorate([
     (0, tsyringe_1.injectable)(),
-    __param(0, (0, tsyringe_1.inject)('StripeService')),
+    __param(0, (0, tsyringe_1.inject)(Tokens_1.TOKENS.STRIPE_SERVICE)),
     __param(1, (0, tsyringe_1.inject)(Tokens_1.TOKENS.IDRIVER_REPO)),
     __metadata("design:paramtypes", [Object, Object])
 ], OnboardDriverUseCase);

@@ -13,7 +13,7 @@ export class MongoChatRepository extends BaseRepository<Chat, ChatDocument> impl
     super(ChatModel);
   }
   async findChatByBookingId(bookingId: string): Promise<Chat | null> {
-    return super.findOne({ bookingId });
+    return super.findOne({ bookingId: new Types.ObjectId(bookingId) });
   }
 
   async createChat(chat: Chat): Promise<Chat> {
@@ -25,7 +25,7 @@ export class MongoChatRepository extends BaseRepository<Chat, ChatDocument> impl
     message: Message
   ): Promise<Message | null> {
      const result = await ChatModel.findOneAndUpdate(
-    { bookingId },
+    { bookingId: new Types.ObjectId(bookingId) },
     { $push: { messages: message } },
     { new: true, projection: { messages: { $slice: -1 } } }
   );
@@ -37,7 +37,7 @@ export class MongoChatRepository extends BaseRepository<Chat, ChatDocument> impl
   return result.messages[result.messages.length - 1];
   }
   async findMessagesByBookingId(bookingId: string): Promise<Message[]> {
-    const chat = await ChatModel.findOne({ bookingId })
+    const chat = await ChatModel.findOne({ bookingId: new Types.ObjectId(bookingId) })
       .select('messages')
       .lean();
   

@@ -5,6 +5,9 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
@@ -14,25 +17,16 @@ const ChatSchema_1 = __importDefault(require("./modals/ChatSchema")); // MongoDB
 const Autherror_1 = require("../../domain/errors/Autherror");
 const tsyringe_1 = require("tsyringe");
 const mongoose_1 = require("mongoose");
-let MongoChatRepository = class MongoChatRepository {
+const BaseRepository_1 = require("./BaseRepository");
+let MongoChatRepository = class MongoChatRepository extends BaseRepository_1.BaseRepository {
+    constructor() {
+        super(ChatSchema_1.default);
+    }
     async findChatByBookingId(bookingId) {
-        try {
-            return await ChatSchema_1.default.findOne({ bookingId }).lean();
-        }
-        catch (error) {
-            console.error("Error finding chat by booking ID:", error.message);
-            throw new Autherror_1.AuthError("Failed to find chat by booking ID", 500);
-        }
+        return super.findOne({ bookingId });
     }
     async createChat(chat) {
-        try {
-            const newChat = await ChatSchema_1.default.create(chat);
-            return newChat.toObject();
-        }
-        catch (error) {
-            console.error("Error creating chat:", error.message);
-            throw new Autherror_1.AuthError("Failed to create chat", 500);
-        }
+        return super.create(chat);
     }
     async addMessageToChat(bookingId, message) {
         const result = await ChatSchema_1.default.findOneAndUpdate({ bookingId }, { $push: { messages: message } }, { new: true, projection: { messages: { $slice: -1 } } });
@@ -60,22 +54,10 @@ let MongoChatRepository = class MongoChatRepository {
         }
     }
     async findById(chatId) {
-        try {
-            if (!mongoose_1.Types.ObjectId.isValid(chatId)) {
-                return null;
-            }
-            const chat = await ChatSchema_1.default.findById(chatId).lean();
-            if (!chat)
-                return null;
-            return {
-                ...chat,
-                _id: chat._id,
-            };
+        if (!mongoose_1.Types.ObjectId.isValid(chatId)) {
+            return null;
         }
-        catch (error) {
-            console.error("Error finding chat by ID:", error.message);
-            throw new Autherror_1.AuthError("Failed to find chat by ID", 500);
-        }
+        return super.findById(chatId);
     }
     async deleteMessage(chatId, messageId) {
         try {
@@ -93,6 +75,7 @@ let MongoChatRepository = class MongoChatRepository {
 };
 exports.MongoChatRepository = MongoChatRepository;
 exports.MongoChatRepository = MongoChatRepository = __decorate([
-    (0, tsyringe_1.injectable)()
+    (0, tsyringe_1.injectable)(),
+    __metadata("design:paramtypes", [])
 ], MongoChatRepository);
 //# sourceMappingURL=ChatRepository.js.map

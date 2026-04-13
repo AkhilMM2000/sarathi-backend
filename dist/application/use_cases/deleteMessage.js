@@ -14,23 +14,19 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.DeleteMessageUseCase = void 0;
 const tsyringe_1 = require("tsyringe");
-const mongoose_1 = require("mongoose");
-const Autherror_1 = require("../../domain/errors/Autherror");
+const Tokens_1 = require("../../constants/Tokens");
 let DeleteMessageUseCase = class DeleteMessageUseCase {
     constructor(chatRepository) {
         this.chatRepository = chatRepository;
     }
     async execute(chatId, messageId) {
-        if (!mongoose_1.Types.ObjectId.isValid(chatId) || !mongoose_1.Types.ObjectId.isValid(messageId)) {
-            throw new Autherror_1.AuthError('Invalid chatId or messageId', 400);
-        }
         await this.chatRepository.deleteMessage(chatId, messageId);
     }
 };
 exports.DeleteMessageUseCase = DeleteMessageUseCase;
 exports.DeleteMessageUseCase = DeleteMessageUseCase = __decorate([
     (0, tsyringe_1.injectable)(),
-    __param(0, (0, tsyringe_1.inject)('IChatRepository')),
+    __param(0, (0, tsyringe_1.inject)(Tokens_1.TOKENS.CHAT_REPO)),
     __metadata("design:paramtypes", [Object])
 ], DeleteMessageUseCase);
 //# sourceMappingURL=deleteMessage.js.map

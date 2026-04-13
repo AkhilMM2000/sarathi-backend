@@ -5,6 +5,9 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
@@ -15,7 +18,11 @@ const Driverschema_1 = __importDefault(require("./modals/Driverschema")); // Mon
 const mongoose_1 = require("mongoose");
 const Autherror_1 = require("../../domain/errors/Autherror");
 const HttpStatusCode_1 = require("../../constants/HttpStatusCode");
-let MongoDriverRepository = class MongoDriverRepository {
+const BaseRepository_1 = require("./BaseRepository");
+let MongoDriverRepository = class MongoDriverRepository extends BaseRepository_1.BaseRepository {
+    constructor() {
+        super(Driverschema_1.default);
+    }
     async create(driver) {
         let geoDriver = { ...driver };
         if ("latitude" in driver.location && "longitude" in driver.location) {
@@ -58,7 +65,7 @@ let MongoDriverRepository = class MongoDriverRepository {
         }
     }
     async findByEmail(email) {
-        return await Driverschema_1.default.findOne({ email });
+        return super.findOne({ email });
     }
     async updateStatus(driverId, status, reason) {
         const updateData = { status };
@@ -68,16 +75,13 @@ let MongoDriverRepository = class MongoDriverRepository {
         else {
             updateData.reason = null;
         }
-        return await Driverschema_1.default.findByIdAndUpdate(driverId, updateData, {
-            new: true,
-            runValidators: true,
-        });
+        return super.update(driverId, updateData);
     }
     async blockOrUnblockDriver(driverId, isBlock) {
-        await Driverschema_1.default.findByIdAndUpdate(driverId, { isBlock });
+        await super.update(driverId, { isBlock });
     }
     async getDrivers() {
-        return await Driverschema_1.default.find();
+        return super.findAll();
     }
     async findActiveDrivers(page, limit, placeKey) {
         const skip = (page - 1) * limit;
@@ -137,7 +141,7 @@ let MongoDriverRepository = class MongoDriverRepository {
         }
     }
     async updateRatingStats(driverId, stats) {
-        await Driverschema_1.default.findByIdAndUpdate(driverId, {
+        await super.update(driverId, {
             $set: {
                 totalRatingPoints: stats.totalRatingPoints,
                 totalRatings: stats.totalRatings,
@@ -187,6 +191,7 @@ let MongoDriverRepository = class MongoDriverRepository {
 };
 exports.MongoDriverRepository = MongoDriverRepository;
 exports.MongoDriverRepository = MongoDriverRepository = __decorate([
-    (0, tsyringe_1.injectable)()
+    (0, tsyringe_1.injectable)(),
+    __metadata("design:paramtypes", [])
 ], MongoDriverRepository);
 //# sourceMappingURL=MongodriverRepository.js.map

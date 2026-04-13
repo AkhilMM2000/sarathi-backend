@@ -14,19 +14,19 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.GetEstimatedFare = void 0;
 const tsyringe_1 = require("tsyringe");
+const Tokens_1 = require("../../../constants/Tokens");
 let GetEstimatedFare = class GetEstimatedFare {
     constructor(fareCalculatorService) {
         this.fareCalculatorService = fareCalculatorService;
     }
     async execute(params) {
-        console.log('worked');
         return this.fareCalculatorService.calculate(params);
     }
 };
 exports.GetEstimatedFare = GetEstimatedFare;
 exports.GetEstimatedFare = GetEstimatedFare = __decorate([
     (0, tsyringe_1.injectable)(),
-    __param(0, (0, tsyringe_1.inject)("IFareCalculatorService")),
+    __param(0, (0, tsyringe_1.inject)(Tokens_1.TOKENS.IFARE_CALCULATE_SERVICE)),
     __metadata("design:paramtypes", [Object])
 ], GetEstimatedFare);
 //# sourceMappingURL=GetEstimatedFare.js.map

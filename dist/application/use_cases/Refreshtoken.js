@@ -15,55 +15,52 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.RefreshToken = void 0;
+exports.RefreshTokenUseCase = void 0;
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const tsyringe_1 = require("tsyringe");
 const AuthService_1 = require("../services/AuthService");
 const Autherror_1 = require("../../domain/errors/Autherror");
 const Tokens_1 = require("../../constants/Tokens");
-let RefreshToken = class RefreshToken {
+const ErrorMessages_1 = require("../../constants/ErrorMessages");
+const HttpStatusCode_1 = require("../../constants/HttpStatusCode");
+let RefreshTokenUseCase = class RefreshTokenUseCase {
     constructor(userRepository, driverRepository) {
         this.userRepository = userRepository;
         this.driverRepository = driverRepository;
     }
     async execute(refreshToken, role) {
         if (!refreshToken) {
-            throw new Autherror_1.AuthError("No refresh token provided", 403);
+            throw new Autherror_1.AuthError(ErrorMessages_1.ERROR_MESSAGES.REFRESHTOKEN_NOTFOUND, HttpStatusCode_1.HTTP_STATUS_CODES.FORBIDDEN);
         }
-        try {
-            const decoded = jsonwebtoken_1.default.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET);
-            let user = null;
-            if (role === "user" || role === "admin") {
-                user = await this.userRepository.findByEmail(decoded.email);
-                if (!user) {
-                    throw new Autherror_1.AuthError("User not found", 404);
-                }
-                if (role === "admin" && user.role !== "admin") {
-                    throw new Autherror_1.AuthError("Not authorized as admin", 403);
-                }
-            }
-            else if (role === "driver") {
-                user = await this.driverRepository.findByEmail(decoded.email);
-                if (!user) {
-                    throw new Autherror_1.AuthError("Driver not found", 404);
-                }
-            }
+        const decoded = jsonwebtoken_1.default.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET);
+        let user = null;
+        if (role === "user" || role === "admin") {
+            user = await this.userRepository.findByEmail(decoded.email);
             if (!user) {
-                throw new Autherror_1.AuthError("User not found", 404);
+                throw new Autherror_1.AuthError(ErrorMessages_1.ERROR_MESSAGES.USER_NOT_FOUND, HttpStatusCode_1.HTTP_STATUS_CODES.NOT_FOUND);
             }
-            const accessToken = AuthService_1.AuthService.generateAccessToken({ id: user._id, email: user.email, role });
-            return { success: true, accessToken };
+            if (role === "admin" && user.role !== "admin") {
+                throw new Autherror_1.AuthError(ErrorMessages_1.ERROR_MESSAGES.NOT_AUTHORIZED_ADMIN, HttpStatusCode_1.HTTP_STATUS_CODES.FORBIDDEN);
+            }
         }
-        catch (error) {
-            throw new Autherror_1.AuthError("Invalid refresh token", 403);
+        else if (role === "driver") {
+            user = await this.driverRepository.findByEmail(decoded.email);
+            if (!user) {
+                throw new Autherror_1.AuthError(ErrorMessages_1.ERROR_MESSAGES.DRIVER_NOT_FOUND, HttpStatusCode_1.HTTP_STATUS_CODES.NOT_FOUND);
+            }
         }
+        if (!user) {
+            throw new Autherror_1.AuthError(ErrorMessages_1.ERROR_MESSAGES.USER_NOT_FOUND, HttpStatusCode_1.HTTP_STATUS_CODES.NOT_FOUND);
+        }
+        const accessToken = AuthService_1.AuthService.generateAccessToken({ id: user._id, email: user.email, role });
+        return accessToken;
     }
 };
-exports.RefreshToken = RefreshToken;
-exports.RefreshToken = RefreshToken = __decorate([
+exports.RefreshTokenUseCase = RefreshTokenUseCase;
+exports.RefreshTokenUseCase = RefreshTokenUseCase = __decorate([
     (0, tsyringe_1.injectable)(),
     __param(0, (0, tsyringe_1.inject)(Tokens_1.TOKENS.IUSER_REPO)),
     __param(1, (0, tsyringe_1.inject)(Tokens_1.TOKENS.IDRIVER_REPO)),
     __metadata("design:paramtypes", [Object, Object])
-], RefreshToken);
+], RefreshTokenUseCase);
 //# sourceMappingURL=Refreshtoken.js.map

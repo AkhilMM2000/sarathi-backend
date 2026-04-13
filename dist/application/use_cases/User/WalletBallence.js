@@ -16,6 +16,7 @@ exports.WalletBallence = void 0;
 const tsyringe_1 = require("tsyringe");
 const Autherror_1 = require("../../../domain/errors/Autherror");
 const HttpStatusCode_1 = require("../../../constants/HttpStatusCode");
+const Tokens_1 = require("../../../constants/Tokens");
 let WalletBallence = class WalletBallence {
     constructor(walletRepository) {
         this.walletRepository = walletRepository;
@@ -30,7 +31,7 @@ let WalletBallence = class WalletBallence {
 exports.WalletBallence = WalletBallence;
 exports.WalletBallence = WalletBallence = __decorate([
     (0, tsyringe_1.injectable)(),
-    __param(0, (0, tsyringe_1.inject)("IWalletRepository")),
+    __param(0, (0, tsyringe_1.inject)(Tokens_1.TOKENS.WALLET_REPO)),
     __metadata("design:paramtypes", [Object])
 ], WalletBallence);
 //# sourceMappingURL=WalletBallence.js.map

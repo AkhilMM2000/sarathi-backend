@@ -1,40 +1,52 @@
 "use strict";
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+var __param = (this && this.__param) || function (paramIndex, decorator) {
+    return function (target, key) { decorator(target, key, paramIndex); }
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.BookingController = void 0;
 const tsyringe_1 = require("tsyringe");
-const BookDriver_1 = require("../../application/use_cases/User/BookDriver");
 const Autherror_1 = require("../../domain/errors/Autherror");
-const GetEstimatedFare_1 = require("../../application/use_cases/User/GetEstimatedFare");
-const GetUserbooking_1 = require("../../application/use_cases/User/GetUserbooking");
-const AttachPaymentIntentIdToBooking_1 = require("../../application/use_cases/User/AttachPaymentIntentIdToBooking");
-const UpdateBookingstatus_1 = require("../../application/use_cases/Driver/UpdateBookingstatus");
-const GetAllRides_1 = require("../../application/use_cases/Admin/GetAllRides");
-const CancelBooking_1 = require("../../application/use_cases/User/CancelBooking");
 const Booking_1 = require("../../domain/models/Booking");
-const GetRidechat_1 = require("../../application/use_cases/GetRidechat");
 const ErrorMessages_1 = require("../../constants/ErrorMessages");
 const HttpStatusCode_1 = require("../../constants/HttpStatusCode");
 const GetRideHistory_1 = require("../../application/use_cases/GetRideHistory");
-const chatGetSignedUrl_1 = require("../../application/use_cases/chatGetSignedUrl");
-const WalletBallence_1 = require("../../application/use_cases/User/WalletBallence");
-const WalletRidePayment_1 = require("../../application/use_cases/User/WalletRidePayment");
-const DriverReview_1 = require("../../application/use_cases/DriverReview");
-const deleteMessage_1 = require("../../application/use_cases/deleteMessage");
-const GetBookingStatusSummary_1 = require("../../application/use_cases/Driver/GetBookingStatusSummary");
-const GetMonthlyEarningsReport_1 = require("../../application/use_cases/Driver/GetMonthlyEarningsReport");
-class BookingController {
-    static async bookDriver(req, res) {
+const UseCaseTokens_1 = require("../../constants/UseCaseTokens");
+let BookingController = class BookingController {
+    constructor(bookDriverUseCase, getEstimatedFareUseCase, getUserBookingsUseCase, attachPaymentIntentUseCase, updateBookingStatusUseCase, getAllBookingsUseCase, cancelBookingUseCase, getMessagesByBookingIdUseCase, deleteMessageUseCase, generateSignedUrlUseCase, walletBalanceUseCase, walletPaymentUseCase, getDriverReviewsUseCase, getBookingStatusSummary, earningsSummaryUseCase, getDriverDashboardStatsUseCase) {
+        this.bookDriverUseCase = bookDriverUseCase;
+        this.getEstimatedFareUseCase = getEstimatedFareUseCase;
+        this.getUserBookingsUseCase = getUserBookingsUseCase;
+        this.attachPaymentIntentUseCase = attachPaymentIntentUseCase;
+        this.updateBookingStatusUseCase = updateBookingStatusUseCase;
+        this.getAllBookingsUseCase = getAllBookingsUseCase;
+        this.cancelBookingUseCase = cancelBookingUseCase;
+        this.getMessagesByBookingIdUseCase = getMessagesByBookingIdUseCase;
+        this.deleteMessageUseCase = deleteMessageUseCase;
+        this.generateSignedUrlUseCase = generateSignedUrlUseCase;
+        this.walletBalanceUseCase = walletBalanceUseCase;
+        this.walletPaymentUseCase = walletPaymentUseCase;
+        this.getDriverReviewsUseCase = getDriverReviewsUseCase;
+        this.getBookingStatusSummary = getBookingStatusSummary;
+        this.earningsSummaryUseCase = earningsSummaryUseCase;
+        this.getDriverDashboardStatsUseCase = getDriverDashboardStatsUseCase;
+    }
+    async bookDriver(req, res, next) {
         try {
             const userId = req.user?.id;
             if (!userId) {
-                res
-                    .status(401)
-                    .json({ success: false, error: "Unauthorized: User ID is missing." });
-                return;
+                throw new Autherror_1.AuthError(ErrorMessages_1.ERROR_MESSAGES.USER_ID_NOT_FOUND, HttpStatusCode_1.HTTP_STATUS_CODES.UNAUTHORIZED);
             }
             const { driverId, fromLocation, toLocation, startDate, endDate, estimatedKm, bookingType, } = req.body;
-            const bookDriver = tsyringe_1.container.resolve(BookDriver_1.BookDriver);
-            const booking = await bookDriver.execute({
+            const booking = await this.bookDriverUseCase.execute({
                 userId,
                 driverId,
                 fromLocation,
@@ -44,225 +56,141 @@ class BookingController {
                 estimatedKm,
                 bookingType,
             });
-            res.status(201).json({ success: true, data: booking });
+            res.status(HttpStatusCode_1.HTTP_STATUS_CODES.CREATED).json({ success: true, data: booking });
         }
         catch (error) {
-            if (error instanceof Autherror_1.AuthError) {
-                res.status(error.statusCode).json({
-                    success: false,
-                    error: error.message,
-                });
-                return;
-            }
-            res.status(500).json({ success: false, error: "Something went wrong" });
-            return;
+            next(error);
         }
     }
-    static async getEstimatedFare(req, res) {
+    async getEstimatedFare(req, res, next) {
         try {
             const { bookingType, estimatedKm, startDate, endDate } = req.body;
-            console.log("ja");
-            const useCase = tsyringe_1.container.resolve(GetEstimatedFare_1.GetEstimatedFare);
-            const fare = await useCase.execute({
+            const fare = await this.getEstimatedFareUseCase.execute({
                 bookingType,
                 estimatedKm,
                 startDate: new Date(startDate),
                 endDate: endDate ? new Date(endDate) : undefined,
             });
-            res.status(200).json({ estimatedFare: fare });
+            res.status(HttpStatusCode_1.HTTP_STATUS_CODES.OK).json({ estimatedFare: fare });
         }
         catch (error) {
-            if (error instanceof Autherror_1.AuthError) {
-                res.status(error.statusCode).json({
-                    success: false,
-                    error: error.message,
-                });
-                return;
-            }
-            res.status(500).json({ success: false, error: "Something went wrong" });
-            return;
+            next(error);
         }
     }
-    static async getUserBookings(req, res) {
+    async getUserBookings(req, res, next) {
         try {
             const userId = req.user?.id;
             if (!userId) {
-                res.status(400).json({ message: "User ID is required" });
-                return;
+                throw new Autherror_1.AuthError(ErrorMessages_1.ERROR_MESSAGES.USER_ID_NOT_FOUND, HttpStatusCode_1.HTTP_STATUS_CODES.BAD_REQUEST);
             }
             const page = parseInt(req.query.page) || 1;
             const limit = parseInt(req.query.limit) || 2;
-            const useCase = tsyringe_1.container.resolve(GetUserbooking_1.GetUserBookings);
-            const { data, total, totalPages } = await useCase.execute(userId, page, limit);
-            res.status(200).json({ data, total, totalPages });
+            ;
+            const { data, total, totalPages } = await this.getUserBookingsUseCase.execute(userId, page, limit);
+            res.status(HttpStatusCode_1.HTTP_STATUS_CODES.OK).json({ data, total, totalPages });
         }
         catch (error) {
-            if (error instanceof Autherror_1.AuthError) {
-                res
-                    .status(error.statusCode)
-                    .json({ success: false, error: error.message });
-                return;
-            }
-            console.error("Error fetching user data:", error);
-            res.status(500).json({ success: false, error: "Internal server error" });
+            next(error);
         }
     }
-    static async attachPaymentIntent(req, res) {
+    async attachPaymentIntent(req, res, next) {
         try {
             const { paymentIntentId, paymentStatus, walletDeduction } = req.body;
             const { rideId } = req.params;
-            console.log(req.body, "req.body for attach payment intent");
-            const useCase = tsyringe_1.container.resolve(AttachPaymentIntentIdToBooking_1.AttachPaymentIntentIdToBooking);
-            await useCase.execute(rideId, walletDeduction, paymentIntentId, paymentStatus);
+            const userId = req.user?.id;
+            if (!userId) {
+                throw new Autherror_1.AuthError(ErrorMessages_1.ERROR_MESSAGES.USER_ID_NOT_FOUND, HttpStatusCode_1.HTTP_STATUS_CODES.BAD_REQUEST);
+            }
+            await this.attachPaymentIntentUseCase.execute(rideId, walletDeduction, paymentIntentId, paymentStatus, userId);
             res
-                .status(200)
+                .status(HttpStatusCode_1.HTTP_STATUS_CODES.OK)
                 .json({
                 success: true,
                 message: "PaymentIntent attached successfully",
             });
         }
         catch (error) {
-            if (error instanceof Autherror_1.AuthError) {
-                res
-                    .status(error.statusCode)
-                    .json({ success: false, error: error.message });
-                return;
-            }
-            console.error("Error fetching user data:", error);
-            res
-                .status(HttpStatusCode_1.HTTP_STATUS_CODES.INTERNAL_SERVER_ERROR)
-                .json({ success: false, error: ErrorMessages_1.ERROR_MESSAGES.INTERNAL_SERVER_ERROR });
+            next(error);
         }
     }
-    static async updateStatus(req, res) {
+    async updateStatus(req, res, next) {
         try {
             const { bookingId } = req.params;
             const { status, reason, finalKm } = req.body;
             console.log(req.body);
             if (!status) {
-                res
-                    .status(400)
-                    .json({ message: "status required for updating status" });
-                return;
+                throw new Autherror_1.AuthError("status required for updating status", HttpStatusCode_1.HTTP_STATUS_CODES.BAD_REQUEST);
             }
             if (status === "REJECTED" && !reason) {
-                res
-                    .status(400)
-                    .json({ message: "Reason is required when rejecting a booking." });
-                return;
+                throw new Autherror_1.AuthError("Reason is required when rejecting a booking.", HttpStatusCode_1.HTTP_STATUS_CODES.BAD_REQUEST);
             }
             if ((status === "COMPLETED" && finalKm === undefined) ||
                 finalKm === null) {
-                res
-                    .status(400)
-                    .json({ message: "finalKm is required when completing a booking." });
-                return;
+                throw new Autherror_1.AuthError("finalKm is required when completing a booking.", HttpStatusCode_1.HTTP_STATUS_CODES.BAD_REQUEST);
             }
-            const useCase = tsyringe_1.container.resolve(UpdateBookingstatus_1.UpdateBookingStatus);
-            await useCase.execute({ bookingId, status, reason, finalKm });
-            res.status(200).json({ message: "Booking status updated successfully" });
+            await this.updateBookingStatusUseCase.execute({ bookingId, status, reason, finalKm });
+            res.status(HttpStatusCode_1.HTTP_STATUS_CODES.OK).json({ message: "Booking status updated successfully" });
         }
         catch (error) {
-            if (error instanceof Autherror_1.AuthError) {
-                res
-                    .status(error.statusCode)
-                    .json({ success: false, error: error.message });
-                return;
-            }
-            console.error("Error fetching user data:", error);
-            res.status(500).json({ success: false, error: "Internal server error" });
+            next(error);
         }
     }
-    static async getAllBookings(req, res) {
+    async getAllBookings(req, res, next) {
         try {
             const page = parseInt(req.query.page) || 1;
             const limit = parseInt(req.query.limit) || 2;
-            const useCase = tsyringe_1.container.resolve(GetAllRides_1.GetAllBookings);
-            const bookings = await useCase.execute(page, limit);
-            res.status(200).json({ bookings });
+            const bookings = await this.getAllBookingsUseCase.execute(page, limit);
+            res.status(HttpStatusCode_1.HTTP_STATUS_CODES.OK).json({ bookings });
         }
         catch (error) {
-            if (error instanceof Autherror_1.AuthError) {
-                res
-                    .status(error.statusCode)
-                    .json({ success: false, error: error.message });
-                return;
-            }
-            console.error("Error fetching user data:", error);
-            res.status(500).json({ success: false, error: "Internal server error" });
+            next(error);
         }
     }
-    static async cancelBooking(req, res) {
+    async cancelBooking(req, res, next) {
         try {
             const { bookingId, reason } = req.body;
             if (!bookingId || !reason) {
                 res.status(400).json({ message: "bookingId and reason are required" });
                 return;
             }
-            const updateBookingStatus = tsyringe_1.container.resolve(CancelBooking_1.CancelBookingInputUseCase);
-            await updateBookingStatus.execute({
+            await this.cancelBookingUseCase.execute({
                 bookingId,
                 reason,
                 status: Booking_1.BookingStatus.CANCELLED,
             });
-            res.status(200).json({ message: "Booking cancelled successfully" });
+            res.status(HttpStatusCode_1.HTTP_STATUS_CODES.OK).json({ message: "Booking cancelled successfully" });
         }
         catch (error) {
-            if (error instanceof Autherror_1.AuthError) {
-                res
-                    .status(error.statusCode)
-                    .json({ success: false, error: error.message });
-                return;
-            }
-            console.error("Error fetching user data:", error);
-            res.status(500).json({ success: false, error: "Internal server error" });
+            next(error);
         }
     }
-    static async getChatByBookingId(req, res) {
+    async getChatByBookingId(req, res, next) {
         try {
             const { roomId } = req.params;
             if (!roomId) {
-                res.status(400).json({ message: "Booking ID is required" });
-                return;
+                throw new Autherror_1.AuthError("Booking ID is required", HttpStatusCode_1.HTTP_STATUS_CODES.BAD_REQUEST);
             }
-            const getChatByBookingId = tsyringe_1.container.resolve(GetRidechat_1.GetMessagesByBookingId);
-            const chat = await getChatByBookingId.execute({ bookingId: roomId });
+            const chat = await this.getMessagesByBookingIdUseCase.execute({ bookingId: roomId });
             if (!chat) {
-                res.status(404).json({ message: "Chat not found" });
-                return;
+                throw new Autherror_1.AuthError("Chat not found", HttpStatusCode_1.HTTP_STATUS_CODES.NOT_FOUND);
             }
-            res.status(200).json(chat);
+            res.status(HttpStatusCode_1.HTTP_STATUS_CODES.OK).json(chat);
         }
         catch (error) {
-            if (error instanceof Autherror_1.AuthError) {
-                res
-                    .status(error.statusCode)
-                    .json({ success: false, error: error.message });
-                return;
-            }
-            console.error("Error fetching user data:", error);
-            res.status(500).json({ success: false, error: "Internal server error" });
+            next(error);
         }
     }
-    static async deleteMessage(req, res) {
+    async deleteMessage(req, res, next) {
         try {
             const { roomId, messageId } = req.params;
-            const deleteMessageUseCase = tsyringe_1.container.resolve(deleteMessage_1.DeleteMessageUseCase);
-            await deleteMessageUseCase.execute(roomId, messageId);
+            await this.deleteMessageUseCase.execute(roomId, messageId);
             res.status(HttpStatusCode_1.HTTP_STATUS_CODES.OK).json({ message: 'Message deleted successfully' });
         }
         catch (error) {
-            if (error instanceof Autherror_1.AuthError) {
-                res
-                    .status(error.statusCode)
-                    .json({ success: false, error: error.message });
-                return;
-            }
-            console.error("Error fetching user data:", error);
-            res.status(HttpStatusCode_1.HTTP_STATUS_CODES.INTERNAL_SERVER_ERROR).json({ success: false, error: ErrorMessages_1.ERROR_MESSAGES.INTERNAL_SERVER_ERROR });
+            next(error);
         }
     }
-    static async getRideHistory(req, res) {
+    static async getRideHistory(req, res, next) {
         try {
             const id = req.user?.id;
             const role = req.user?.role;
@@ -270,140 +198,116 @@ class BookingController {
             const limit = parseInt(req.query.limit) || 2;
             const BookingHistory = tsyringe_1.container.resolve(GetRideHistory_1.GetRideHistory);
             const ridehistory = await BookingHistory.execute(role, id, page, limit);
-            res.status(200).json(ridehistory);
+            res.status(HttpStatusCode_1.HTTP_STATUS_CODES.OK).json(ridehistory);
         }
         catch (error) {
-            if (error instanceof Autherror_1.AuthError) {
-                res
-                    .status(error.statusCode)
-                    .json({ success: false, error: error.message });
-                return;
-            }
-            console.error("Error fetching user data:", error);
-            res.status(500).json({ success: false, error: ErrorMessages_1.ERROR_MESSAGES.INTERNAL_SERVER_ERROR });
+            next(error);
         }
     }
-    static async getChatSignature(req, res) {
+    async getChatSignature(req, res, next) {
         try {
             const id = req.user?.id;
             const { fileType } = req.body;
-            console.log(req.body);
-            const chatMediaSignature = tsyringe_1.container.resolve(chatGetSignedUrl_1.GenerateChatSignedUrl);
-            const chatUploadMedia = await chatMediaSignature.execute(fileType, id);
+            const chatUploadMedia = await this.generateSignedUrlUseCase.execute(fileType, id);
             console.log(chatUploadMedia, 'media signurl reach');
             res.status(HttpStatusCode_1.HTTP_STATUS_CODES.OK).json(chatUploadMedia);
         }
         catch (error) {
-            if (error instanceof Autherror_1.AuthError) {
-                res
-                    .status(error.statusCode)
-                    .json({ success: false, error: error.message });
-                return;
-            }
-            console.error("Error fetching user data:", error);
-            res.status(500).json({ success: false, error: ErrorMessages_1.ERROR_MESSAGES.INTERNAL_SERVER_ERROR });
+            next(error);
         }
     }
-    static async Walletballence(req, res) {
+    async Walletballence(req, res, next) {
         try {
             const userId = req.user?.id;
-            const walletBallence = tsyringe_1.container.resolve(WalletBallence_1.WalletBallence);
-            const ballence = await walletBallence.execute(userId);
+            const ballence = await this.walletBalanceUseCase.execute(userId);
             res.status(HttpStatusCode_1.HTTP_STATUS_CODES.OK).json({ ballence });
         }
         catch (error) {
-            if (error instanceof Autherror_1.AuthError) {
-                res
-                    .status(error.statusCode)
-                    .json({ success: false, error: error.message });
-                return;
-            }
-            console.error("Error fetching user data:", error);
-            res.status(500).json({ success: false, error: ErrorMessages_1.ERROR_MESSAGES.INTERNAL_SERVER_ERROR });
+            next(error);
         }
     }
-    static async WalletPayment(req, res) {
+    async WalletPayment(req, res, next) {
         try {
             const userId = req.user?.id;
             const { rideId, amount } = req.body;
-            const walletPay = tsyringe_1.container.resolve(WalletRidePayment_1.WalletPayment);
-            await walletPay.WalletRidePayment(rideId, userId, amount);
+            await this.walletPaymentUseCase.WalletRidePayment(rideId, userId, amount);
             res.status(HttpStatusCode_1.HTTP_STATUS_CODES.OK).json({ message: "payment successfull" });
         }
         catch (error) {
-            if (error instanceof Autherror_1.AuthError) {
-                res
-                    .status(error.statusCode)
-                    .json({ success: false, error: error.message });
-                return;
-            }
-            console.error("Error fetching user data:", error);
-            res.status(500).json({ success: false, error: ErrorMessages_1.ERROR_MESSAGES.INTERNAL_SERVER_ERROR });
+            next(error);
         }
     }
-    static async ReviewDriver(req, res) {
+    async ReviewDriver(req, res, next) {
         try {
             const driverId = req.params.id;
             console.log(driverId, "driver id");
             const page = parseInt(req.query.page) || 1;
             const limit = parseInt(req.query.limit) || 2;
-            const ReviewDriver = tsyringe_1.container.resolve(DriverReview_1.GetDriverReviews);
-            const reviews = await ReviewDriver.execute(driverId, page, limit);
+            const reviews = await this.getDriverReviewsUseCase.execute(driverId, page, limit);
             res.status(HttpStatusCode_1.HTTP_STATUS_CODES.OK).json(reviews);
         }
         catch (error) {
-            if (error instanceof Autherror_1.AuthError) {
-                res
-                    .status(error.statusCode)
-                    .json({ success: false, error: error.message });
-                return;
-            }
-            console.error("Error fetching user data:", error);
-            res.status(500).json({ success: false, error: ErrorMessages_1.ERROR_MESSAGES.INTERNAL_SERVER_ERROR });
+            next(error);
         }
     }
-    static async getDriverBookingStatusSummary(req, res) {
+    async getDriverBookingStatusSummary(req, res, next) {
         try {
             const driverId = req.user?.id;
             const year = req.query.year ? parseInt(req.query.year) : undefined;
             const month = req.query.month ? parseInt(req.query.month) : undefined;
-            const useCase = tsyringe_1.container.resolve(GetBookingStatusSummary_1.GetBookingStatusSummary);
-            const result = await useCase.execute(driverId, year, month);
+            const result = await this.getBookingStatusSummary.execute(driverId, year, month);
             res.status(HttpStatusCode_1.HTTP_STATUS_CODES.OK).json(result);
         }
         catch (error) {
-            if (error instanceof Autherror_1.AuthError) {
-                res
-                    .status(error.statusCode)
-                    .json({ success: false, error: error.message });
-                return;
-            }
-            console.error("Error fetching getDriverBookingStatusSummary", error);
-            res.status(500).json({ success: false, error: ErrorMessages_1.ERROR_MESSAGES.INTERNAL_SERVER_ERROR });
+            next(error);
         }
     }
     ;
-    static async getDriverEarningsByMonth(req, res) {
+    async getDriverEarningsByMonth(req, res, next) {
         try {
             const driverId = req.user?.id;
             const year = req.query.year ? parseInt(req.query.year) : new Date().getFullYear();
             const month = req.query.month ? parseInt(req.query.month) : undefined;
-            const useCase = tsyringe_1.container.resolve(GetMonthlyEarningsReport_1.GetDriverEarningsSummary);
-            const result = await useCase.execute(driverId, year, month);
+            const result = await this.earningsSummaryUseCase.execute(driverId, year, month);
             res.status(HttpStatusCode_1.HTTP_STATUS_CODES.OK).json(result);
         }
         catch (error) {
-            if (error instanceof Autherror_1.AuthError) {
-                res
-                    .status(error.statusCode)
-                    .json({ success: false, error: error.message });
-                return;
-            }
-            console.error("Error fetching getDriverEarningsByMonth ", error);
-            res.status(HttpStatusCode_1.HTTP_STATUS_CODES.INTERNAL_SERVER_ERROR).json({ success: false, error: ErrorMessages_1.ERROR_MESSAGES.INTERNAL_SERVER_ERROR });
+            next(error);
         }
     }
     ;
-}
+    async getDriverDashboard(req, res, next) {
+        try {
+            const driverId = req.user?.id;
+            if (!driverId)
+                throw new Autherror_1.AuthError(ErrorMessages_1.ERROR_MESSAGES.USER_ID_NOT_FOUND, HttpStatusCode_1.HTTP_STATUS_CODES.UNAUTHORIZED);
+            const result = await this.getDriverDashboardStatsUseCase.execute(driverId);
+            res.status(HttpStatusCode_1.HTTP_STATUS_CODES.OK).json(result);
+        }
+        catch (error) {
+            next(error);
+        }
+    }
+};
 exports.BookingController = BookingController;
+exports.BookingController = BookingController = __decorate([
+    (0, tsyringe_1.injectable)(),
+    __param(0, (0, tsyringe_1.inject)(UseCaseTokens_1.USECASE_TOKENS.BOOK_DRIVER_USECASE)),
+    __param(1, (0, tsyringe_1.inject)(UseCaseTokens_1.USECASE_TOKENS.GET_ESTIMATED_FARE_USECASE)),
+    __param(2, (0, tsyringe_1.inject)(UseCaseTokens_1.USECASE_TOKENS.IGET_USER_BOOKINGS_USECASE)),
+    __param(3, (0, tsyringe_1.inject)(UseCaseTokens_1.USECASE_TOKENS.ATTACH_PAYMENT_INTENT_USECASE)),
+    __param(4, (0, tsyringe_1.inject)(UseCaseTokens_1.USECASE_TOKENS.UPDATE_BOOKING_STATUS_USECASE)),
+    __param(5, (0, tsyringe_1.inject)(UseCaseTokens_1.USECASE_TOKENS.GET_ALL_BOOKINGS_USECASE)),
+    __param(6, (0, tsyringe_1.inject)(UseCaseTokens_1.USECASE_TOKENS.CANCEL_BOOKING_USECASE)),
+    __param(7, (0, tsyringe_1.inject)(UseCaseTokens_1.USECASE_TOKENS.GET_MESSAGES_BY_BOOKING_USECASE)),
+    __param(8, (0, tsyringe_1.inject)(UseCaseTokens_1.USECASE_TOKENS.DELETE_MESSAGE_USECASE)),
+    __param(9, (0, tsyringe_1.inject)(UseCaseTokens_1.USECASE_TOKENS.GENERATE_SIGNED_URL_USECASE)),
+    __param(10, (0, tsyringe_1.inject)(UseCaseTokens_1.USECASE_TOKENS.WALLET_BALANCE_USECASE)),
+    __param(11, (0, tsyringe_1.inject)(UseCaseTokens_1.USECASE_TOKENS.WALLET_PAYMENT_USECASE)),
+    __param(12, (0, tsyringe_1.inject)(UseCaseTokens_1.USECASE_TOKENS.GET_DRIVER_REVIEWS_USECASE)),
+    __param(13, (0, tsyringe_1.inject)(UseCaseTokens_1.USECASE_TOKENS.GET_BOOKING_STATUS_SUMMARY_USECASE)),
+    __param(14, (0, tsyringe_1.inject)(UseCaseTokens_1.USECASE_TOKENS.GET_DRIVER_EARNINGS_SUMMARY_USECASE)),
+    __param(15, (0, tsyringe_1.inject)(UseCaseTokens_1.USECASE_TOKENS.GET_DRIVER_DASHBOARD_STATS_USECASE)),
+    __metadata("design:paramtypes", [Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, Object])
+], BookingController);
 //# sourceMappingURL=BookingController.js.map

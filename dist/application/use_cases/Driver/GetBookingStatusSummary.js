@@ -14,26 +14,19 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.GetBookingStatusSummary = void 0;
 const tsyringe_1 = require("tsyringe");
-const HttpStatusCode_1 = require("../../../constants/HttpStatusCode");
-const Autherror_1 = require("../../../domain/errors/Autherror");
+const Tokens_1 = require("../../../constants/Tokens");
 let GetBookingStatusSummary = class GetBookingStatusSummary {
     constructor(bookingRepo) {
         this.bookingRepo = bookingRepo;
     }
     async execute(driverId, year, month) {
-        try {
-            return await this.bookingRepo.countBookingsByStatus(driverId, year, month);
-        }
-        catch (error) {
-            console.error('GetBookingStatusSummary Use Case Error:', error.message);
-            throw new Autherror_1.AuthError('Unable to fetch booking status summary', HttpStatusCode_1.HTTP_STATUS_CODES.INTERNAL_SERVER_ERROR);
-        }
+        return await this.bookingRepo.countBookingsByStatus(driverId, year, month);
     }
 };
 exports.GetBookingStatusSummary = GetBookingStatusSummary;
 exports.GetBookingStatusSummary = GetBookingStatusSummary = __decorate([
     (0, tsyringe_1.injectable)(),
-    __param(0, (0, tsyringe_1.inject)('IBookingRepository')),
+    __param(0, (0, tsyringe_1.inject)(Tokens_1.TOKENS.IBOOKING_REPO)),
     __metadata("design:paramtypes", [Object])
 ], GetBookingStatusSummary);
 //# sourceMappingURL=GetBookingStatusSummary.js.map

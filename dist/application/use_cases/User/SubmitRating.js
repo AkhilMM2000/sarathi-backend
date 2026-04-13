@@ -53,7 +53,7 @@ let SubmitDriverReview = class SubmitDriverReview {
 exports.SubmitDriverReview = SubmitDriverReview;
 exports.SubmitDriverReview = SubmitDriverReview = __decorate([
     (0, tsyringe_1.injectable)(),
-    __param(0, (0, tsyringe_1.inject)("DriverReviewRepository")),
+    __param(0, (0, tsyringe_1.inject)(Tokens_1.TOKENS.DRIVER_REVIEW_REPO)),
     __param(1, (0, tsyringe_1.inject)(Tokens_1.TOKENS.IDRIVER_REPO)),
     __metadata("design:paramtypes", [Object, Object])
 ], SubmitDriverReview);

@@ -16,6 +16,7 @@ exports.GenerateChatSignedUrl = void 0;
 const tsyringe_1 = require("tsyringe");
 const Autherror_1 = require("../../domain/errors/Autherror");
 const HttpStatusCode_1 = require("../../constants/HttpStatusCode");
+const Tokens_1 = require("../../constants/Tokens");
 let GenerateChatSignedUrl = class GenerateChatSignedUrl {
     constructor(fileStorageService) {
         this.fileStorageService = fileStorageService;
@@ -30,7 +31,7 @@ let GenerateChatSignedUrl = class GenerateChatSignedUrl {
 exports.GenerateChatSignedUrl = GenerateChatSignedUrl;
 exports.GenerateChatSignedUrl = GenerateChatSignedUrl = __decorate([
     (0, tsyringe_1.injectable)(),
-    __param(0, (0, tsyringe_1.inject)("IFileStorageService")),
+    __param(0, (0, tsyringe_1.inject)(Tokens_1.TOKENS.FILE_SERVICE)),
     __metadata("design:paramtypes", [Object])
 ], GenerateChatSignedUrl);
 //# sourceMappingURL=chatGetSignedUrl.js.map

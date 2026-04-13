@@ -16,6 +16,7 @@ exports.AdminChangeDriverStatus = void 0;
 const tsyringe_1 = require("tsyringe");
 const Autherror_1 = require("../../../domain/errors/Autherror");
 const Tokens_1 = require("../../../constants/Tokens");
+const HttpStatusCode_1 = require("../../../constants/HttpStatusCode");
 let AdminChangeDriverStatus = class AdminChangeDriverStatus {
     constructor(driverRepository, notificationService) {
         this.driverRepository = driverRepository;
@@ -23,10 +24,10 @@ let AdminChangeDriverStatus = class AdminChangeDriverStatus {
     }
     async execute(driverId, status, reason) {
         if (!["pending", "approved", "rejected"].includes(status)) {
-            throw new Autherror_1.AuthError("Invalid status value.", 400); // Bad Request
+            throw new Autherror_1.AuthError("Invalid status value.", HttpStatusCode_1.HTTP_STATUS_CODES.BAD_REQUEST); // Bad Request
         }
         if (status === "rejected" && !reason) {
-            throw new Autherror_1.AuthError("Rejection reason is required.", 422); // Unprocessable Entity
+            throw new Autherror_1.AuthError("Rejection reason is required.", HttpStatusCode_1.HTTP_STATUS_CODES.UNPROCESSABLE_ENTITY); // Unprocessable Entity
         }
         await this.notificationService.adminChangeDriverStatusNotification(driverId, { status, reason });
         return await this.driverRepository.updateStatus(driverId, status, reason);
@@ -36,7 +37,7 @@ exports.AdminChangeDriverStatus = AdminChangeDriverStatus;
 exports.AdminChangeDriverStatus = AdminChangeDriverStatus = __decorate([
     (0, tsyringe_1.injectable)(),
     __param(0, (0, tsyringe_1.inject)(Tokens_1.TOKENS.IDRIVER_REPO)),
-    __param(1, (0, tsyringe_1.inject)("INotificationService")),
+    __param(1, (0, tsyringe_1.inject)(Tokens_1.TOKENS.NOTIFICATION_SERVICE)),
     __metadata("design:paramtypes", [Object, Object])
 ], AdminChangeDriverStatus);
 //# sourceMappingURL=AdminChangeDriverStatus.js.map

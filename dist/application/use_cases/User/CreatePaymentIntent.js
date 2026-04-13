@@ -25,7 +25,6 @@ let CreatePaymentIntent = class CreatePaymentIntent {
     async execute({ amount, driverId, }) {
         const platformFee = Math.floor(amount * 0.1); // 10% platform fee
         const driver = await this.driverRepository.findDriverById(driverId);
-        console.log(driver, 'driver');
         console.log(driver?.stripeAccountId);
         if (driver) {
             if (!driver.stripeAccountId) {
@@ -42,7 +41,7 @@ let CreatePaymentIntent = class CreatePaymentIntent {
 exports.CreatePaymentIntent = CreatePaymentIntent;
 exports.CreatePaymentIntent = CreatePaymentIntent = __decorate([
     (0, tsyringe_1.injectable)(),
-    __param(0, (0, tsyringe_1.inject)('StripePaymentService')),
+    __param(0, (0, tsyringe_1.inject)(Tokens_1.TOKENS.PAYMENT_SERVICE)),
     __param(1, (0, tsyringe_1.inject)(Tokens_1.TOKENS.IDRIVER_REPO)),
     __metadata("design:paramtypes", [Object, Object])
 ], CreatePaymentIntent);

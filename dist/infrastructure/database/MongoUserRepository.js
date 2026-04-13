@@ -5,6 +5,9 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
@@ -13,20 +16,13 @@ exports.MongoUserRepository = void 0;
 const tsyringe_1 = require("tsyringe");
 const userschema_1 = __importDefault(require("./modals/userschema")); // MongoDB Schema
 const mongoose_1 = require("mongoose");
-const Autherror_1 = require("../../domain/errors/Autherror");
-const HttpStatusCode_1 = require("../../constants/HttpStatusCode");
-const ErrorMessages_1 = require("../../constants/ErrorMessages");
-let MongoUserRepository = class MongoUserRepository {
+const BaseRepository_1 = require("./BaseRepository");
+let MongoUserRepository = class MongoUserRepository extends BaseRepository_1.BaseRepository {
+    constructor() {
+        super(userschema_1.default);
+    }
     async create(user) {
-        try {
-            const newUser = new userschema_1.default(user);
-            const savedUser = await newUser.save();
-            return savedUser.toObject();
-        }
-        catch (error) {
-            console.error("Error creating user:", error);
-            throw new Error("Failed to create user");
-        }
+        return super.create(user);
     }
     async updateUser(userId, data) {
         if (!(0, mongoose_1.isValidObjectId)(userId))
@@ -39,35 +35,17 @@ let MongoUserRepository = class MongoUserRepository {
         return user.toObject();
     }
     async findByEmail(email) {
-        try {
-            return await userschema_1.default.findOne({ email });
-        }
-        catch (error) {
-            console.error("Error finding user by email:", error);
-            throw new Error("Failed to find user");
-        }
+        return super.findOne({ email });
     }
     async findByReferralCode(referralCode) {
         if (!referralCode)
             return null;
-        try {
-            return await userschema_1.default.findOne({ referralCode });
-        }
-        catch (error) {
-            console.error("Error finding user by referral code:", error.message);
-            throw new Autherror_1.AuthError("Failed to find user by referral code", HttpStatusCode_1.HTTP_STATUS_CODES.INTERNAL_SERVER_ERROR);
-        }
+        return super.findOne({ referralCode });
     }
     async getUserById(userId) {
-        try {
-            if (!(0, mongoose_1.isValidObjectId)(userId))
-                return null; // ✅ Validate ID format
-            return await userschema_1.default.findById(new mongoose_1.Types.ObjectId(userId));
-        }
-        catch (error) {
-            console.error("Error finding user by ID:", error.message);
-            throw new Autherror_1.AuthError(ErrorMessages_1.ERROR_MESSAGES.INTERNAL_SERVER_ERROR, HttpStatusCode_1.HTTP_STATUS_CODES.INTERNAL_SERVER_ERROR);
-        }
+        if (!(0, mongoose_1.isValidObjectId)(userId))
+            return null;
+        return super.findById(userId);
     }
     async getUsers() {
         try {
@@ -146,20 +124,13 @@ let MongoUserRepository = class MongoUserRepository {
         }
     }
     async findByEmailOrMobile(email, mobile) {
-        try {
-            const user = await userschema_1.default.findOne({
-                $or: [{ email }, { mobile }]
-            });
-            return !!user;
-        }
-        catch (error) {
-            console.error("Error finding user by email or mobile:", error);
-            return false; // or throw an AppError if you want to handle differently
-        }
+        const user = await super.findOne({ $or: [{ email }, { mobile }] });
+        return !!user;
     }
 };
 exports.MongoUserRepository = MongoUserRepository;
 exports.MongoUserRepository = MongoUserRepository = __decorate([
-    (0, tsyringe_1.injectable)()
+    (0, tsyringe_1.injectable)(),
+    __metadata("design:paramtypes", [])
 ], MongoUserRepository);
 //# sourceMappingURL=MongoUserRepository.js.map

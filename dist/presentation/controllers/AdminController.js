@@ -1,23 +1,40 @@
 "use strict";
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+var __param = (this && this.__param) || function (paramIndex, decorator) {
+    return function (target, key) { decorator(target, key, paramIndex); }
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.AdminController = void 0;
 const tsyringe_1 = require("tsyringe");
 const Autherror_1 = require("../../domain/errors/Autherror");
-const Login_1 = require("../../application/use_cases/Login");
-const GetAllusers_1 = require("../../application/use_cases/Admin/GetAllusers");
-const BlockUser_1 = require("../../application/use_cases/Admin/BlockUser");
-const GetDrivers_1 = require("../../application/use_cases/Admin/GetDrivers");
-const AdminChangeDriverStatus_1 = require("../../application/use_cases/Admin/AdminChangeDriverStatus");
-const BlockOrUnblockDriver_1 = require("../../application/use_cases/Admin/BlockOrUnblockDriver");
-const GetVehiclesByUser_1 = require("../../application/use_cases/Admin/GetVehiclesByUser");
 const HttpStatusCode_1 = require("../../constants/HttpStatusCode");
-class AdminController {
-    static async login(req, res) {
+const Tokens_1 = require("../../constants/Tokens");
+const UseCaseTokens_1 = require("../../constants/UseCaseTokens");
+const ErrorMessages_1 = require("../../constants/ErrorMessages");
+let AdminController = class AdminController {
+    constructor(loginUsecase, getAllUsersUseCase, blockUserUseCase, getDriversUseCase, changeDriverStatusUseCase, blockOrUnblockDriverUseCase, getVehiclebyUserUsecase, getAdminDashboardStatsUseCase) {
+        this.loginUsecase = loginUsecase;
+        this.getAllUsersUseCase = getAllUsersUseCase;
+        this.blockUserUseCase = blockUserUseCase;
+        this.getDriversUseCase = getDriversUseCase;
+        this.changeDriverStatusUseCase = changeDriverStatusUseCase;
+        this.blockOrUnblockDriverUseCase = blockOrUnblockDriverUseCase;
+        this.getVehiclebyUserUsecase = getVehiclebyUserUsecase;
+        this.getAdminDashboardStatsUseCase = getAdminDashboardStatsUseCase;
+    }
+    async login(req, res, next) {
         try {
-            const login = tsyringe_1.container.resolve(Login_1.Login);
             const { email, password, role } = req.body;
             console.log(req.body);
-            const { accessToken, refreshToken } = await login.execute(email, password, req.body.role);
+            const { accessToken, refreshToken } = await this.loginUsecase.execute(email, password, req.body.role);
             const refreshTokenKey = `${role}RefreshToken`;
             res.cookie(refreshTokenKey, refreshToken, {
                 httpOnly: true,
@@ -25,46 +42,33 @@ class AdminController {
                 sameSite: "none",
                 maxAge: 7 * 24 * 60 * 60 * 1000,
             });
-            res.status(200).json({
+            res.status(HttpStatusCode_1.HTTP_STATUS_CODES.OK).json({
                 accessToken,
                 role,
                 message: "your admin login successfull"
             });
         }
         catch (error) {
-            if (error instanceof Autherror_1.AuthError) {
-                res.status(error.statusCode).json({
-                    success: false,
-                    error: error.message,
-                });
-                return;
-            }
-            res.status(500).json({ success: false, error: "Something went wrong" });
-            return;
+            next(error);
         }
     }
-    static async getAllUsers(req, res) {
+    async getAllUsers(req, res, next) {
         try {
-            const getAllUsers = tsyringe_1.container.resolve(GetAllusers_1.GetAllUsers);
-            const usersWithVehicleCount = await getAllUsers.execute();
+            const usersWithVehicleCount = await this.getAllUsersUseCase.execute();
             res.status(HttpStatusCode_1.HTTP_STATUS_CODES.OK).json({
                 success: true,
                 data: usersWithVehicleCount,
             });
         }
         catch (error) {
-            res.status(500).json({
-                success: false,
-                error: "Failed to fetch users",
-            });
+            next(error);
         }
     }
-    static async updateUserStatus(req, res) {
+    async updateUserStatus(req, res, next) {
         try {
             const { userId } = req.params;
             const { isBlock } = req.body;
-            const blockUserUseCase = tsyringe_1.container.resolve(BlockUser_1.BlockUserUseCase);
-            const blockedUser = await blockUserUseCase.execute(userId, isBlock);
+            const blockedUser = await this.blockUserUseCase.execute(userId, isBlock);
             res.status(HttpStatusCode_1.HTTP_STATUS_CODES.OK).json({
                 success: true,
                 message: isBlock
@@ -74,94 +78,86 @@ class AdminController {
             });
         }
         catch (error) {
-            if (error instanceof Autherror_1.AuthError) {
-                res.status(error.statusCode).json({
-                    success: false,
-                    error: error.message,
-                });
-                return;
-            }
-            res.status(HttpStatusCode_1.HTTP_STATUS_CODES.INTERNAL_SERVER_ERROR).json({ success: false, error: "Something went wrong" });
-            return;
+            next(error);
         }
     }
-    static async getAllDrivers(req, res) {
+    async getAllDrivers(req, res, next) {
         try {
-            const getAllUsersUseCase = tsyringe_1.container.resolve(GetDrivers_1.GetDrivers);
-            const drivers = await getAllUsersUseCase.execute();
+            const drivers = await this.getDriversUseCase.execute();
             res.status(HttpStatusCode_1.HTTP_STATUS_CODES.OK).json(drivers);
         }
         catch (error) {
-            console.error("Error fetching drivers:", error);
-            res.status(HttpStatusCode_1.HTTP_STATUS_CODES.INTERNAL_SERVER_ERROR).json({ message: "Failed to fetch drivers", error });
+            next(error);
         }
     }
-    static async changeDriverStatus(req, res) {
+    async changeDriverStatus(req, res, next) {
         try {
             const { driverId } = req.params;
             const { status, reason } = req.body;
-            const adminChangeDriverStatus = tsyringe_1.container.resolve(AdminChangeDriverStatus_1.AdminChangeDriverStatus);
             // Execute the use case
-            const updatedDriver = await adminChangeDriverStatus.execute(driverId, status, reason);
+            const updatedDriver = await this.changeDriverStatusUseCase.execute(driverId, status, reason);
             if (!updatedDriver) {
-                res.status(404).json({ message: "Driver not found" });
-                return;
+                throw new Autherror_1.AuthError(ErrorMessages_1.ERROR_MESSAGES.DRIVER_NOT_FOUND, HttpStatusCode_1.HTTP_STATUS_CODES.NOT_FOUND);
             }
-            res.status(200).json({
+            res.status(HttpStatusCode_1.HTTP_STATUS_CODES.OK).json({
                 message: "Driver status updated successfully",
                 driver: updatedDriver
             });
         }
         catch (error) {
-            res.status(500).json({ message: error.message });
+            next(error);
         }
     }
-    static async handleBlockStatus(req, res) {
+    async handleBlockStatus(req, res, next) {
         try {
             const { driverId } = req.params;
             const { isBlock } = req.body;
             // Validate input
             if (typeof isBlock !== "boolean") {
-                res.status(400).json({ message: "Invalid isBlocked value. Must be a boolean." });
-                return;
+                throw new Autherror_1.AuthError("Invalid isBlocked value. Must be a boolean.", HttpStatusCode_1.HTTP_STATUS_CODES.BAD_REQUEST);
             }
-            // Get use case from DI container
-            const blockOrUnblockDriver = tsyringe_1.container.resolve(BlockOrUnblockDriver_1.BlockOrUnblockDriver);
             // Execute the use case
-            await blockOrUnblockDriver.execute(driverId, isBlock);
-            res.status(200).json({ success: true, message: `Driver ${isBlock ? "blocked" : "unblocked"} successfully` });
+            await this.blockOrUnblockDriverUseCase.execute(driverId, isBlock);
+            res.status(HttpStatusCode_1.HTTP_STATUS_CODES.OK).json({ success: true, message: `Driver ${isBlock ? "blocked" : "unblocked"} successfully` });
         }
         catch (error) {
-            if (error instanceof Autherror_1.AuthError) {
-                res.status(error.statusCode).json({
-                    success: false,
-                    error: error.message,
-                });
-                return;
-            }
-            res.status(500).json({ success: false, error: "Something went wrong" });
-            return;
+            next(error);
         }
     }
-    static async getVehiclesByUser(req, res) {
+    async getVehiclesByUser(req, res, next) {
         try {
             const { userId } = req.params;
-            const getVehiclesByUser = tsyringe_1.container.resolve(GetVehiclesByUser_1.GetVehiclesByUser);
-            const vehicles = await getVehiclesByUser.execute(userId);
-            res.status(200).json({ success: true, data: vehicles });
+            const vehicles = await this.getVehiclebyUserUsecase.execute(userId);
+            res.status(HttpStatusCode_1.HTTP_STATUS_CODES.OK).json({ success: true, data: vehicles });
         }
         catch (error) {
-            if (error instanceof Autherror_1.AuthError) {
-                res.status(error.statusCode).json({
-                    success: false,
-                    error: error.message,
-                });
-                return;
-            }
-            res.status(500).json({ success: false, error: "Something went wrong" });
-            return;
+            next(error);
         }
     }
-}
+    async getDashboardStats(req, res, next) {
+        try {
+            const stats = await this.getAdminDashboardStatsUseCase.execute();
+            res.status(HttpStatusCode_1.HTTP_STATUS_CODES.OK).json({
+                success: true,
+                data: stats,
+            });
+        }
+        catch (error) {
+            next(error);
+        }
+    }
+};
 exports.AdminController = AdminController;
+exports.AdminController = AdminController = __decorate([
+    (0, tsyringe_1.injectable)(),
+    __param(0, (0, tsyringe_1.inject)(Tokens_1.TOKENS.LOGIN_USECASE)),
+    __param(1, (0, tsyringe_1.inject)(UseCaseTokens_1.USECASE_TOKENS.GET_ALL_USERS_USECASE)),
+    __param(2, (0, tsyringe_1.inject)(UseCaseTokens_1.USECASE_TOKENS.BLOCK_USER_USECASE)),
+    __param(3, (0, tsyringe_1.inject)(UseCaseTokens_1.USECASE_TOKENS.GET_DRIVERS_USECASE)),
+    __param(4, (0, tsyringe_1.inject)(UseCaseTokens_1.USECASE_TOKENS.ADMIN_CHANGE_DRIVER_STATUS_USECASE)),
+    __param(5, (0, tsyringe_1.inject)(UseCaseTokens_1.USECASE_TOKENS.BLOCK_OR_UNBLOCK_DRIVER_USECASE)),
+    __param(6, (0, tsyringe_1.inject)(Tokens_1.TOKENS.GET_VEHICLES_BY_USER_USECASE)),
+    __param(7, (0, tsyringe_1.inject)(UseCaseTokens_1.USECASE_TOKENS.GET_ADMIN_DASHBOARD_STATS_USECASE)),
+    __metadata("design:paramtypes", [Object, Object, Object, Object, Object, Object, Object, Object])
+], AdminController);
 //# sourceMappingURL=AdminController.js.map

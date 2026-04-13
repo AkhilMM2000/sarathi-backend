@@ -15,6 +15,9 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.CancelBookingInputUseCase = void 0;
 const tsyringe_1 = require("tsyringe");
 const Autherror_1 = require("../../../domain/errors/Autherror");
+const Tokens_1 = require("../../../constants/Tokens");
+const ErrorMessages_1 = require("../../../constants/ErrorMessages");
+const HttpStatusCode_1 = require("../../../constants/HttpStatusCode");
 let CancelBookingInputUseCase = class CancelBookingInputUseCase {
     constructor(notificationService, bookingRepo) {
         this.notificationService = notificationService;
@@ -24,7 +27,7 @@ let CancelBookingInputUseCase = class CancelBookingInputUseCase {
         const { bookingId, status, reason } = input;
         const booking = await this.bookingRepo.findBookingById(bookingId);
         if (!booking) {
-            throw new Autherror_1.AuthError("Booking not found", 404);
+            throw new Autherror_1.AuthError(ErrorMessages_1.ERROR_MESSAGES.BOOKING_NOT_FOUND, HttpStatusCode_1.HTTP_STATUS_CODES.NOT_FOUND);
         }
         await this.bookingRepo.updateBooking(bookingId, {
             status,
@@ -36,8 +39,8 @@ let CancelBookingInputUseCase = class CancelBookingInputUseCase {
 exports.CancelBookingInputUseCase = CancelBookingInputUseCase;
 exports.CancelBookingInputUseCase = CancelBookingInputUseCase = __decorate([
     (0, tsyringe_1.injectable)(),
-    __param(0, (0, tsyringe_1.inject)("INotificationService")),
-    __param(1, (0, tsyringe_1.inject)("IBookingRepository")),
+    __param(0, (0, tsyringe_1.inject)(Tokens_1.TOKENS.NOTIFICATION_SERVICE)),
+    __param(1, (0, tsyringe_1.inject)(Tokens_1.TOKENS.IBOOKING_REPO)),
     __metadata("design:paramtypes", [Object, Object])
 ], CancelBookingInputUseCase);
 //# sourceMappingURL=CancelBooking.js.map

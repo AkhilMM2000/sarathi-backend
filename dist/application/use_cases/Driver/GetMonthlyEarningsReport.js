@@ -14,27 +14,19 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.GetDriverEarningsSummary = void 0;
 const tsyringe_1 = require("tsyringe");
-const HttpStatusCode_1 = require("../../../constants/HttpStatusCode");
-const Autherror_1 = require("../../../domain/errors/Autherror");
-const ErrorMessages_1 = require("../../../constants/ErrorMessages");
+const Tokens_1 = require("../../../constants/Tokens");
 let GetDriverEarningsSummary = class GetDriverEarningsSummary {
     constructor(bookingRepo) {
         this.bookingRepo = bookingRepo;
     }
     async execute(driverId, year, month) {
-        try {
-            return await this.bookingRepo.getDriverEarningsByMonth(driverId, year, month);
-        }
-        catch (error) {
-            console.error('GetDriverEarningsSummary Use Case Error:', error.message);
-            throw new Autherror_1.AuthError(ErrorMessages_1.ERROR_MESSAGES.BOOKING_EARNINGS_SUMMARY_NOT_FOUND, HttpStatusCode_1.HTTP_STATUS_CODES.INTERNAL_SERVER_ERROR);
-        }
+        return await this.bookingRepo.getDriverEarningsByMonth(driverId, year, month);
     }
 };
 exports.GetDriverEarningsSummary = GetDriverEarningsSummary;
 exports.GetDriverEarningsSummary = GetDriverEarningsSummary = __decorate([
     (0, tsyringe_1.injectable)(),
-    __param(0, (0, tsyringe_1.inject)('IBookingRepository')),
+    __param(0, (0, tsyringe_1.inject)(Tokens_1.TOKENS.IBOOKING_REPO)),
     __metadata("design:paramtypes", [Object])
 ], GetDriverEarningsSummary);
 //# sourceMappingURL=GetMonthlyEarningsReport.js.map

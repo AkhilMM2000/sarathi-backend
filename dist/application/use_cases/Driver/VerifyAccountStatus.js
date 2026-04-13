@@ -17,6 +17,7 @@ exports.VerifyDriverPaymentAccount = void 0;
 const tsyringe_1 = require("tsyringe");
 const Autherror_1 = require("../../../domain/errors/Autherror");
 const Tokens_1 = require("../../../constants/Tokens");
+const HttpStatusCode_1 = require("../../../constants/HttpStatusCode");
 let VerifyDriverPaymentAccount = class VerifyDriverPaymentAccount {
     constructor(stripeService, driverRepository) {
         this.stripeService = stripeService;
@@ -25,7 +26,7 @@ let VerifyDriverPaymentAccount = class VerifyDriverPaymentAccount {
     async execute(driverId) {
         const driver = await this.driverRepository.findDriverById(driverId);
         if (!driver || !driver.stripeAccountId) {
-            throw new Autherror_1.AuthError('Driver not found or Stripe account ID missing', 404);
+            throw new Autherror_1.AuthError('Driver not found or Stripe account ID missing', HttpStatusCode_1.HTTP_STATUS_CODES.NOT_FOUND);
         }
         const account = await this.stripeService.retrieveAccount(driver.stripeAccountId);
         // console.log('Account:', account);
@@ -35,14 +36,14 @@ let VerifyDriverPaymentAccount = class VerifyDriverPaymentAccount {
         }
         else {
             await this.driverRepository.update(driverId, { stripeAccountId: '' });
-            throw new Autherror_1.AuthError('Stripe account not yet fully activated', 400);
+            throw new Autherror_1.AuthError('Stripe account not yet fully activated', HttpStatusCode_1.HTTP_STATUS_CODES.BAD_REQUEST);
         }
     }
 };
 exports.VerifyDriverPaymentAccount = VerifyDriverPaymentAccount;
 exports.VerifyDriverPaymentAccount = VerifyDriverPaymentAccount = __decorate([
     (0, tsyringe_1.injectable)(),
-    __param(0, (0, tsyringe_1.inject)('StripeService')),
+    __param(0, (0, tsyringe_1.inject)(Tokens_1.TOKENS.STRIPE_SERVICE)),
     __param(1, (0, tsyringe_1.inject)(Tokens_1.TOKENS.IDRIVER_REPO)),
     __metadata("design:paramtypes", [Object, Object])
 ], VerifyDriverPaymentAccount);

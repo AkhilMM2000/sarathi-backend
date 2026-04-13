@@ -87,8 +87,8 @@ export class AuthController {
       // 2. Clear Cookie
       res.clearCookie(`${role}RefreshToken`, {
         httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "strict",
+        secure: true,
+        sameSite: "none",
       });
 
       res.status(HTTP_STATUS_CODES.OK).json({ 

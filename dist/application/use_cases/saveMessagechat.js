@@ -16,6 +16,7 @@ exports.SaveMessageUseCase = void 0;
 const mongoose_1 = require("mongoose");
 const tsyringe_1 = require("tsyringe");
 const chatService_1 = require("../services/chatService");
+const Tokens_1 = require("../../constants/Tokens");
 let SaveMessageUseCase = class SaveMessageUseCase {
     constructor(chatRepository, chatService) {
         this.chatRepository = chatRepository;
@@ -57,7 +58,7 @@ let SaveMessageUseCase = class SaveMessageUseCase {
 exports.SaveMessageUseCase = SaveMessageUseCase;
 exports.SaveMessageUseCase = SaveMessageUseCase = __decorate([
     (0, tsyringe_1.injectable)(),
-    __param(0, (0, tsyringe_1.inject)('IChatRepository')),
+    __param(0, (0, tsyringe_1.inject)(Tokens_1.TOKENS.CHAT_REPO)),
     __metadata("design:paramtypes", [Object, chatService_1.ChatService])
 ], SaveMessageUseCase);
 //# sourceMappingURL=saveMessagechat.js.map
