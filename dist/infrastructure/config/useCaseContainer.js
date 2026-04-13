@@ -24,6 +24,7 @@ const VerifyAccountStatus_1 = require("../../application/use_cases/Driver/Verify
 const BookDriver_1 = require("../../application/use_cases/User/BookDriver");
 const GetEstimatedFare_1 = require("../../application/use_cases/User/GetEstimatedFare");
 const GetUserbooking_1 = require("../../application/use_cases/User/GetUserbooking");
+const GetRideHistory_1 = require("../../application/use_cases/User/GetRideHistory");
 const AttachPaymentIntentIdToBooking_1 = require("../../application/use_cases/User/AttachPaymentIntentIdToBooking");
 const UpdateBookingstatus_1 = require("../../application/use_cases/Driver/UpdateBookingstatus");
 const GetAllRides_1 = require("../../application/use_cases/Admin/GetAllRides");
@@ -49,6 +50,7 @@ const FindNearbyDrivers_1 = require("../../application/use_cases/User/FindNearby
 const GetNearbyDriverDetails_1 = require("../../application/use_cases/User/GetNearbyDriverDetails");
 const GetDriverDashboardStats_1 = require("../../application/use_cases/Driver/GetDriverDashboardStats");
 const GetAdminDashboardStats_1 = require("../../application/use_cases/Admin/GetAdminDashboardStats");
+const chatGetSignedUrl_1 = require("../../application/use_cases/chatGetSignedUrl");
 tsyringe_1.container.registerSingleton(Tokens_1.TOKENS.REGISTER_USER_USECASE, RegisterUser_1.RegisterUser);
 tsyringe_1.container.registerSingleton(Tokens_1.TOKENS.GET_USER_DATA_USECASE, GetUserData_1.GetUserData);
 tsyringe_1.container.registerSingleton(Tokens_1.TOKENS.VERIFY_OTP_USECAE, VerifyOTP_1.VerifyOTP);
@@ -75,8 +77,10 @@ tsyringe_1.container.registerSingleton(UseCaseTokens_1.USECASE_TOKENS.UPDATE_BOO
 tsyringe_1.container.registerSingleton(UseCaseTokens_1.USECASE_TOKENS.GET_ALL_BOOKINGS_USECASE, GetAllRides_1.GetAllBookings);
 tsyringe_1.container.registerSingleton(UseCaseTokens_1.USECASE_TOKENS.CANCEL_BOOKING_USECASE, CancelBooking_1.CancelBookingInputUseCase);
 tsyringe_1.container.registerSingleton(UseCaseTokens_1.USECASE_TOKENS.GET_MESSAGES_BY_BOOKING_USECASE, GetRidechat_1.GetMessagesByBookingId);
+tsyringe_1.container.registerSingleton(UseCaseTokens_1.USECASE_TOKENS.GET_RIDE_HISTORY_USECASE, GetRideHistory_1.GetRideHistory);
 tsyringe_1.container.registerSingleton(UseCaseTokens_1.USECASE_TOKENS.DELETE_MESSAGE_USECASE, deleteMessage_1.DeleteMessageUseCase);
 tsyringe_1.container.registerSingleton(UseCaseTokens_1.USECASE_TOKENS.GENERATE_SIGNED_URL_USECASE, GenerateSignedUrl_1.GenerateSignedUrl);
+tsyringe_1.container.registerSingleton(UseCaseTokens_1.USECASE_TOKENS.GENERATE_CHAT_SIGNED_URL_USECASE, chatGetSignedUrl_1.GenerateChatSignedUrl);
 tsyringe_1.container.registerSingleton(UseCaseTokens_1.USECASE_TOKENS.WALLET_BALANCE_USECASE, WalletBallence_1.WalletBallence);
 tsyringe_1.container.registerSingleton(UseCaseTokens_1.USECASE_TOKENS.WALLET_PAYMENT_USECASE, WalletRidePayment_1.WalletPayment);
 tsyringe_1.container.registerSingleton(UseCaseTokens_1.USECASE_TOKENS.GET_DRIVER_REVIEWS_USECASE, DriverReview_1.GetDriverReviews);

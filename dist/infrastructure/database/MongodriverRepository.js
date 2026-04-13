@@ -80,8 +80,32 @@ let MongoDriverRepository = class MongoDriverRepository extends BaseRepository_1
     async blockOrUnblockDriver(driverId, isBlock) {
         await super.update(driverId, { isBlock });
     }
-    async getDrivers() {
-        return super.findAll();
+    async getDrivers(page, limit) {
+        const skip = (page - 1) * limit;
+        const aggregationPipeline = [
+            {
+                $facet: {
+                    data: [
+                        { $sort: { createdAt: -1 } }, // Assuming recent drivers first
+                        { $skip: skip },
+                        { $limit: limit }
+                    ],
+                    totalCount: [
+                        { $count: "count" }
+                    ]
+                }
+            }
+        ];
+        const result = await Driverschema_1.default.aggregate(aggregationPipeline);
+        const data = result[0]?.data || [];
+        const total = result[0]?.totalCount[0]?.count || 0;
+        const totalPages = Math.ceil(total / limit);
+        return {
+            data: data,
+            total,
+            page,
+            totalPages
+        };
     }
     async findActiveDrivers(page, limit, placeKey) {
         const skip = (page - 1) * limit;

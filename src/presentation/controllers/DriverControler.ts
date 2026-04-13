@@ -83,7 +83,7 @@ private verifyDriverPaymentAccount: IVerifyDriverPaymentAccount
       res.cookie(`driverRefreshToken`, refreshToken, {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
-        sameSite: "none",
+        sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
         maxAge: 7 * 24 * 60 * 60 * 1000,
       });
       res
@@ -119,7 +119,7 @@ private verifyDriverPaymentAccount: IVerifyDriverPaymentAccount
       res.cookie(refreshTokenKey, refreshToken, {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
-        sameSite: "none",
+        sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
         maxAge: 7 * 24 * 60 * 60 * 1000,
       });
       res.status(HTTP_STATUS_CODES.OK).json({

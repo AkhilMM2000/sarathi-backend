@@ -24,12 +24,18 @@ let GetNearbyDriverDetails = class GetNearbyDriverDetails {
         this.userRepository = userRepository;
         this.distanceService = distanceService;
     }
-    async execute(userId, driverId) {
-        const user = await this.userRepository.getUserById(userId);
-        if (!user?.location) {
-            throw new Autherror_1.AuthError("User location not found", HttpStatusCode_1.HTTP_STATUS_CODES.BAD_REQUEST);
+    async execute(userId, driverId, lat, lng) {
+        let latitude = lat;
+        let longitude = lng;
+        // 1️⃣ Fetch the user's location from the database if not provided
+        if (latitude === undefined || longitude === undefined) {
+            const user = await this.userRepository.getUserById(userId);
+            if (!user?.location) {
+                throw new Autherror_1.AuthError("User location not found. Please provide coordinates or update your profile.", HttpStatusCode_1.HTTP_STATUS_CODES.BAD_REQUEST);
+            }
+            latitude = user.location.latitude;
+            longitude = user.location.longitude;
         }
-        const { latitude, longitude } = user.location;
         const paginatedResult = await this.driverRepository.findActiveDrivers(1, 3, '');
         const drivers = paginatedResult.data;
         // 3️⃣ Extract driver locations

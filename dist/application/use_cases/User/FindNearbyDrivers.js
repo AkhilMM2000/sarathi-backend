@@ -25,16 +25,21 @@ let FindNearbyDrivers = class FindNearbyDrivers {
         this.userRepository = userRepository;
         this.distanceService = distanceService;
     }
-    async execute(userId, page = 1, limit = 2, placeKey) {
-        // 1️⃣ Fetch the user's location from the database
-        const user = await this.userRepository.getUserById(userId);
-        if (!user) {
-            throw new Autherror_1.AuthError(ErrorMessages_1.ERROR_MESSAGES.USER_NOT_FOUND, HttpStatusCode_1.HTTP_STATUS_CODES.NOT_FOUND);
+    async execute(userId, page = 1, limit = 2, placeKey, lat, lng) {
+        let latitude = lat;
+        let longitude = lng;
+        // 1️⃣ Fetch the user's location from the database if not provided
+        if (latitude === undefined || longitude === undefined) {
+            const user = await this.userRepository.getUserById(userId);
+            if (!user) {
+                throw new Autherror_1.AuthError(ErrorMessages_1.ERROR_MESSAGES.USER_NOT_FOUND, HttpStatusCode_1.HTTP_STATUS_CODES.NOT_FOUND);
+            }
+            if (!user.location) {
+                throw new Autherror_1.AuthError(ErrorMessages_1.ERROR_MESSAGES.LOCATION_NOTFOUND, HttpStatusCode_1.HTTP_STATUS_CODES.BAD_REQUEST);
+            }
+            latitude = user.location.latitude;
+            longitude = user.location.longitude;
         }
-        if (!user.location) {
-            throw new Autherror_1.AuthError(ErrorMessages_1.ERROR_MESSAGES.LOCATION_NOTFOUND, HttpStatusCode_1.HTTP_STATUS_CODES.BAD_REQUEST);
-        }
-        const { latitude, longitude } = user.location;
         // 2️⃣ Use paginated driver fetching from repository
         const paginatedResult = await this.driverRepository.findActiveDrivers(page, limit, placeKey);
         const drivers = paginatedResult.data;

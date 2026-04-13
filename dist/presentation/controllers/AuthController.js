@@ -14,11 +14,12 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.AuthController = void 0;
 const tsyringe_1 = require("tsyringe");
-const Autherror_1 = require("../../domain/errors/Autherror");
-const ChangePassword_1 = require("../../application/use_cases/Auth/ChangePassword");
 const HttpStatusCode_1 = require("../../constants/HttpStatusCode");
 const ErrorMessages_1 = require("../../constants/ErrorMessages");
 const UseCaseTokens_1 = require("../../constants/UseCaseTokens");
+const ZodHelper_1 = require("../dto/common/ZodHelper");
+const AuthRequestDTO_1 = require("../dto/auth/AuthRequestDTO");
+const Autherror_1 = require("../../domain/errors/Autherror");
 let AuthController = class AuthController {
     constructor(refreshTokenUseCase, forgotPasswordUseCase, resetPasswordUseCase, changePasswordUseCase) {
         this.refreshTokenUseCase = refreshTokenUseCase;
@@ -28,24 +29,14 @@ let AuthController = class AuthController {
     }
     async refreshToken(req, res, next) {
         try {
-            const { role } = req.body;
-            if (!role) {
-                throw new Autherror_1.AuthError(ErrorMessages_1.ERROR_MESSAGES.ROLE_REQUIRED, HttpStatusCode_1.HTTP_STATUS_CODES.BAD_REQUEST);
-            }
-            const refreshTokenKey = role === "user"
-                ? "userRefreshToken"
-                : role === "driver"
-                    ? "driverRefreshToken"
-                    : role === "admin"
-                        ? "adminRefreshToken"
-                        : null;
-            if (!refreshTokenKey) {
-                throw new Autherror_1.AuthError(ErrorMessages_1.ERROR_MESSAGES.INVALID_ROLE, HttpStatusCode_1.HTTP_STATUS_CODES.BAD_REQUEST);
-            }
+            // 1. DTO Validation
+            const { role } = ZodHelper_1.ZodHelper.validate(AuthRequestDTO_1.RefreshTokenSchema, req.body);
+            const refreshTokenKey = `${role}RefreshToken`;
             const refreshToken = req.cookies[refreshTokenKey];
             if (!refreshToken) {
                 throw new Autherror_1.AuthError(ErrorMessages_1.ERROR_MESSAGES.REFRESHTOKEN_NOTFOUND, HttpStatusCode_1.HTTP_STATUS_CODES.FORBIDDEN);
             }
+            // 2. Execute
             const result = await this.refreshTokenUseCase.execute(refreshToken, role);
             res.status(HttpStatusCode_1.HTTP_STATUS_CODES.OK).json({ success: true, accessToken: result });
         }
@@ -55,9 +46,14 @@ let AuthController = class AuthController {
     }
     async forgotPassword(req, res, next) {
         try {
-            const { email, role } = req.body;
+            // 1. DTO Validation
+            const { email, role } = ZodHelper_1.ZodHelper.validate(AuthRequestDTO_1.ForgotPasswordSchema, req.body);
+            // 2. Execute
             await this.forgotPasswordUseCase.execute(email, role);
-            res.status(HttpStatusCode_1.HTTP_STATUS_CODES.OK).json({ success: true, message: `check ${role} mail for reset password` });
+            res.status(HttpStatusCode_1.HTTP_STATUS_CODES.OK).json({
+                success: true,
+                message: `check ${role} mail for reset password`
+            });
         }
         catch (error) {
             next(error);
@@ -65,14 +61,13 @@ let AuthController = class AuthController {
     }
     async resetPassword(req, res, next) {
         try {
-            const { token, newPassword, role } = req.body;
-            if (!token || !newPassword || !role) {
-                throw new Autherror_1.AuthError("Invalid input!", HttpStatusCode_1.HTTP_STATUS_CODES.BAD_REQUEST);
-            }
-            const result = await this.resetPasswordUseCase.execute(token, newPassword, role);
+            // 1. DTO Validation
+            const { token, newPassword, role } = ZodHelper_1.ZodHelper.validate(AuthRequestDTO_1.ResetPasswordSchema, req.body);
+            // 2. Execute
+            await this.resetPasswordUseCase.execute(token, newPassword, role);
             res.status(HttpStatusCode_1.HTTP_STATUS_CODES.OK).json({
                 success: true,
-                message: `${role}Password reset successful`,
+                message: `${role} Password reset successful`,
             });
         }
         catch (error) {
@@ -81,23 +76,18 @@ let AuthController = class AuthController {
     }
     logout(req, res, next) {
         try {
-            const role = req.query.role;
-            console.log(role);
-            if (!role) {
-                res.status(400).json({ message: "Role is required" });
-                throw new Autherror_1.AuthError("Role is required");
-            }
-            const token = req.cookies[`${role}RefreshToken`];
-            console.log(`${role} Refresh Token before clearing:`, token);
-            // 🔹 ust clearing the refresh token cookie
+            // 1. DTO Validation (Query params)
+            const { role } = ZodHelper_1.ZodHelper.validate(AuthRequestDTO_1.LogoutSchema, req.query);
+            // 2. Clear Cookie
             res.clearCookie(`${role}RefreshToken`, {
                 httpOnly: true,
-                secure: true,
-                sameSite: "none",
+                secure: process.env.NODE_ENV === "production",
+                sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
             });
-            res
-                .status(HttpStatusCode_1.HTTP_STATUS_CODES.OK)
-                .json({ success: true, message: `${role} is logout successfully` });
+            res.status(HttpStatusCode_1.HTTP_STATUS_CODES.OK).json({
+                success: true,
+                message: `${role} logout successful`
+            });
         }
         catch (error) {
             next(error);
@@ -105,22 +95,18 @@ let AuthController = class AuthController {
     }
     async ChangePassword(req, res, next) {
         try {
-            const { oldPassword, newPassword, role } = req.body;
             const userId = req.user?.id;
             if (!userId) {
                 throw new Autherror_1.AuthError(ErrorMessages_1.ERROR_MESSAGES.USER_ID_NOT_FOUND, HttpStatusCode_1.HTTP_STATUS_CODES.UNAUTHORIZED);
             }
-            if (!oldPassword || !newPassword || !role) {
-                throw new Autherror_1.AuthError("All fields (oldPassword, newPassword, role) are required.", HttpStatusCode_1.HTTP_STATUS_CODES.BAD_REQUEST);
-            }
-            if (role !== "user" && role !== "driver") {
-                throw new Autherror_1.AuthError("Role must be 'user' or 'driver'.", HttpStatusCode_1.HTTP_STATUS_CODES.NOT_FOUND);
-            }
-            const changePassword = tsyringe_1.container.resolve(ChangePassword_1.ChangePassword);
-            await changePassword.execute(userId, oldPassword, newPassword, role);
-            res
-                .status(HttpStatusCode_1.HTTP_STATUS_CODES.OK)
-                .json({ message: "Password changed successfully." });
+            // 1. DTO Validation
+            const { oldPassword, newPassword, role } = ZodHelper_1.ZodHelper.validate(AuthRequestDTO_1.ChangePasswordSchema, req.body);
+            // 2. Execute
+            await this.changePasswordUseCase.execute(userId, oldPassword, newPassword, role);
+            res.status(HttpStatusCode_1.HTTP_STATUS_CODES.OK).json({
+                success: true,
+                message: "Password changed successfully."
+            });
         }
         catch (error) {
             next(error);

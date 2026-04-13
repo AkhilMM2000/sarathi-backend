@@ -1,61 +1,44 @@
 "use strict";
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+var __param = (this && this.__param) || function (paramIndex, decorator) {
+    return function (target, key) { decorator(target, key, paramIndex); }
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.FileController = void 0;
 const tsyringe_1 = require("tsyringe");
-const GenerateSignedUrl_1 = require("../../application/use_cases/GenerateSignedUrl");
-class FileController {
-    async getSignedUrl(req, res) {
+const UseCaseTokens_1 = require("../../constants/UseCaseTokens");
+const ZodHelper_1 = require("../dto/common/ZodHelper");
+const FileRequestDTO_1 = require("../dto/common/FileRequestDTO");
+const HttpStatusCode_1 = require("../../constants/HttpStatusCode");
+let FileController = class FileController {
+    constructor(generateSignedUrlUseCase) {
+        this.generateSignedUrlUseCase = generateSignedUrlUseCase;
+    }
+    async getSignedUrl(req, res, next) {
         try {
-            const { fileType, fileName } = req.query;
-            if (!fileType || !fileName) {
-                return res.status(400).json({ message: "File type and file name are required" });
-            }
-            const SignedUrl = tsyringe_1.container.resolve(GenerateSignedUrl_1.GenerateSignedUrl);
-            const signedUrl = await SignedUrl.execute(fileType, fileName);
-            console.log(signedUrl);
-            return res.status(201).json({ signedUrl });
+            // 1. DTO Validation
+            const { fileType, fileName } = ZodHelper_1.ZodHelper.validate(FileRequestDTO_1.GetSignedUrlSchema, req.query);
+            // 2. Execute
+            const signedUrlResponse = await this.generateSignedUrlUseCase.execute(fileType, fileName);
+            return res.status(HttpStatusCode_1.HTTP_STATUS_CODES.CREATED).json({ signedUrl: signedUrlResponse });
         }
         catch (error) {
-            return res.status(500).json({ message: error.message || "Failed to generate signed URL" });
+            next(error);
         }
     }
-}
+};
 exports.FileController = FileController;
-// import { Request, Response } from "express";
-// import { autoInjectable } from "tsyringe";
-// import { GenerateSignedUrl } from "../../application/use_cases/GenerateSignedUrl";
-// @autoInjectable()
-// export class FileController {
-//   constructor(private generateSignedUrl?: GenerateSignedUrl) {}
-//   async getSignedUrl(req: Request, res: Response) {
-//     try {
-//       const { fileType, fileName } = req.query;
-//       if (!fileType || !fileName) {
-//         return res.status(400).json({ message: "File type and file name are required" });
-//       }
-//       const signedUrl = await this.generateSignedUrl!.execute(fileType as string, fileName as string);
-//       return res.json({ signedUrl });
-//     } catch (error: any) {
-//       return res.status(500).json({ message: error.message || "Failed to generate signed URL" });
-//     }
-//   }
-// }
-// import { Request, Response } from "express";
-// import { GenerateSignedUrl } from "../../application/use_cases/GenerateSignedUrl";
-// import { container } from "tsyringe";
-// export class FileController {
-//   static async getSignedUrl(req: Request, res: Response) {
-//     try {
-//       const { fileType, fileName } = req.query;
-//       if (!fileType || !fileName) {
-//         return res.status(400).json({ message: "File type and file name are required" });
-//       }
-//   const SignedUrl = container.resolve(GenerateSignedUrl);
-//       const signedUrl = await SignedUrl.execute(fileType as string, fileName as string);
-//       return res.status(201).json({ signedUrl });
-//     } catch (error: any) {
-//       return res.status(500).json({ message: error.message || "Failed to generate signed URL" });
-//     }
-//   }
-// }
+exports.FileController = FileController = __decorate([
+    (0, tsyringe_1.injectable)(),
+    __param(0, (0, tsyringe_1.inject)(UseCaseTokens_1.USECASE_TOKENS.GENERATE_SIGNED_URL_USECASE)),
+    __metadata("design:paramtypes", [Object])
+], FileController);
 //# sourceMappingURL=FileController.js.map

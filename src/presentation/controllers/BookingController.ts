@@ -9,6 +9,7 @@ import { HTTP_STATUS_CODES } from "../../constants/HttpStatusCode";
 import { IGetRideHistoryUseCase } from "../../application/use_cases/User/interfaces/IGetRideHistoryUseCase";
 import { BookDriverSchema, GetEstimatedFareSchema, UserBookingPaginationSchema, AttachPaymentIntentSchema, BookingIdParamSchema, UpdateBookingStatusSchema, RideIdParamSchema, CancelBookingSchema, ChatParamsSchema, MessageParamsSchema, RideHistorySchema, GetChatSignatureSchema, WalletPaymentSchema, DriverReviewParamsSchema, DriverStatsQuerySchema } from "../dto/booking/BookingRequestDTO";
 import { USECASE_TOKENS } from "../../constants/UseCaseTokens";
+import { GenerateChatSignedUrl } from "../../application/use_cases/chatGetSignedUrl";
 import { IBookDriverUseCase } from "../../application/use_cases/User/interfaces/IBookDriverUseCase";
 import { IGetEstimatedFare } from "../../application/use_cases/User/interfaces/IGetEstimatedFare";
 import { IGetUserBookingsUseCase } from "../../application/use_cases/User/interfaces/IGetUserBookingsUseCase";
@@ -62,7 +63,9 @@ private bookDriverUseCase: IBookDriverUseCase,
     @inject(USECASE_TOKENS.GET_DRIVER_DASHBOARD_STATS_USECASE)
   private getDriverDashboardStatsUseCase: IGetDriverDashboardStatsUseCase,
     @inject(USECASE_TOKENS.GET_RIDE_HISTORY_USECASE)
-  private getRideHistoryUseCase: IGetRideHistoryUseCase
+  private getRideHistoryUseCase: IGetRideHistoryUseCase,
+    @inject(USECASE_TOKENS.GENERATE_CHAT_SIGNED_URL_USECASE)
+  private generateChatSignedUrlUseCase: GenerateChatSignedUrl
 
    ){}
    async bookDriver(req: AuthenticatedRequest, res: Response,next:NextFunction) {
@@ -266,10 +269,10 @@ private bookDriverUseCase: IBookDriverUseCase,
       
       // 1. DTO Validation
       const { fileType } = ZodHelper.validate(GetChatSignatureSchema, req.body);
-     
+     console.log(fileType,"fileType")
       // 2. Execute
-      const chatUploadMedia = await this.generateSignedUrlUseCase.execute(fileType, id);
-      
+      const chatUploadMedia = await this.generateChatSignedUrlUseCase.execute(fileType, id);
+      console.log(chatUploadMedia,"chatUploadMedia")
       res.status(HTTP_STATUS_CODES.OK).json(chatUploadMedia);
     } catch (error: any) {
        next(error)

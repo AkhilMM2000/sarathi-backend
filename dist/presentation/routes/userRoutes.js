@@ -8,7 +8,6 @@ const express_1 = __importDefault(require("express"));
 const authMiddleware_1 = require("../../middleware/authMiddleware");
 const checkBlocked_1 = require("../../middleware/checkBlocked");
 const tsyringe_1 = require("tsyringe");
-const BookingController_1 = require("../controllers/BookingController");
 const Tokens_1 = require("../../constants/Tokens");
 const AuthRoute_1 = require("./AuthRoute");
 const router = express_1.default.Router();
@@ -40,7 +39,7 @@ router
     .all((0, authMiddleware_1.protectRoute)(["user"]), checkBlockedMiddleware.handle.bind(checkBlockedMiddleware))
     .patch(exports.userController.updateUser.bind(exports.userController));
 router.get("/nearby", (0, authMiddleware_1.protectRoute)(['user']), checkBlockedMiddleware.handle.bind(checkBlockedMiddleware), exports.userController.fetchDrivers.bind(exports.userController))
-    .get('/driver/:driverId', exports.userController.getDriverDetails.bind(exports.userController));
+    .get('/driver/:driverId', (0, authMiddleware_1.protectRoute)(['user']), checkBlockedMiddleware.handle.bind(checkBlockedMiddleware), exports.userController.getDriverDetails.bind(exports.userController));
 router.patch('/auth/change-password', (0, authMiddleware_1.protectRoute)(['user']), checkBlockedMiddleware.handle.bind(checkBlockedMiddleware), AuthRoute_1.authController.ChangePassword.bind(AuthRoute_1.authController));
 //Booking Routes
 router
@@ -55,12 +54,12 @@ router
     .patch((0, authMiddleware_1.protectRoute)(["user"]), checkBlockedMiddleware.handle.bind(checkBlockedMiddleware), exports.bookingController.attachPaymentIntent.bind(exports.bookingController));
 router
     .route("/ridehistory")
-    .get((0, authMiddleware_1.protectRoute)(["user"]), checkBlockedMiddleware.handle.bind(checkBlockedMiddleware), BookingController_1.BookingController.getRideHistory);
+    .get((0, authMiddleware_1.protectRoute)(["user"]), checkBlockedMiddleware.handle.bind(checkBlockedMiddleware), exports.bookingController.getRideHistory.bind(exports.bookingController));
 router
     .post("/payment-intent", (0, authMiddleware_1.protectRoute)(["user"]), checkBlockedMiddleware.handle.bind(checkBlockedMiddleware), exports.userController.createPaymentIntent.bind(exports.userController))
     .patch("/booking/cancel", (0, authMiddleware_1.protectRoute)(["user"]), checkBlockedMiddleware.handle.bind(checkBlockedMiddleware), exports.bookingController.cancelBooking.bind(exports.bookingController))
     .get("/chat/:roomId", (0, authMiddleware_1.protectRoute)(["user"]), checkBlockedMiddleware.handle.bind(checkBlockedMiddleware), exports.bookingController.getChatByBookingId.bind(exports.bookingController))
     .delete('/chat/:roomId/message/:messageId', (0, authMiddleware_1.protectRoute)(['user']), checkBlockedMiddleware.handle.bind(checkBlockedMiddleware), exports.bookingController.deleteMessage.bind(exports.bookingController))
-    .post("/chat/signature", (0, authMiddleware_1.protectRoute)(["user"]), checkBlockedMiddleware.handle.bind(checkBlockedMiddleware), exports.bookingController.getChatSignature.bind(exports.bookingController)).get('/driver/:id', (0, authMiddleware_1.protectRoute)(["user"]), checkBlockedMiddleware.handle.bind(checkBlockedMiddleware), exports.userController.getDriverById.bind(exports.userController)).get('/wallet', (0, authMiddleware_1.protectRoute)(["user"]), checkBlockedMiddleware.handle.bind(checkBlockedMiddleware), exports.userController.WalletTransaction.bind(exports.userController)).get('/wallet/ballence', (0, authMiddleware_1.protectRoute)(["user"]), checkBlockedMiddleware.handle.bind(checkBlockedMiddleware), exports.bookingController.Walletballence.bind(exports.bookingController)).post('/wallet/ridepayment', (0, authMiddleware_1.protectRoute)(["user"]), checkBlockedMiddleware.handle.bind(checkBlockedMiddleware), exports.bookingController.WalletPayment.bind(exports.bookingController)).post('/review', (0, authMiddleware_1.protectRoute)(["user"]), checkBlockedMiddleware.handle.bind(checkBlockedMiddleware), exports.userController.submitReview.bind(exports.userController)).get('/review/:id', (0, authMiddleware_1.protectRoute)(['user']), checkBlockedMiddleware.handle.bind(checkBlockedMiddleware), exports.bookingController.ReviewDriver.bind(exports.bookingController));
+    .post("/chat/signature", (0, authMiddleware_1.protectRoute)(["user"]), checkBlockedMiddleware.handle.bind(checkBlockedMiddleware), exports.bookingController.getChatSignature.bind(exports.bookingController)).get('/driver/:id', (0, authMiddleware_1.protectRoute)(["user"]), checkBlockedMiddleware.handle.bind(checkBlockedMiddleware), exports.userController.getDriverById.bind(exports.userController)).get('/wallet', (0, authMiddleware_1.protectRoute)(["user"]), checkBlockedMiddleware.handle.bind(checkBlockedMiddleware), exports.userController.WalletTransaction.bind(exports.userController)).get('/wallet/balance', (0, authMiddleware_1.protectRoute)(["user"]), checkBlockedMiddleware.handle.bind(checkBlockedMiddleware), exports.bookingController.WalletBalance.bind(exports.bookingController)).post('/wallet/ridepayment', (0, authMiddleware_1.protectRoute)(["user"]), checkBlockedMiddleware.handle.bind(checkBlockedMiddleware), exports.bookingController.WalletPayment.bind(exports.bookingController)).post('/review', (0, authMiddleware_1.protectRoute)(["user"]), checkBlockedMiddleware.handle.bind(checkBlockedMiddleware), exports.userController.submitReview.bind(exports.userController)).get('/review/:id', (0, authMiddleware_1.protectRoute)(['user']), checkBlockedMiddleware.handle.bind(checkBlockedMiddleware), exports.bookingController.ReviewDriver.bind(exports.bookingController));
 exports.default = router;
 //# sourceMappingURL=userRoutes.js.map

@@ -32,7 +32,16 @@ let RefreshTokenUseCase = class RefreshTokenUseCase {
         if (!refreshToken) {
             throw new Autherror_1.AuthError(ErrorMessages_1.ERROR_MESSAGES.REFRESHTOKEN_NOTFOUND, HttpStatusCode_1.HTTP_STATUS_CODES.FORBIDDEN);
         }
-        const decoded = jsonwebtoken_1.default.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET);
+        let decoded;
+        try {
+            decoded = jsonwebtoken_1.default.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET);
+        }
+        catch (error) {
+            if (error.name === "TokenExpiredError") {
+                throw new Autherror_1.AuthError("Refresh token expired. Please login again.", HttpStatusCode_1.HTTP_STATUS_CODES.UNAUTHORIZED);
+            }
+            throw new Autherror_1.AuthError("Invalid refresh token.", HttpStatusCode_1.HTTP_STATUS_CODES.UNAUTHORIZED);
+        }
         let user = null;
         if (role === "user" || role === "admin") {
             user = await this.userRepository.findByEmail(decoded.email);

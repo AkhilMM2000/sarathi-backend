@@ -30,7 +30,7 @@ let ForgotPasswordUseCase = class ForgotPasswordUseCase {
     async execute(email, role) {
         let user;
         console.log(email, role);
-        if (role == 'user') {
+        if (role == 'user' || role == 'admin') {
             user = await this.userRepository.findByEmail(email);
             if (!user)
                 throw new Autherror_1.AuthError(ErrorMessages_1.ERROR_MESSAGES.USER_NOT_FOUND, HttpStatusCode_1.HTTP_STATUS_CODES.NOT_FOUND);

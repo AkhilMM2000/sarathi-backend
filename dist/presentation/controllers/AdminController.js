@@ -14,11 +14,13 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.AdminController = void 0;
 const tsyringe_1 = require("tsyringe");
+const ZodHelper_1 = require("../dto/common/ZodHelper");
 const Autherror_1 = require("../../domain/errors/Autherror");
 const HttpStatusCode_1 = require("../../constants/HttpStatusCode");
 const Tokens_1 = require("../../constants/Tokens");
 const UseCaseTokens_1 = require("../../constants/UseCaseTokens");
 const ErrorMessages_1 = require("../../constants/ErrorMessages");
+const AdminRequestDTO_1 = require("../dto/admin/AdminRequestDTO");
 let AdminController = class AdminController {
     constructor(loginUsecase, getAllUsersUseCase, blockUserUseCase, getDriversUseCase, changeDriverStatusUseCase, blockOrUnblockDriverUseCase, getVehiclebyUserUsecase, getAdminDashboardStatsUseCase) {
         this.loginUsecase = loginUsecase;
@@ -32,20 +34,21 @@ let AdminController = class AdminController {
     }
     async login(req, res, next) {
         try {
-            const { email, password, role } = req.body;
-            console.log(req.body);
-            const { accessToken, refreshToken } = await this.loginUsecase.execute(email, password, req.body.role);
+            // 1. DTO Validation
+            const { email, password, role } = ZodHelper_1.ZodHelper.validate(AdminRequestDTO_1.AdminLoginSchema, req.body);
+            // 2. Execute
+            const { accessToken, refreshToken } = await this.loginUsecase.execute(email, password, role);
             const refreshTokenKey = `${role}RefreshToken`;
             res.cookie(refreshTokenKey, refreshToken, {
                 httpOnly: true,
                 secure: process.env.NODE_ENV === "production",
-                sameSite: "none",
+                sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
                 maxAge: 7 * 24 * 60 * 60 * 1000,
             });
             res.status(HttpStatusCode_1.HTTP_STATUS_CODES.OK).json({
                 accessToken,
                 role,
-                message: "your admin login successfull"
+                message: "your admin login successfull",
             });
         }
         catch (error) {
@@ -54,10 +57,14 @@ let AdminController = class AdminController {
     }
     async getAllUsers(req, res, next) {
         try {
+            // 1. Request Validation (Optional pagination params)
+            const { page, limit } = ZodHelper_1.ZodHelper.validate(AdminRequestDTO_1.AdminPaginationSchema, req.query);
+            // 2. Execute
             const usersWithVehicleCount = await this.getAllUsersUseCase.execute();
             res.status(HttpStatusCode_1.HTTP_STATUS_CODES.OK).json({
                 success: true,
                 data: usersWithVehicleCount,
+                pagination: { page, limit }
             });
         }
         catch (error) {
@@ -66,8 +73,10 @@ let AdminController = class AdminController {
     }
     async updateUserStatus(req, res, next) {
         try {
-            const { userId } = req.params;
-            const { isBlock } = req.body;
+            // 1. Param & Body Validation
+            const { userId } = ZodHelper_1.ZodHelper.validate(AdminRequestDTO_1.UserIdParamSchema, req.params);
+            const { isBlock } = ZodHelper_1.ZodHelper.validate(AdminRequestDTO_1.UpdateUserStatusSchema, req.body);
+            // 2. Execute
             const blockedUser = await this.blockUserUseCase.execute(userId, isBlock);
             res.status(HttpStatusCode_1.HTTP_STATUS_CODES.OK).json({
                 success: true,
@@ -83,8 +92,14 @@ let AdminController = class AdminController {
     }
     async getAllDrivers(req, res, next) {
         try {
-            const drivers = await this.getDriversUseCase.execute();
-            res.status(HttpStatusCode_1.HTTP_STATUS_CODES.OK).json(drivers);
+            // 1. Request Validation (pagination params)
+            const { page, limit } = ZodHelper_1.ZodHelper.validate(AdminRequestDTO_1.AdminPaginationSchema, req.query);
+            // 2. Execute
+            const paginatedDrivers = await this.getDriversUseCase.execute(page, limit);
+            res.status(HttpStatusCode_1.HTTP_STATUS_CODES.OK).json({
+                success: true,
+                ...paginatedDrivers
+            });
         }
         catch (error) {
             next(error);
@@ -92,9 +107,10 @@ let AdminController = class AdminController {
     }
     async changeDriverStatus(req, res, next) {
         try {
-            const { driverId } = req.params;
-            const { status, reason } = req.body;
-            // Execute the use case
+            // 1. Param & Body Validation
+            const { driverId } = ZodHelper_1.ZodHelper.validate(AdminRequestDTO_1.DriverIdParamSchema, req.params);
+            const { status, reason } = ZodHelper_1.ZodHelper.validate(AdminRequestDTO_1.ChangeDriverStatusSchema, req.body);
+            // 2. Execute the use case
             const updatedDriver = await this.changeDriverStatusUseCase.execute(driverId, status, reason);
             if (!updatedDriver) {
                 throw new Autherror_1.AuthError(ErrorMessages_1.ERROR_MESSAGES.DRIVER_NOT_FOUND, HttpStatusCode_1.HTTP_STATUS_CODES.NOT_FOUND);
@@ -110,13 +126,10 @@ let AdminController = class AdminController {
     }
     async handleBlockStatus(req, res, next) {
         try {
-            const { driverId } = req.params;
-            const { isBlock } = req.body;
-            // Validate input
-            if (typeof isBlock !== "boolean") {
-                throw new Autherror_1.AuthError("Invalid isBlocked value. Must be a boolean.", HttpStatusCode_1.HTTP_STATUS_CODES.BAD_REQUEST);
-            }
-            // Execute the use case
+            // 1. Param & Body Validation
+            const { driverId } = ZodHelper_1.ZodHelper.validate(AdminRequestDTO_1.DriverIdParamSchema, req.params);
+            const { isBlock } = ZodHelper_1.ZodHelper.validate(AdminRequestDTO_1.HandleBlockStatusSchema, req.body);
+            // 2. Execute the use case
             await this.blockOrUnblockDriverUseCase.execute(driverId, isBlock);
             res.status(HttpStatusCode_1.HTTP_STATUS_CODES.OK).json({ success: true, message: `Driver ${isBlock ? "blocked" : "unblocked"} successfully` });
         }
@@ -126,7 +139,9 @@ let AdminController = class AdminController {
     }
     async getVehiclesByUser(req, res, next) {
         try {
-            const { userId } = req.params;
+            // 1. Param Validation
+            const { userId } = ZodHelper_1.ZodHelper.validate(AdminRequestDTO_1.UserIdParamSchema, req.params);
+            // 2. Execute
             const vehicles = await this.getVehiclebyUserUsecase.execute(userId);
             res.status(HttpStatusCode_1.HTTP_STATUS_CODES.OK).json({ success: true, data: vehicles });
         }

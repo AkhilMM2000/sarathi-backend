@@ -95,6 +95,7 @@ import { IGetDriverDashboardStatsUseCase } from "../../application/use_cases/Dri
 import { GetDriverDashboardStats } from "../../application/use_cases/Driver/GetDriverDashboardStats";
 import { GetAdminDashboardStats } from "../../application/use_cases/Admin/GetAdminDashboardStats";
 import { IGetAdminDashboardStatsUseCase } from "../../application/use_cases/Admin/Interfaces/IGetAdminDashboardStatsUseCase";
+import { GenerateChatSignedUrl } from "../../application/use_cases/chatGetSignedUrl";
 
 container.registerSingleton<IRegisterUser>(
   TOKENS.REGISTER_USER_USECASE,
@@ -203,6 +204,10 @@ container.registerSingleton<IDeleteMessageUseCase>(
 container.registerSingleton<IGenerateSignedUrlUseCase>(
   USECASE_TOKENS.GENERATE_SIGNED_URL_USECASE,
   GenerateSignedUrl
+);
+container.registerSingleton<GenerateChatSignedUrl>(
+  USECASE_TOKENS.GENERATE_CHAT_SIGNED_URL_USECASE,
+  GenerateChatSignedUrl
 );
 container.registerSingleton<IWalletBalanceUseCase>(
   USECASE_TOKENS.WALLET_BALANCE_USECASE,

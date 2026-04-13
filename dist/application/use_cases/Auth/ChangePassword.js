@@ -27,7 +27,7 @@ let ChangePassword = class ChangePassword {
     async execute(userId, oldPassword, newPassword, role) {
         let account;
         // Fetch account based on role
-        if (role === "user") {
+        if (role === "user" || role === "admin") {
             account = await this.userRepository.getUserById(userId);
         }
         else {
@@ -40,7 +40,7 @@ let ChangePassword = class ChangePassword {
         if (!isPasswordValid) {
             throw new Autherror_1.AuthError(ErrorMessages_1.ERROR_MESSAGES.INCORRECT_CURRENT_PASSWORD, HttpStatusCode_1.HTTP_STATUS_CODES.BAD_REQUEST); // 400 Bad Request
         }
-        if (role === "user") {
+        if (role === "user" || role === "admin") {
             await this.userRepository.updateUser(userId, { password: newPassword });
         }
         else {

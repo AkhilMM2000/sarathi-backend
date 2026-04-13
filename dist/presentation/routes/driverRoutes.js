@@ -8,7 +8,6 @@ const express_1 = __importDefault(require("express"));
 const authMiddleware_1 = require("../../middleware/authMiddleware");
 const checkBlocked_1 = require("../../middleware/checkBlocked");
 const tsyringe_1 = require("tsyringe");
-const BookingController_1 = require("../controllers/BookingController");
 const Tokens_1 = require("../../constants/Tokens");
 const UseCaseTokens_1 = require("../../constants/UseCaseTokens");
 const AuthRoute_1 = require("./AuthRoute");
@@ -30,7 +29,7 @@ router
     .all((0, authMiddleware_1.protectRoute)(["driver"]), checkBlockedMiddleware.handle.bind(checkBlockedMiddleware)) // Apply to all methods
     .put(driverController.editDriverProfile.bind(driverController));
 router
-    .get("/ridehistory", (0, authMiddleware_1.protectRoute)(["driver"]), checkBlockedMiddleware.handle.bind(checkBlockedMiddleware), BookingController_1.BookingController.getRideHistory).patch('/auth/change-password', (0, authMiddleware_1.protectRoute)(['driver']), checkBlockedMiddleware.handle.bind(checkBlockedMiddleware), AuthRoute_1.authController.ChangePassword.bind(AuthRoute_1.authController))
+    .get("/ridehistory", (0, authMiddleware_1.protectRoute)(["driver"]), checkBlockedMiddleware.handle.bind(checkBlockedMiddleware), exports.bookingController.getRideHistory.bind(exports.bookingController)).patch('/auth/change-password', (0, authMiddleware_1.protectRoute)(['driver']), checkBlockedMiddleware.handle.bind(checkBlockedMiddleware), AuthRoute_1.authController.ChangePassword.bind(AuthRoute_1.authController))
     .post('/onboard', (0, authMiddleware_1.protectRoute)(['driver']), checkBlockedMiddleware.handle.bind(checkBlockedMiddleware), driverController.onboardDriver.bind(driverController))
     .get('/bookings', (0, authMiddleware_1.protectRoute)(['driver']), checkBlockedMiddleware.handle.bind(checkBlockedMiddleware), driverController.getBookingsForDriver.bind(driverController))
     .patch('/booking-status/:bookingId', (0, authMiddleware_1.protectRoute)(['driver']), checkBlockedMiddleware.handle.bind(checkBlockedMiddleware), exports.bookingController.updateStatus.bind(exports.bookingController))

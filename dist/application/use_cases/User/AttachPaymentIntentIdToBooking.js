@@ -26,8 +26,9 @@ let AttachPaymentIntentIdToBooking = class AttachPaymentIntentIdToBooking {
         this.stripeService = stripeService;
         this.notificationService = notificationService;
     }
-    async execute(bookingId, walletDeduction, paymentIntentId, paymentstatus, userId) {
-        const booking = await this.bookingRepo.findBookingById(bookingId);
+    async execute(params) {
+        const { rideId, walletDeduction, paymentIntentId, paymentStatus: paymentstatus, userId } = params;
+        const booking = await this.bookingRepo.findBookingById(rideId);
         console.log(walletDeduction, 'walletDeduction');
         if (!booking) {
             throw new Autherror_1.AuthError(ErrorMessages_1.ERROR_MESSAGES.BOOKING_NOT_FOUND, HttpStatusCode_1.HTTP_STATUS_CODES.NOT_FOUND);
@@ -53,10 +54,10 @@ let AttachPaymentIntentIdToBooking = class AttachPaymentIntentIdToBooking {
                 throw new Autherror_1.AuthError(ErrorMessages_1.ERROR_MESSAGES.USER_NOT_FOUND, HttpStatusCode_1.HTTP_STATUS_CODES.NOT_FOUND);
             }
         }
-        await this.bookingRepo.updateBooking(bookingId, booking);
+        await this.bookingRepo.updateBooking(rideId, booking);
         console.log(booking.driverId.toString());
         if (paymentstatus == 'COMPLETED') {
-            await this.notificationService.paymentNotification(booking.driverId.toString(), { status: paymentstatus, startDate: booking.startDate, bookingId });
+            await this.notificationService.paymentNotification(booking.driverId.toString(), { status: paymentstatus, startDate: booking.startDate, bookingId: rideId });
         }
     }
 };

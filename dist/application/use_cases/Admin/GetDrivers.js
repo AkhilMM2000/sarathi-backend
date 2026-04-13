@@ -19,8 +19,8 @@ let GetDrivers = class GetDrivers {
     constructor(driverRepository) {
         this.driverRepository = driverRepository;
     }
-    async execute() {
-        return await this.driverRepository.getDrivers();
+    async execute(page, limit) {
+        return await this.driverRepository.getDrivers(page, limit);
     }
 };
 exports.GetDrivers = GetDrivers;

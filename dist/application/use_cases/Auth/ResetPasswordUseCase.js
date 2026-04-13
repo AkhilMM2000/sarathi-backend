@@ -29,7 +29,7 @@ let ResetPasswordUseCase = class ResetPasswordUseCase {
         if (!userId)
             throw new Autherror_1.AuthError(ErrorMessages_1.ERROR_MESSAGES.INVALID_TOKEN, HttpStatusCode_1.HTTP_STATUS_CODES.BAD_REQUEST);
         let user;
-        if (role === 'user') {
+        if (role === 'user' || role === 'admin') {
             user = await this.userRepository.getUserById(userId);
             if (!user)
                 throw new Autherror_1.AuthError(ErrorMessages_1.ERROR_MESSAGES.USER_NOT_FOUND, HttpStatusCode_1.HTTP_STATUS_CODES.NOT_FOUND);
@@ -43,7 +43,7 @@ let ResetPasswordUseCase = class ResetPasswordUseCase {
             const updatedData = {
                 password: newPassword,
             };
-            if (role === 'user') {
+            if (role === 'user' || role === 'admin') {
                 if (user._id) {
                     await this.userRepository.updateUser(user._id.toString(), updatedData);
                 }

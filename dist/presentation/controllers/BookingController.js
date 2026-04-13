@@ -13,15 +13,17 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.BookingController = void 0;
+const ZodHelper_1 = require("../dto/common/ZodHelper");
 const tsyringe_1 = require("tsyringe");
 const Autherror_1 = require("../../domain/errors/Autherror");
 const Booking_1 = require("../../domain/models/Booking");
 const ErrorMessages_1 = require("../../constants/ErrorMessages");
 const HttpStatusCode_1 = require("../../constants/HttpStatusCode");
-const GetRideHistory_1 = require("../../application/use_cases/GetRideHistory");
+const BookingRequestDTO_1 = require("../dto/booking/BookingRequestDTO");
 const UseCaseTokens_1 = require("../../constants/UseCaseTokens");
+const chatGetSignedUrl_1 = require("../../application/use_cases/chatGetSignedUrl");
 let BookingController = class BookingController {
-    constructor(bookDriverUseCase, getEstimatedFareUseCase, getUserBookingsUseCase, attachPaymentIntentUseCase, updateBookingStatusUseCase, getAllBookingsUseCase, cancelBookingUseCase, getMessagesByBookingIdUseCase, deleteMessageUseCase, generateSignedUrlUseCase, walletBalanceUseCase, walletPaymentUseCase, getDriverReviewsUseCase, getBookingStatusSummary, earningsSummaryUseCase, getDriverDashboardStatsUseCase) {
+    constructor(bookDriverUseCase, getEstimatedFareUseCase, getUserBookingsUseCase, attachPaymentIntentUseCase, updateBookingStatusUseCase, getAllBookingsUseCase, cancelBookingUseCase, getMessagesByBookingIdUseCase, deleteMessageUseCase, generateSignedUrlUseCase, walletBalanceUseCase, walletPaymentUseCase, getDriverReviewsUseCase, getBookingStatusSummary, earningsSummaryUseCase, getDriverDashboardStatsUseCase, getRideHistoryUseCase, generateChatSignedUrlUseCase) {
         this.bookDriverUseCase = bookDriverUseCase;
         this.getEstimatedFareUseCase = getEstimatedFareUseCase;
         this.getUserBookingsUseCase = getUserBookingsUseCase;
@@ -38,6 +40,8 @@ let BookingController = class BookingController {
         this.getBookingStatusSummary = getBookingStatusSummary;
         this.earningsSummaryUseCase = earningsSummaryUseCase;
         this.getDriverDashboardStatsUseCase = getDriverDashboardStatsUseCase;
+        this.getRideHistoryUseCase = getRideHistoryUseCase;
+        this.generateChatSignedUrlUseCase = generateChatSignedUrlUseCase;
     }
     async bookDriver(req, res, next) {
         try {
@@ -45,16 +49,13 @@ let BookingController = class BookingController {
             if (!userId) {
                 throw new Autherror_1.AuthError(ErrorMessages_1.ERROR_MESSAGES.USER_ID_NOT_FOUND, HttpStatusCode_1.HTTP_STATUS_CODES.UNAUTHORIZED);
             }
-            const { driverId, fromLocation, toLocation, startDate, endDate, estimatedKm, bookingType, } = req.body;
+            console.log(req.body, 'booking data ');
+            // 1. DTO Validation
+            const validatedData = ZodHelper_1.ZodHelper.validate(BookingRequestDTO_1.BookDriverSchema, req.body);
+            // 2. Execute
             const booking = await this.bookDriverUseCase.execute({
                 userId,
-                driverId,
-                fromLocation,
-                toLocation,
-                startDate,
-                endDate,
-                estimatedKm,
-                bookingType,
+                ...validatedData
             });
             res.status(HttpStatusCode_1.HTTP_STATUS_CODES.CREATED).json({ success: true, data: booking });
         }
@@ -64,13 +65,10 @@ let BookingController = class BookingController {
     }
     async getEstimatedFare(req, res, next) {
         try {
-            const { bookingType, estimatedKm, startDate, endDate } = req.body;
-            const fare = await this.getEstimatedFareUseCase.execute({
-                bookingType,
-                estimatedKm,
-                startDate: new Date(startDate),
-                endDate: endDate ? new Date(endDate) : undefined,
-            });
+            // 1. DTO Validation
+            const validatedData = ZodHelper_1.ZodHelper.validate(BookingRequestDTO_1.GetEstimatedFareSchema, req.body);
+            // 2. Execute
+            const fare = await this.getEstimatedFareUseCase.execute(validatedData);
             res.status(HttpStatusCode_1.HTTP_STATUS_CODES.OK).json({ estimatedFare: fare });
         }
         catch (error) {
@@ -83,9 +81,9 @@ let BookingController = class BookingController {
             if (!userId) {
                 throw new Autherror_1.AuthError(ErrorMessages_1.ERROR_MESSAGES.USER_ID_NOT_FOUND, HttpStatusCode_1.HTTP_STATUS_CODES.BAD_REQUEST);
             }
-            const page = parseInt(req.query.page) || 1;
-            const limit = parseInt(req.query.limit) || 2;
-            ;
+            // 1. Query Validation
+            const { page, limit } = ZodHelper_1.ZodHelper.validate(BookingRequestDTO_1.UserBookingPaginationSchema, req.query);
+            // 2. Execute
             const { data, total, totalPages } = await this.getUserBookingsUseCase.execute(userId, page, limit);
             res.status(HttpStatusCode_1.HTTP_STATUS_CODES.OK).json({ data, total, totalPages });
         }
@@ -95,16 +93,21 @@ let BookingController = class BookingController {
     }
     async attachPaymentIntent(req, res, next) {
         try {
-            const { paymentIntentId, paymentStatus, walletDeduction } = req.body;
-            const { rideId } = req.params;
             const userId = req.user?.id;
             if (!userId) {
                 throw new Autherror_1.AuthError(ErrorMessages_1.ERROR_MESSAGES.USER_ID_NOT_FOUND, HttpStatusCode_1.HTTP_STATUS_CODES.BAD_REQUEST);
             }
-            await this.attachPaymentIntentUseCase.execute(rideId, walletDeduction, paymentIntentId, paymentStatus, userId);
-            res
-                .status(HttpStatusCode_1.HTTP_STATUS_CODES.OK)
-                .json({
+            // 1. Param & Body Validation
+            const { rideId } = ZodHelper_1.ZodHelper.validate(BookingRequestDTO_1.RideIdParamSchema, req.params);
+            const validatedData = ZodHelper_1.ZodHelper.validate(BookingRequestDTO_1.AttachPaymentIntentSchema, req.body);
+            // 2. Execute
+            await this.attachPaymentIntentUseCase.execute({
+                rideId,
+                userId,
+                ...validatedData,
+                paymentStatus: validatedData.paymentStatus // Cast safely to enum if needed, or let use case handle it
+            });
+            res.status(HttpStatusCode_1.HTTP_STATUS_CODES.OK).json({
                 success: true,
                 message: "PaymentIntent attached successfully",
             });
@@ -115,20 +118,17 @@ let BookingController = class BookingController {
     }
     async updateStatus(req, res, next) {
         try {
-            const { bookingId } = req.params;
-            const { status, reason, finalKm } = req.body;
-            console.log(req.body);
-            if (!status) {
-                throw new Autherror_1.AuthError("status required for updating status", HttpStatusCode_1.HTTP_STATUS_CODES.BAD_REQUEST);
+            // 1. Param & Body Validation
+            const { bookingId } = ZodHelper_1.ZodHelper.validate(BookingRequestDTO_1.BookingIdParamSchema, req.params);
+            const validatedData = ZodHelper_1.ZodHelper.validate(BookingRequestDTO_1.UpdateBookingStatusSchema, req.body);
+            if (!bookingId) {
+                throw new Autherror_1.AuthError("Booking ID is required", HttpStatusCode_1.HTTP_STATUS_CODES.BAD_REQUEST);
             }
-            if (status === "REJECTED" && !reason) {
-                throw new Autherror_1.AuthError("Reason is required when rejecting a booking.", HttpStatusCode_1.HTTP_STATUS_CODES.BAD_REQUEST);
-            }
-            if ((status === "COMPLETED" && finalKm === undefined) ||
-                finalKm === null) {
-                throw new Autherror_1.AuthError("finalKm is required when completing a booking.", HttpStatusCode_1.HTTP_STATUS_CODES.BAD_REQUEST);
-            }
-            await this.updateBookingStatusUseCase.execute({ bookingId, status, reason, finalKm });
+            // 2. Execute
+            await this.updateBookingStatusUseCase.execute({
+                bookingId,
+                ...validatedData
+            });
             res.status(HttpStatusCode_1.HTTP_STATUS_CODES.OK).json({ message: "Booking status updated successfully" });
         }
         catch (error) {
@@ -137,8 +137,9 @@ let BookingController = class BookingController {
     }
     async getAllBookings(req, res, next) {
         try {
-            const page = parseInt(req.query.page) || 1;
-            const limit = parseInt(req.query.limit) || 2;
+            // 1. Query Validation
+            const { page, limit } = ZodHelper_1.ZodHelper.validate(BookingRequestDTO_1.UserBookingPaginationSchema, req.query);
+            // 2. Execute
             const bookings = await this.getAllBookingsUseCase.execute(page, limit);
             res.status(HttpStatusCode_1.HTTP_STATUS_CODES.OK).json({ bookings });
         }
@@ -148,15 +149,12 @@ let BookingController = class BookingController {
     }
     async cancelBooking(req, res, next) {
         try {
-            const { bookingId, reason } = req.body;
-            if (!bookingId || !reason) {
-                res.status(400).json({ message: "bookingId and reason are required" });
-                return;
-            }
+            // 1. DTO Validation
+            const validatedData = ZodHelper_1.ZodHelper.validate(BookingRequestDTO_1.CancelBookingSchema, req.body);
+            // 2. Execute
             await this.cancelBookingUseCase.execute({
-                bookingId,
-                reason,
-                status: Booking_1.BookingStatus.CANCELLED,
+                ...validatedData,
+                status: Booking_1.BookingStatus.CANCELLED
             });
             res.status(HttpStatusCode_1.HTTP_STATUS_CODES.OK).json({ message: "Booking cancelled successfully" });
         }
@@ -166,15 +164,14 @@ let BookingController = class BookingController {
     }
     async getChatByBookingId(req, res, next) {
         try {
-            const { roomId } = req.params;
+            // 1. Param Validation
+            const { roomId } = ZodHelper_1.ZodHelper.validate(BookingRequestDTO_1.ChatParamsSchema, req.params);
             if (!roomId) {
-                throw new Autherror_1.AuthError("Booking ID is required", HttpStatusCode_1.HTTP_STATUS_CODES.BAD_REQUEST);
+                throw new Autherror_1.AuthError("Room ID is required", HttpStatusCode_1.HTTP_STATUS_CODES.BAD_REQUEST);
             }
+            // 2. Execute
             const chat = await this.getMessagesByBookingIdUseCase.execute({ bookingId: roomId });
-            if (!chat) {
-                throw new Autherror_1.AuthError("Chat not found", HttpStatusCode_1.HTTP_STATUS_CODES.NOT_FOUND);
-            }
-            res.status(HttpStatusCode_1.HTTP_STATUS_CODES.OK).json(chat);
+            res.status(HttpStatusCode_1.HTTP_STATUS_CODES.OK).json({ chat });
         }
         catch (error) {
             next(error);
@@ -182,22 +179,24 @@ let BookingController = class BookingController {
     }
     async deleteMessage(req, res, next) {
         try {
-            const { roomId, messageId } = req.params;
+            // 1. Param Validation
+            const { roomId, messageId } = ZodHelper_1.ZodHelper.validate(BookingRequestDTO_1.MessageParamsSchema, req.params);
+            // 2. Execute
             await this.deleteMessageUseCase.execute(roomId, messageId);
-            res.status(HttpStatusCode_1.HTTP_STATUS_CODES.OK).json({ message: 'Message deleted successfully' });
+            res.status(HttpStatusCode_1.HTTP_STATUS_CODES.OK).json({ success: true, message: "Message deleted" });
         }
         catch (error) {
             next(error);
         }
     }
-    static async getRideHistory(req, res, next) {
+    async getRideHistory(req, res, next) {
         try {
             const id = req.user?.id;
             const role = req.user?.role;
-            const page = parseInt(req.query.page) || 1;
-            const limit = parseInt(req.query.limit) || 2;
-            const BookingHistory = tsyringe_1.container.resolve(GetRideHistory_1.GetRideHistory);
-            const ridehistory = await BookingHistory.execute(role, id, page, limit);
+            // 1. Query Validation
+            const { page, limit } = ZodHelper_1.ZodHelper.validate(BookingRequestDTO_1.RideHistorySchema, req.query);
+            // 2. Execute
+            const ridehistory = await this.getRideHistoryUseCase.execute(role, id, page, limit);
             res.status(HttpStatusCode_1.HTTP_STATUS_CODES.OK).json(ridehistory);
         }
         catch (error) {
@@ -207,20 +206,23 @@ let BookingController = class BookingController {
     async getChatSignature(req, res, next) {
         try {
             const id = req.user?.id;
-            const { fileType } = req.body;
-            const chatUploadMedia = await this.generateSignedUrlUseCase.execute(fileType, id);
-            console.log(chatUploadMedia, 'media signurl reach');
+            // 1. DTO Validation
+            const { fileType } = ZodHelper_1.ZodHelper.validate(BookingRequestDTO_1.GetChatSignatureSchema, req.body);
+            console.log(fileType, "fileType");
+            // 2. Execute
+            const chatUploadMedia = await this.generateChatSignedUrlUseCase.execute(fileType, id);
+            console.log(chatUploadMedia, "chatUploadMedia");
             res.status(HttpStatusCode_1.HTTP_STATUS_CODES.OK).json(chatUploadMedia);
         }
         catch (error) {
             next(error);
         }
     }
-    async Walletballence(req, res, next) {
+    async WalletBalance(req, res, next) {
         try {
             const userId = req.user?.id;
-            const ballence = await this.walletBalanceUseCase.execute(userId);
-            res.status(HttpStatusCode_1.HTTP_STATUS_CODES.OK).json({ ballence });
+            const balance = await this.walletBalanceUseCase.execute(userId);
+            res.status(HttpStatusCode_1.HTTP_STATUS_CODES.OK).json({ balance });
         }
         catch (error) {
             next(error);
@@ -229,9 +231,11 @@ let BookingController = class BookingController {
     async WalletPayment(req, res, next) {
         try {
             const userId = req.user?.id;
-            const { rideId, amount } = req.body;
+            // 1. DTO Validation
+            const { rideId, amount } = ZodHelper_1.ZodHelper.validate(BookingRequestDTO_1.WalletPaymentSchema, req.body);
+            // 2. Execute
             await this.walletPaymentUseCase.WalletRidePayment(rideId, userId, amount);
-            res.status(HttpStatusCode_1.HTTP_STATUS_CODES.OK).json({ message: "payment successfull" });
+            res.status(HttpStatusCode_1.HTTP_STATUS_CODES.OK).json({ message: "Payment successful" });
         }
         catch (error) {
             next(error);
@@ -239,10 +243,10 @@ let BookingController = class BookingController {
     }
     async ReviewDriver(req, res, next) {
         try {
-            const driverId = req.params.id;
-            console.log(driverId, "driver id");
-            const page = parseInt(req.query.page) || 1;
-            const limit = parseInt(req.query.limit) || 2;
+            // 1. Validation
+            const { id: driverId } = ZodHelper_1.ZodHelper.validate(BookingRequestDTO_1.DriverReviewParamsSchema, req.params);
+            const { page, limit } = ZodHelper_1.ZodHelper.validate(BookingRequestDTO_1.UserBookingPaginationSchema, req.query);
+            // 2. Execute
             const reviews = await this.getDriverReviewsUseCase.execute(driverId, page, limit);
             res.status(HttpStatusCode_1.HTTP_STATUS_CODES.OK).json(reviews);
         }
@@ -253,8 +257,9 @@ let BookingController = class BookingController {
     async getDriverBookingStatusSummary(req, res, next) {
         try {
             const driverId = req.user?.id;
-            const year = req.query.year ? parseInt(req.query.year) : undefined;
-            const month = req.query.month ? parseInt(req.query.month) : undefined;
+            // 1. Query Validation
+            const { year, month } = ZodHelper_1.ZodHelper.validate(BookingRequestDTO_1.DriverStatsQuerySchema, req.query);
+            // 2. Execute
             const result = await this.getBookingStatusSummary.execute(driverId, year, month);
             res.status(HttpStatusCode_1.HTTP_STATUS_CODES.OK).json(result);
         }
@@ -262,20 +267,19 @@ let BookingController = class BookingController {
             next(error);
         }
     }
-    ;
     async getDriverEarningsByMonth(req, res, next) {
         try {
             const driverId = req.user?.id;
-            const year = req.query.year ? parseInt(req.query.year) : new Date().getFullYear();
-            const month = req.query.month ? parseInt(req.query.month) : undefined;
-            const result = await this.earningsSummaryUseCase.execute(driverId, year, month);
+            // 1. Query Validation
+            const { year, month } = ZodHelper_1.ZodHelper.validate(BookingRequestDTO_1.DriverStatsQuerySchema, req.query);
+            // 2. Execute
+            const result = await this.earningsSummaryUseCase.execute(driverId, year || new Date().getFullYear(), month);
             res.status(HttpStatusCode_1.HTTP_STATUS_CODES.OK).json(result);
         }
         catch (error) {
             next(error);
         }
     }
-    ;
     async getDriverDashboard(req, res, next) {
         try {
             const driverId = req.user?.id;
@@ -308,6 +312,8 @@ exports.BookingController = BookingController = __decorate([
     __param(13, (0, tsyringe_1.inject)(UseCaseTokens_1.USECASE_TOKENS.GET_BOOKING_STATUS_SUMMARY_USECASE)),
     __param(14, (0, tsyringe_1.inject)(UseCaseTokens_1.USECASE_TOKENS.GET_DRIVER_EARNINGS_SUMMARY_USECASE)),
     __param(15, (0, tsyringe_1.inject)(UseCaseTokens_1.USECASE_TOKENS.GET_DRIVER_DASHBOARD_STATS_USECASE)),
-    __metadata("design:paramtypes", [Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, Object])
+    __param(16, (0, tsyringe_1.inject)(UseCaseTokens_1.USECASE_TOKENS.GET_RIDE_HISTORY_USECASE)),
+    __param(17, (0, tsyringe_1.inject)(UseCaseTokens_1.USECASE_TOKENS.GENERATE_CHAT_SIGNED_URL_USECASE)),
+    __metadata("design:paramtypes", [Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, chatGetSignedUrl_1.GenerateChatSignedUrl])
 ], BookingController);
 //# sourceMappingURL=BookingController.js.map

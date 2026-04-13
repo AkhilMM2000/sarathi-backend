@@ -23,20 +23,20 @@ let MongoChatRepository = class MongoChatRepository extends BaseRepository_1.Bas
         super(ChatSchema_1.default);
     }
     async findChatByBookingId(bookingId) {
-        return super.findOne({ bookingId });
+        return super.findOne({ bookingId: new mongoose_1.Types.ObjectId(bookingId) });
     }
     async createChat(chat) {
         return super.create(chat);
     }
     async addMessageToChat(bookingId, message) {
-        const result = await ChatSchema_1.default.findOneAndUpdate({ bookingId }, { $push: { messages: message } }, { new: true, projection: { messages: { $slice: -1 } } });
+        const result = await ChatSchema_1.default.findOneAndUpdate({ bookingId: new mongoose_1.Types.ObjectId(bookingId) }, { $push: { messages: message } }, { new: true, projection: { messages: { $slice: -1 } } });
         if (!result || !result.messages || result.messages.length === 0) {
             return null;
         }
         return result.messages[result.messages.length - 1];
     }
     async findMessagesByBookingId(bookingId) {
-        const chat = await ChatSchema_1.default.findOne({ bookingId })
+        const chat = await ChatSchema_1.default.findOne({ bookingId: new mongoose_1.Types.ObjectId(bookingId) })
             .select('messages')
             .lean();
         if (!chat) {
