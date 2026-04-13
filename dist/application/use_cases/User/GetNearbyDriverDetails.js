@@ -36,44 +36,34 @@ let GetNearbyDriverDetails = class GetNearbyDriverDetails {
             latitude = user.location.latitude;
             longitude = user.location.longitude;
         }
-        const paginatedResult = await this.driverRepository.findActiveDrivers(1, 3, '');
-        const drivers = paginatedResult.data;
-        // 3️⃣ Extract driver locations
-        const driverLocations = drivers.map((driver) => {
-            if ('coordinates' in driver.location) {
-                return {
-                    id: driver._id?.toString() || "",
-                    latitude: driver.location.coordinates[1],
-                    longitude: driver.location.coordinates[0],
-                };
+        // 2️⃣ Fetch the specific driver directly
+        const driver = await this.driverRepository.findDriverById(driverId);
+        if (!driver) {
+            throw new Autherror_1.AuthError("Driver not found", HttpStatusCode_1.HTTP_STATUS_CODES.NOT_FOUND);
+        }
+        // 3️⃣ Extract driver location for distance calculation
+        const driverLocation = ('coordinates' in driver.location)
+            ? {
+                id: driverId,
+                latitude: driver.location.coordinates[1],
+                longitude: driver.location.coordinates[0],
             }
-            else {
-                return {
-                    id: driver._id?.toString() || "",
-                    latitude: driver.location.latitude,
-                    longitude: driver.location.longitude,
-                };
-            }
-        });
-        // 4️⃣ Get distances
-        const distances = await this.distanceService.getDistances({ latitude, longitude }, driverLocations);
-        // 5️⃣ Add distance to driver
-        const driversWithDistance = drivers.map((driver) => {
-            const driverId = driver._id?.toString();
-            return {
-                ...driver,
-                distance: driverId ? distances[driverId] || null : null,
+            : {
+                id: driverId,
+                latitude: driver.location.latitude,
+                longitude: driver.location.longitude,
             };
-        });
-        const driver = driversWithDistance.find((d) => d._id?.toString() === driverId);
+        // 4️⃣ Get distance for this specific driver
+        const distances = await this.distanceService.getDistances({ latitude, longitude }, [driverLocation]);
+        const distance = distances[driverId] || null;
         return {
             _id: driverId,
-            name: driver?.name,
-            profileImage: driver?.profileImage,
-            location: driver?.location,
-            place: driver?.place,
-            averageRating: driver?.averageRating,
-            distance: driver?.distance
+            name: driver.name,
+            profileImage: driver.profileImage,
+            location: driver.location,
+            place: driver.place,
+            averageRating: driver.averageRating,
+            distance: distance
         };
     }
 };

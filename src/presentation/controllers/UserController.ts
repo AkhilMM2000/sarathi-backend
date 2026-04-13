@@ -382,7 +382,7 @@ export class UserController {
       
       // 1. Param Validation
       const { driverId } = ZodHelper.validate(DriverIdParamSchema, req.params);
-
+console.log(req.query,'query')
       // 2. Query Validation (Optional coordinates)
       const { lat, lng } = ZodHelper.validate(GetNearbyDriverQuerySchema, req.query);
 
@@ -390,7 +390,7 @@ export class UserController {
 
       // 3. Execute and map to safe Response DTO
       const driver = await this.getNearbyDriverDetailsUseCase.execute(userId!, driverId, lat, lng);
-
+console.log(driver,userId!, driverId, lat, lng,'driver');
       res.status(HTTP_STATUS_CODES.OK).json(toDriverResponse(driver));
     } catch (error: any) {
       console.log(error,'error')
@@ -452,7 +452,7 @@ export class UserController {
 
       // 2. Execute
       const driver = await this.getDriverProfileUsecase.execute(driverId);
-
+      console.log(driver,'driver')
       if (!driver) {
         throw new AuthError(ERROR_MESSAGES.DRIVER_NOT_FOUND, HTTP_STATUS_CODES.NOT_FOUND);
       }
