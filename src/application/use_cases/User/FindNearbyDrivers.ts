@@ -37,7 +37,9 @@ export class FindNearbyDrivers implements IFindNearbyDriversUseCase{
     const paginatedResult= await this.driverRepository.findActiveDrivers(
       page,
       limit,
-      placeKey
+      placeKey,
+      latitude,
+      longitude
     );
     const drivers = paginatedResult.data;
 

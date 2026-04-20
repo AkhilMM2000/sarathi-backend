@@ -9,7 +9,7 @@ export interface IDriverRepository {
   updateStatus(driverId: string, status: "pending" | "approved" | "rejected", reason?: string):Promise<Driver | null>; 
   blockOrUnblockDriver(driverId: string, isBlocked: boolean): Promise<void>;
   update(userId: string, data: Partial<Driver>): Promise<Driver | null>;
- findActiveDrivers(page: number, limit: number, placeKey?: string): Promise<PaginatedResult<Driver>>;
+  findActiveDrivers(page: number, limit: number, placeKey?: string, lat?: number, lng?: number): Promise<PaginatedResult<Driver>>;
 
   updateStripeAccount(driverId: string, stripeAccountId: string): Promise<Driver>;
   

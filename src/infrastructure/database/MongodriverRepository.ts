@@ -119,7 +119,9 @@ export class MongoDriverRepository extends BaseRepository<Driver, IDriver> imple
   async findActiveDrivers(
   page: number,
   limit: number,
-  placeKey?: string
+  placeKey?: string,
+  lat?: number,
+  lng?: number
 ): Promise<PaginatedResult<Driver>> {
   const skip = (page - 1) * limit;
 
@@ -132,28 +134,42 @@ export class MongoDriverRepository extends BaseRepository<Driver, IDriver> imple
     matchStage.place = { $regex: trimmedPlaceKey, $options: "i" };
   }
 
-  const aggregationPipeline = [
-    { $match: matchStage },
-    {
-      $facet: {
-        data: [
-          { $project: {
-              _id: 1,             
-              name: 1,
-              profileImage: 1,
-              place: 1,
-              location:1,
-              averageRating:1
-          }},
-          { $skip: skip },
-          { $limit: limit }
-        ],
-        totalCount: [
-          { $count: "count" }
-        ]
+  const aggregationPipeline: any[] = [];
+
+  if (lat !== undefined && lng !== undefined) {
+    aggregationPipeline.push({
+      $geoNear: {
+        near: { type: "Point", coordinates: [lng, lat] },
+        distanceField: "distance",
+        maxDistance: 50000, // 50km equivalent in meters
+        spherical: true,
+        query: matchStage
       }
+    });
+  } else {
+    aggregationPipeline.push({ $match: matchStage });
+  }
+
+  aggregationPipeline.push({
+    $facet: {
+      data: [
+        { $project: {
+            _id: 1,             
+            name: 1,
+            profileImage: 1,
+            place: 1,
+            location:1,
+            averageRating:1,
+            distance:1 // Include distance from $geoNear if present
+        }},
+        { $skip: skip },
+        { $limit: limit }
+      ],
+      totalCount: [
+        { $count: "count" }
+      ]
     }
-  ];
+  });
 
   const result = await DriverModel.aggregate(aggregationPipeline);
 
