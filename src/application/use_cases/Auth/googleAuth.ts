@@ -60,7 +60,7 @@ export class GoogleAuthUseCase {
         user = await this.driverRepository.findByEmail(email);
 
         if (!user) {
-          throw new AuthError("Driver not registered", 401);
+          throw new AuthError("Driver not registered. Please register manually.", 401);
         }
       }
       if(!user){
@@ -82,6 +82,9 @@ export class GoogleAuthUseCase {
       return { accessToken, refreshToken,success:true};
     } catch (error) {
       console.error(error);
+      if (error instanceof AuthError) {
+        throw error;
+      }
       throw new AuthError("Google authentication failed", 401);
     }
   }
