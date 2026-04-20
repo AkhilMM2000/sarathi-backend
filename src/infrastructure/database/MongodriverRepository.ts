@@ -126,7 +126,8 @@ export class MongoDriverRepository extends BaseRepository<Driver, IDriver> imple
   const skip = (page - 1) * limit;
 
   const matchStage: any = {
-    status: "approved"
+    status: "approved",
+    activePayment: true
   };
 
   const trimmedPlaceKey = placeKey?.trim();
