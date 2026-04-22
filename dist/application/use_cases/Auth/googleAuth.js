@@ -63,7 +63,7 @@ let GoogleAuthUseCase = class GoogleAuthUseCase {
             else if (role === "driver") {
                 user = await this.driverRepository.findByEmail(email);
                 if (!user) {
-                    throw new Autherror_1.AuthError("Driver not registered", 401);
+                    throw new Autherror_1.AuthError("Driver not registered. Please register manually.", 401);
                 }
             }
             if (!user) {
@@ -83,6 +83,9 @@ let GoogleAuthUseCase = class GoogleAuthUseCase {
         }
         catch (error) {
             console.error(error);
+            if (error instanceof Autherror_1.AuthError) {
+                throw error;
+            }
             throw new Autherror_1.AuthError("Google authentication failed", 401);
         }
     }

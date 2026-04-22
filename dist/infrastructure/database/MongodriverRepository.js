@@ -107,37 +107,51 @@ let MongoDriverRepository = class MongoDriverRepository extends BaseRepository_1
             totalPages
         };
     }
-    async findActiveDrivers(page, limit, placeKey) {
+    async findActiveDrivers(page, limit, placeKey, lat, lng) {
         const skip = (page - 1) * limit;
         const matchStage = {
-            status: "approved"
+            status: "approved",
+            activePayment: true
         };
         const trimmedPlaceKey = placeKey?.trim();
         if (trimmedPlaceKey) {
             matchStage.place = { $regex: trimmedPlaceKey, $options: "i" };
         }
-        const aggregationPipeline = [
-            { $match: matchStage },
-            {
-                $facet: {
-                    data: [
-                        { $project: {
-                                _id: 1,
-                                name: 1,
-                                profileImage: 1,
-                                place: 1,
-                                location: 1,
-                                averageRating: 1
-                            } },
-                        { $skip: skip },
-                        { $limit: limit }
-                    ],
-                    totalCount: [
-                        { $count: "count" }
-                    ]
+        const aggregationPipeline = [];
+        if (lat !== undefined && lng !== undefined) {
+            aggregationPipeline.push({
+                $geoNear: {
+                    near: { type: "Point", coordinates: [lng, lat] },
+                    distanceField: "distance",
+                    maxDistance: 50000, // 50km equivalent in meters
+                    spherical: true,
+                    query: matchStage
                 }
+            });
+        }
+        else {
+            aggregationPipeline.push({ $match: matchStage });
+        }
+        aggregationPipeline.push({
+            $facet: {
+                data: [
+                    { $project: {
+                            _id: 1,
+                            name: 1,
+                            profileImage: 1,
+                            place: 1,
+                            location: 1,
+                            averageRating: 1,
+                            distance: 1 // Include distance from $geoNear if present
+                        } },
+                    { $skip: skip },
+                    { $limit: limit }
+                ],
+                totalCount: [
+                    { $count: "count" }
+                ]
             }
-        ];
+        });
         const result = await Driverschema_1.default.aggregate(aggregationPipeline);
         const data = result[0]?.data || [];
         const total = result[0]?.totalCount[0]?.count || 0;

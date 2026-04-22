@@ -41,7 +41,7 @@ let FindNearbyDrivers = class FindNearbyDrivers {
             longitude = user.location.longitude;
         }
         // 2️⃣ Use paginated driver fetching from repository
-        const paginatedResult = await this.driverRepository.findActiveDrivers(page, limit, placeKey);
+        const paginatedResult = await this.driverRepository.findActiveDrivers(page, limit, placeKey, latitude, longitude);
         const drivers = paginatedResult.data;
         if (drivers.length === 0)
             return { ...paginatedResult, data: [] };

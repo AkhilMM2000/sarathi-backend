@@ -261,8 +261,10 @@ let UserController = class UserController {
             }
             // 2. Query Validation (Automatic page/limit numeric coercion)
             const { page, limit, search, lat, lng } = ZodHelper_1.ZodHelper.validate(UserDTO_1.FetchDriversSchema, req.query);
+            console.log(page, limit, search, lat, lng, 'page limit search lat lng');
             // 3. Execute the use case
             const paginatedDrivers = await this.findNearbyDrivers.execute(userId, page, limit, search, lat, lng);
+            console.log(paginatedDrivers, 'paginated drivers');
             // 4. Map to safe Response DTOs
             res.status(HttpStatusCode_1.HTTP_STATUS_CODES.OK).json({
                 success: true,
