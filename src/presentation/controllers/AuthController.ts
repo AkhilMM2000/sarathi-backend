@@ -8,8 +8,8 @@ import { USECASE_TOKENS } from "../../constants/UseCaseTokens";
 import { IForgotPasswordUseCase } from "../../application/use_cases/Auth/interface/IForgotPasswordUseCase";
 import { IResetPasswordUseCase } from "../../application/use_cases/Auth/interface/IResetPasswordUseCase";
 import { IChangePasswordUseCase } from "../../application/use_cases/Auth/interface/IChangePasswordUseCase";
-import { ZodHelper } from "../dto/common/ZodHelper";
-import { RefreshTokenSchema, ForgotPasswordSchema, ResetPasswordSchema, LogoutSchema, ChangePasswordSchema } from "../dto/auth/AuthRequestDTO";
+import { ZodHelper } from "../schemas/common/ZodHelper";
+import { RefreshTokenSchema, ForgotPasswordSchema, ResetPasswordSchema, LogoutSchema, ChangePasswordSchema } from "../schemas/auth/AuthRequestDTO";
 import { AuthError } from "../../domain/errors/Autherror";
 
 @injectable()

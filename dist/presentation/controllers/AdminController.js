@@ -14,13 +14,13 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.AdminController = void 0;
 const tsyringe_1 = require("tsyringe");
-const ZodHelper_1 = require("../dto/common/ZodHelper");
+const ZodHelper_1 = require("../schemas/common/ZodHelper");
 const Autherror_1 = require("../../domain/errors/Autherror");
 const HttpStatusCode_1 = require("../../constants/HttpStatusCode");
 const Tokens_1 = require("../../constants/Tokens");
 const UseCaseTokens_1 = require("../../constants/UseCaseTokens");
 const ErrorMessages_1 = require("../../constants/ErrorMessages");
-const AdminRequestDTO_1 = require("../dto/admin/AdminRequestDTO");
+const AdminRequestDTO_1 = require("../schemas/admin/AdminRequestDTO");
 let AdminController = class AdminController {
     constructor(loginUsecase, getAllUsersUseCase, blockUserUseCase, getDriversUseCase, changeDriverStatusUseCase, blockOrUnblockDriverUseCase, getVehiclebyUserUsecase, getAdminDashboardStatsUseCase) {
         this.loginUsecase = loginUsecase;

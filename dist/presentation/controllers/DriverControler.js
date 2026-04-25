@@ -19,8 +19,8 @@ const ErrorMessages_1 = require("../../constants/ErrorMessages");
 const UseCaseTokens_1 = require("../../constants/UseCaseTokens");
 const HttpStatusCode_1 = require("../../constants/HttpStatusCode");
 const Tokens_1 = require("../../constants/Tokens");
-const ZodHelper_1 = require("../dto/common/ZodHelper");
-const DriverRequestDTO_1 = require("../dto/driver/DriverRequestDTO");
+const ZodHelper_1 = require("../schemas/common/ZodHelper");
+const DriverRequestDTO_1 = require("../schemas/driver/DriverRequestDTO");
 const zod_1 = require("zod");
 let DriverController = class DriverController {
     constructor(_registerDriverUseCase, _verifyOtpUsecase, _loginUsecase, _getDriverProfileUsecase, _getUserDataUsecase, _resendOtpUsecase, _editDriverProfileUseCase, _onboardDriverUseCase, _getUserBookingsUsecase, _verifyDriverPaymentAccount) {

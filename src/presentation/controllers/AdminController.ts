@@ -1,6 +1,6 @@
 import { inject, injectable } from "tsyringe";
 import { NextFunction, Request, Response } from "express";
-import { ZodHelper } from "../dto/common/ZodHelper";
+import { ZodHelper } from "../schemas/common/ZodHelper";
 import { AuthError } from "../../domain/errors/Autherror";
 import { HTTP_STATUS_CODES } from "../../constants/HttpStatusCode";
 import { TOKENS } from "../../constants/Tokens";
@@ -14,7 +14,7 @@ import { IAdminChangeDriverStatusUseCase } from "../../application/use_cases/Adm
 import { IBlockOrUnblockDriverUseCase } from "../../application/use_cases/Admin/Interfaces/IBlockOrUnblockDriverUseCase";
 import { IGetVehiclesByUserUseCase } from "../../application/use_cases/User/interfaces/IGetVehiclesByUserUseCase";
 import { IGetAdminDashboardStatsUseCase } from "../../application/use_cases/Admin/Interfaces/IGetAdminDashboardStatsUseCase";
-import { AdminLoginSchema, UserIdParamSchema, UpdateUserStatusSchema, DriverIdParamSchema, ChangeDriverStatusSchema, HandleBlockStatusSchema, AdminPaginationSchema } from "../dto/admin/AdminRequestDTO";
+import { AdminLoginSchema, UserIdParamSchema, UpdateUserStatusSchema, DriverIdParamSchema, ChangeDriverStatusSchema, HandleBlockStatusSchema, AdminPaginationSchema } from "../schemas/admin/AdminRequestDTO";
 
 @injectable()
 export class AdminController {

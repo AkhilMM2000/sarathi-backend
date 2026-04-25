@@ -3,7 +3,7 @@ import { IFareCalculatorService } from "../../services/FareCalculatorService";
 import { BookingType } from "../../../domain/models/Booking"; 
 import { TOKENS } from "../../../constants/Tokens";
 import { IGetEstimatedFare } from "./interfaces/IGetEstimatedFare";
-import { GetEstimatedFareRequest } from "../../../presentation/dto/booking/BookingRequestDTO";
+import { GetEstimatedFareRequest } from "../../../presentation/schemas/booking/BookingRequestDTO";
 
 @injectable()
 export class GetEstimatedFare implements IGetEstimatedFare{

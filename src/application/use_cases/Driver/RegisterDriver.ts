@@ -7,7 +7,7 @@ import { TOKENS } from "../../../constants/Tokens";
 import { AuthError } from "../../../domain/errors/Autherror";
 import { HTTP_STATUS_CODES } from "../../../constants/HttpStatusCode";
 import { IRegisterDriverUseCase } from "./interfaces/IRegisterDriverUseCase";
-import { RegisterDriverRequest } from "../../../presentation/dto/driver/DriverRequestDTO";
+import { RegisterDriverRequest } from "../../../presentation/schemas/driver/DriverRequestDTO";
 
 @injectable()
 export class RegisterDriver  implements IRegisterDriverUseCase {

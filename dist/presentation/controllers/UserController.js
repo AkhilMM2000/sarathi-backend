@@ -20,8 +20,8 @@ const HttpStatusCode_1 = require("../../constants/HttpStatusCode");
 const Tokens_1 = require("../../constants/Tokens");
 const Info_Messages_1 = require("../../constants/Info_Messages");
 const UseCaseTokens_1 = require("../../constants/UseCaseTokens");
-const ZodHelper_1 = require("../dto/common/ZodHelper");
-const UserDTO_1 = require("../dto/user/UserDTO");
+const ZodHelper_1 = require("../schemas/common/ZodHelper");
+const UserDTO_1 = require("../schemas/user/UserDTO");
 const zod_1 = require("zod");
 let UserController = class UserController {
     constructor(_registerUsecase, _getUserDataUsecase, _verifyOtpUsecase, _resendOtpUsecase, _loginUsecase, _addVehicleUsecase, _editVehicleUsecase, _getVehiclebyUserUsecase, _updateuserUsecase, _findNearbyDrivers, _createPaymentUsecase, _getDriverProfileUsecase, _walletTransactionUsecase, _submitReviewUsecase, _getNearbyDriverDetailsUseCase) {

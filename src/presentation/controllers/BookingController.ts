@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from "express";
-import { ZodHelper } from "../dto/common/ZodHelper";
+import { ZodHelper } from "../schemas/common/ZodHelper";
 import {  inject, injectable } from "tsyringe";
 import { AuthError } from "../../domain/errors/Autherror";
 import { AuthenticatedRequest } from "../../middleware/authMiddleware";
@@ -7,7 +7,7 @@ import { BookingStatus } from "../../domain/models/Booking";
 import { ERROR_MESSAGES } from "../../constants/ErrorMessages";
 import { HTTP_STATUS_CODES } from "../../constants/HttpStatusCode";
 import { IGetRideHistoryUseCase } from "../../application/use_cases/User/interfaces/IGetRideHistoryUseCase";
-import { BookDriverSchema, GetEstimatedFareSchema, UserBookingPaginationSchema, AttachPaymentIntentSchema, BookingIdParamSchema, UpdateBookingStatusSchema, RideIdParamSchema, CancelBookingSchema, ChatParamsSchema, MessageParamsSchema, RideHistorySchema, GetChatSignatureSchema, WalletPaymentSchema, DriverReviewParamsSchema, DriverStatsQuerySchema } from "../dto/booking/BookingRequestDTO";
+import { BookDriverSchema, GetEstimatedFareSchema, UserBookingPaginationSchema, AttachPaymentIntentSchema, BookingIdParamSchema, UpdateBookingStatusSchema, RideIdParamSchema, CancelBookingSchema, ChatParamsSchema, MessageParamsSchema, RideHistorySchema, GetChatSignatureSchema, WalletPaymentSchema, DriverReviewParamsSchema, DriverStatsQuerySchema } from "../schemas/booking/BookingRequestDTO";
 import { USECASE_TOKENS } from "../../constants/UseCaseTokens";
 import { GenerateChatSignedUrl } from "../../application/use_cases/chatGetSignedUrl";
 import { IBookDriverUseCase } from "../../application/use_cases/User/interfaces/IBookDriverUseCase";
@@ -31,41 +31,41 @@ export class BookingController {
 
    constructor(
  @inject(USECASE_TOKENS.BOOK_DRIVER_USECASE)
-private bookDriverUseCase: IBookDriverUseCase,
+private _bookDriverUseCase: IBookDriverUseCase,
   @inject(USECASE_TOKENS.GET_ESTIMATED_FARE_USECASE)
-    private getEstimatedFareUseCase: IGetEstimatedFare,
+    private _getEstimatedFareUseCase: IGetEstimatedFare,
   @inject(USECASE_TOKENS.IGET_USER_BOOKINGS_USECASE)
-    private getUserBookingsUseCase: IGetUserBookingsUseCase,
+    private _getUserBookingsUseCase: IGetUserBookingsUseCase,
     @inject(USECASE_TOKENS.ATTACH_PAYMENT_INTENT_USECASE)
-  private attachPaymentIntentUseCase: IAttachPaymentIntentIdToBookingUseCase,
+  private _attachPaymentIntentUseCase: IAttachPaymentIntentIdToBookingUseCase,
      @inject(USECASE_TOKENS.UPDATE_BOOKING_STATUS_USECASE)
-    private updateBookingStatusUseCase: IUpdateBookingStatusUseCase,
+    private _updateBookingStatusUseCase: IUpdateBookingStatusUseCase,
       @inject(USECASE_TOKENS.GET_ALL_BOOKINGS_USECASE)
-    private getAllBookingsUseCase: IGetAllBookingsUseCase,
+    private _getAllBookingsUseCase: IGetAllBookingsUseCase,
         @inject(USECASE_TOKENS.CANCEL_BOOKING_USECASE)
-    private cancelBookingUseCase: ICancelBookingUseCase,
+    private _cancelBookingUseCase: ICancelBookingUseCase,
       @inject(USECASE_TOKENS.GET_MESSAGES_BY_BOOKING_USECASE)
-    private getMessagesByBookingIdUseCase: IGetMessagesByBookingIdUseCase,
+    private _getMessagesByBookingIdUseCase: IGetMessagesByBookingIdUseCase,
         @inject(USECASE_TOKENS.DELETE_MESSAGE_USECASE)
-    private deleteMessageUseCase: IDeleteMessageUseCase,
+    private _deleteMessageUseCase: IDeleteMessageUseCase,
        @inject(USECASE_TOKENS.GENERATE_SIGNED_URL_USECASE)
-    private generateSignedUrlUseCase: IGenerateSignedUrlUseCase,
+    private _generateSignedUrlUseCase: IGenerateSignedUrlUseCase,
     @inject(USECASE_TOKENS.WALLET_BALANCE_USECASE)
-    private walletBalanceUseCase: IWalletBalanceUseCase,
+    private _walletBalanceUseCase: IWalletBalanceUseCase,
       @inject(USECASE_TOKENS.WALLET_PAYMENT_USECASE)
-  private walletPaymentUseCase: IWalletPaymentUseCase,
+  private _walletPaymentUseCase: IWalletPaymentUseCase,
     @inject(USECASE_TOKENS.GET_DRIVER_REVIEWS_USECASE)
-  private getDriverReviewsUseCase: IGetDriverReviewsUseCase,
+  private _getDriverReviewsUseCase: IGetDriverReviewsUseCase,
    @inject(USECASE_TOKENS.GET_BOOKING_STATUS_SUMMARY_USECASE)
-  private getBookingStatusSummary: IGetBookingStatusSummaryUseCase,
+  private _getBookingStatusSummary: IGetBookingStatusSummaryUseCase,
     @inject(USECASE_TOKENS.GET_DRIVER_EARNINGS_SUMMARY_USECASE)
-  private earningsSummaryUseCase: IGetDriverEarningsSummaryUseCase,
+  private _earningsSummaryUseCase: IGetDriverEarningsSummaryUseCase,
     @inject(USECASE_TOKENS.GET_DRIVER_DASHBOARD_STATS_USECASE)
-  private getDriverDashboardStatsUseCase: IGetDriverDashboardStatsUseCase,
+  private _getDriverDashboardStatsUseCase: IGetDriverDashboardStatsUseCase,
     @inject(USECASE_TOKENS.GET_RIDE_HISTORY_USECASE)
-  private getRideHistoryUseCase: IGetRideHistoryUseCase,
+  private _getRideHistoryUseCase: IGetRideHistoryUseCase,
     @inject(USECASE_TOKENS.GENERATE_CHAT_SIGNED_URL_USECASE)
-  private generateChatSignedUrlUseCase: GenerateChatSignedUrl
+  private _generateChatSignedUrlUseCase: GenerateChatSignedUrl
 
    ){}
    async bookDriver(req: AuthenticatedRequest, res: Response,next:NextFunction) {
@@ -79,7 +79,7 @@ private bookDriverUseCase: IBookDriverUseCase,
       const validatedData = ZodHelper.validate(BookDriverSchema, req.body);
 
       // 2. Execute
-      const booking = await this.bookDriverUseCase.execute({
+      const booking = await this._bookDriverUseCase.execute({
         userId,
         ...validatedData
       });
@@ -96,7 +96,7 @@ private bookDriverUseCase: IBookDriverUseCase,
       const validatedData = ZodHelper.validate(GetEstimatedFareSchema, req.body);
       
       // 2. Execute
-      const fare = await this.getEstimatedFareUseCase.execute(validatedData);
+      const fare = await this._getEstimatedFareUseCase.execute(validatedData);
 
       res.status(HTTP_STATUS_CODES.OK).json({ estimatedFare: fare });
     } catch (error: any) {
@@ -115,7 +115,7 @@ private bookDriverUseCase: IBookDriverUseCase,
       const { page, limit } = ZodHelper.validate(UserBookingPaginationSchema, req.query);
 
       // 2. Execute
-      const { data, total, totalPages } = await this.getUserBookingsUseCase.execute(
+      const { data, total, totalPages } = await this._getUserBookingsUseCase.execute(
         userId,
         page,
         limit
@@ -139,7 +139,7 @@ private bookDriverUseCase: IBookDriverUseCase,
       const validatedData = ZodHelper.validate(AttachPaymentIntentSchema, req.body);
      
       // 2. Execute
-      await this.attachPaymentIntentUseCase.execute({
+      await this._attachPaymentIntentUseCase.execute({
         rideId,
         userId,
         ...validatedData,
@@ -169,7 +169,7 @@ private bookDriverUseCase: IBookDriverUseCase,
       }
 
       // 2. Execute
-      await this.updateBookingStatusUseCase.execute({ 
+      await this._updateBookingStatusUseCase.execute({ 
         bookingId, 
         ...validatedData 
       });
@@ -186,7 +186,7 @@ private bookDriverUseCase: IBookDriverUseCase,
       const { page, limit } = ZodHelper.validate(UserBookingPaginationSchema, req.query);
 
       // 2. Execute
-      const bookings = await this.getAllBookingsUseCase.execute(page, limit);
+      const bookings = await this._getAllBookingsUseCase.execute(page, limit);
 
       res.status(HTTP_STATUS_CODES.OK).json({ bookings });
     } catch (error: any) {
@@ -200,7 +200,7 @@ private bookDriverUseCase: IBookDriverUseCase,
       const validatedData = ZodHelper.validate(CancelBookingSchema, req.body);
 
       // 2. Execute
-      await this.cancelBookingUseCase.execute({ 
+      await this._cancelBookingUseCase.execute({ 
         ...validatedData, 
         status: BookingStatus.CANCELLED 
       });
@@ -221,7 +221,7 @@ private bookDriverUseCase: IBookDriverUseCase,
       }
 
       // 2. Execute
-      const chat = await this.getMessagesByBookingIdUseCase.execute({ bookingId: roomId });
+      const chat = await this._getMessagesByBookingIdUseCase.execute({ bookingId: roomId });
 
       res.status(HTTP_STATUS_CODES.OK).json({ chat });
     } catch (error: any) {
@@ -235,10 +235,10 @@ private bookDriverUseCase: IBookDriverUseCase,
       const { roomId, messageId } = ZodHelper.validate(MessageParamsSchema, req.params);
 
       // 2. Execute
-      await this.deleteMessageUseCase.execute(roomId, messageId);
+      await this._deleteMessageUseCase.execute(roomId, messageId);
 
       res.status(HTTP_STATUS_CODES.OK).json({ success: true, message: "Message deleted" });
-    } catch (error) {
+    } catch (error: any) {
       next(error)
     }
     }
@@ -255,7 +255,7 @@ private bookDriverUseCase: IBookDriverUseCase,
       const { page, limit } = ZodHelper.validate(RideHistorySchema, req.query);
 
       // 2. Execute
-      const ridehistory = await this.getRideHistoryUseCase.execute(role, id, page, limit);
+      const ridehistory = await this._getRideHistoryUseCase.execute(role, id, page, limit);
 
       res.status(HTTP_STATUS_CODES.OK).json(ridehistory);
     } catch (error: any) {
@@ -271,7 +271,7 @@ private bookDriverUseCase: IBookDriverUseCase,
       const { fileType } = ZodHelper.validate(GetChatSignatureSchema, req.body);
      console.log(fileType,"fileType")
       // 2. Execute
-      const chatUploadMedia = await this.generateChatSignedUrlUseCase.execute(fileType, id);
+      const chatUploadMedia = await this._generateChatSignedUrlUseCase.execute(fileType, id);
       console.log(chatUploadMedia,"chatUploadMedia")
       res.status(HTTP_STATUS_CODES.OK).json(chatUploadMedia);
     } catch (error: any) {
@@ -282,7 +282,7 @@ private bookDriverUseCase: IBookDriverUseCase,
     try {
       const userId = req.user?.id!;
 
-      const balance = await this.walletBalanceUseCase.execute(userId);
+      const balance = await this._walletBalanceUseCase.execute(userId);
       res.status(HTTP_STATUS_CODES.OK).json({ balance });
     } catch (error: any) {
       next(error);
@@ -297,7 +297,7 @@ private bookDriverUseCase: IBookDriverUseCase,
       const { rideId, amount } = ZodHelper.validate(WalletPaymentSchema, req.body);
         
       // 2. Execute
-      await this.walletPaymentUseCase.WalletRidePayment(rideId, userId, amount);
+      await this._walletPaymentUseCase.WalletRidePayment(rideId, userId, amount);
 
       res.status(HTTP_STATUS_CODES.OK).json({ message: "Payment successful" });
     } catch (error: any) {
@@ -312,7 +312,7 @@ private bookDriverUseCase: IBookDriverUseCase,
       const { page, limit } = ZodHelper.validate(UserBookingPaginationSchema, req.query);
         
       // 2. Execute
-      const reviews = await this.getDriverReviewsUseCase.execute(driverId, page, limit);
+      const reviews = await this._getDriverReviewsUseCase.execute(driverId, page, limit);
 
       res.status(HTTP_STATUS_CODES.OK).json(reviews);
     } catch (error: any) {
@@ -328,7 +328,7 @@ private bookDriverUseCase: IBookDriverUseCase,
       const { year, month } = ZodHelper.validate(DriverStatsQuerySchema, req.query);
       
       // 2. Execute
-      const result = await this.getBookingStatusSummary.execute(driverId, year, month);
+      const result = await this._getBookingStatusSummary.execute(driverId, year, month);
 
       res.status(HTTP_STATUS_CODES.OK).json(result);
     } catch (error: any) {
@@ -344,7 +344,7 @@ private bookDriverUseCase: IBookDriverUseCase,
       const { year, month } = ZodHelper.validate(DriverStatsQuerySchema, req.query);
       
       // 2. Execute
-      const result = await this.earningsSummaryUseCase.execute(driverId, year || new Date().getFullYear(), month);
+      const result = await this._earningsSummaryUseCase.execute(driverId, year || new Date().getFullYear(), month);
 
       res.status(HTTP_STATUS_CODES.OK).json(result);
     } catch (error: any) {
@@ -357,7 +357,7 @@ async getDriverDashboard(req: AuthenticatedRequest, res: Response, next: NextFun
     const driverId = req.user?.id;
     if (!driverId) throw new AuthError(ERROR_MESSAGES.USER_ID_NOT_FOUND, HTTP_STATUS_CODES.UNAUTHORIZED);
 
-    const result = await this.getDriverDashboardStatsUseCase.execute(driverId);
+    const result = await this._getDriverDashboardStatsUseCase.execute(driverId);
     res.status(HTTP_STATUS_CODES.OK).json(result);
   } catch (error: any) {
     next(error);

@@ -17,11 +17,11 @@ import { IEditDriverProfile } from "../../application/use_cases/Driver/interface
 import { IOnboardDriverUseCase } from "../../application/use_cases/Driver/interfaces/IOnboardDriverUseCase";
 import { IGetBooking } from "../../application/use_cases/Driver/interfaces/IGetUserBooking";
 import { IVerifyDriverPaymentAccount } from "../../application/use_cases/Driver/interfaces/IVerifyDriverPaymentAccount";
-import { ZodHelper } from "../dto/common/ZodHelper";
-import { RegisterDriverSchema, VerifyDriverOtpSchema, DriverLoginSchema, ResendDriverOtpSchema, EditDriverProfileSchema, OnboardDriverSchema, UserIdParamSchema, DriverBookingPaginationSchema, VerifyAccountSchema } from "../dto/driver/DriverRequestDTO";
+import { ZodHelper } from "../schemas/common/ZodHelper";
+import { RegisterDriverSchema, VerifyDriverOtpSchema, DriverLoginSchema, ResendDriverOtpSchema, EditDriverProfileSchema, OnboardDriverSchema, UserIdParamSchema, DriverBookingPaginationSchema, VerifyAccountSchema } from "../schemas/driver/DriverRequestDTO";
 import { toUserResponse } from "../../application/dto/user/UserResponseDto";
 import { toDriverFullResponse } from "../../application/dto/driver/DriverResponseDto";
-import { DriverIdParamSchema } from "../dto/user/UserDTO";
+import { DriverIdParamSchema } from "../schemas/user/UserDTO";
 import { z } from "zod";
 @injectable()
 export class DriverController {

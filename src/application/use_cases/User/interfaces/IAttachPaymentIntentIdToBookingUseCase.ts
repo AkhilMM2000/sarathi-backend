@@ -1,4 +1,4 @@
-import { AttachPaymentIntentRequest } from "../../../../presentation/dto/booking/BookingRequestDTO";
+import { AttachPaymentIntentRequest } from "../../../../presentation/schemas/booking/BookingRequestDTO";
 import { paymentStatus } from "../../../../domain/models/Booking";
 
 export interface AttachPaymentIntentParams extends AttachPaymentIntentRequest {

@@ -17,8 +17,8 @@ const tsyringe_1 = require("tsyringe");
 const HttpStatusCode_1 = require("../../constants/HttpStatusCode");
 const ErrorMessages_1 = require("../../constants/ErrorMessages");
 const UseCaseTokens_1 = require("../../constants/UseCaseTokens");
-const ZodHelper_1 = require("../dto/common/ZodHelper");
-const AuthRequestDTO_1 = require("../dto/auth/AuthRequestDTO");
+const ZodHelper_1 = require("../schemas/common/ZodHelper");
+const AuthRequestDTO_1 = require("../schemas/auth/AuthRequestDTO");
 const Autherror_1 = require("../../domain/errors/Autherror");
 let AuthController = class AuthController {
     constructor(refreshTokenUseCase, forgotPasswordUseCase, resetPasswordUseCase, changePasswordUseCase) {

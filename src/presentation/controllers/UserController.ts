@@ -23,8 +23,8 @@ import { ISubmitDriverReview } from "../../application/use_cases/User/interfaces
 import { USECASE_TOKENS } from "../../constants/UseCaseTokens";
 import { IFindNearbyDriversUseCase } from "../../application/use_cases/User/interfaces/IFindNearbyDriversUseCase";
 import { IGetNearbyDriverDetailsUseCase } from "../../application/use_cases/Interfaces/IGetNearbyDriverDetailsUseCase";
-import { ZodHelper } from "../dto/common/ZodHelper";
-import { AddVehicleSchema, CreatePaymentIntentSchema, DriverIdParamSchema, EditVehicleSchema, FetchDriversSchema, GetNearbyDriverQuerySchema, LoginSchema, RegisterSchema, ResendOtpSchema, SubmitReviewSchema, UpdateUserSchema, VehicleIdParamSchema, VerifyOtpSchema, WalletPaginationSchema } from "../dto/user/UserDTO";
+import { ZodHelper } from "../schemas/common/ZodHelper";
+import { AddVehicleSchema, CreatePaymentIntentSchema, DriverIdParamSchema, EditVehicleSchema, FetchDriversSchema, GetNearbyDriverQuerySchema, LoginSchema, RegisterSchema, ResendOtpSchema, SubmitReviewSchema, UpdateUserSchema, VehicleIdParamSchema, VerifyOtpSchema, WalletPaginationSchema } from "../schemas/user/UserDTO";
 import { z } from "zod";
 
 @injectable()

@@ -1,7 +1,7 @@
 
 
 import { Booking } from "../../../../domain/models/Booking";
-import { BookDriverRequest } from "../../../../presentation/dto/booking/BookingRequestDTO";
+import { BookDriverRequest } from "../../../../presentation/schemas/booking/BookingRequestDTO";
 
 export interface BookDriverInput extends BookDriverRequest {
   userId: string;

@@ -15,19 +15,19 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.FileController = void 0;
 const tsyringe_1 = require("tsyringe");
 const UseCaseTokens_1 = require("../../constants/UseCaseTokens");
-const ZodHelper_1 = require("../dto/common/ZodHelper");
-const FileRequestDTO_1 = require("../dto/common/FileRequestDTO");
+const ZodHelper_1 = require("../schemas/common/ZodHelper");
+const FileRequestDTO_1 = require("../schemas/common/FileRequestDTO");
 const HttpStatusCode_1 = require("../../constants/HttpStatusCode");
 let FileController = class FileController {
-    constructor(generateSignedUrlUseCase) {
-        this.generateSignedUrlUseCase = generateSignedUrlUseCase;
+    constructor(_generateSignedUrlUseCase) {
+        this._generateSignedUrlUseCase = _generateSignedUrlUseCase;
     }
     async getSignedUrl(req, res, next) {
         try {
             // 1. DTO Validation
             const { fileType, fileName } = ZodHelper_1.ZodHelper.validate(FileRequestDTO_1.GetSignedUrlSchema, req.query);
             // 2. Execute
-            const signedUrlResponse = await this.generateSignedUrlUseCase.execute(fileType, fileName);
+            const signedUrlResponse = await this._generateSignedUrlUseCase.execute(fileType, fileName);
             return res.status(HttpStatusCode_1.HTTP_STATUS_CODES.CREATED).json({ signedUrl: signedUrlResponse });
         }
         catch (error) {
