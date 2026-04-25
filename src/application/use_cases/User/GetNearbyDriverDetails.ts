@@ -65,9 +65,11 @@ export class GetNearbyDriverDetails
 
     const distance = distances[driverId] || null;
 
-    return toDriverResponse({
-      ...driver,
+    const driverData = {
+      ...(driver as any),
       distance
-    });
+    };
+
+    return toDriverResponse(driverData);
   }
 }

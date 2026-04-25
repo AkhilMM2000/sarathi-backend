@@ -7,8 +7,6 @@ import { Driver } from "../../../domain/models/Driver";
 export interface DriverResponseDto {
   _id: string;
   name: string;
-  email: string;
-  mobile: string;
   profileImage: string;
   location: 
     | { latitude: number; longitude: number } 
@@ -22,6 +20,8 @@ export interface DriverResponseDto {
 }
 
 export interface DriverFullResponseDto extends DriverResponseDto {
+  email: string;
+  mobile: string;
   aadhaarNumber: string;
   licenseNumber: string;
   aadhaarImage: string;
@@ -33,12 +33,10 @@ export interface DriverFullResponseDto extends DriverResponseDto {
 /**
  * Mapper: Domain Entity -> DriverResponseDto
  */
-export const toDriverResponse = (driver: Partial<Driver> & { distance?: number | null }): DriverResponseDto => {
+export const toDriverResponse = (driver: any): DriverResponseDto => {
   return {
-    _id: driver._id?.toString() || "",
+    _id: driver._id ? driver._id.toString() : "",
     name: driver.name || "",
-    email: driver.email || "",
-    mobile: driver.mobile || "",
     profileImage: driver.profileImage || "",
     location: driver.location || { latitude: 0, longitude: 0 },
     place: driver.place || "",
@@ -53,13 +51,15 @@ export const toDriverResponse = (driver: Partial<Driver> & { distance?: number |
 /**
  * Mapper: Domain Entity -> DriverFullResponseDto
  */
-export const toDriverFullResponse = (driver: Partial<Driver>): DriverFullResponseDto => {
+export const toDriverFullResponse = (driver: any): DriverFullResponseDto => {
   return {
     ...toDriverResponse(driver),
+    email: driver.email || "",
+    mobile: driver.mobile || "",
     aadhaarNumber: driver.aadhaarNumber || "",
     licenseNumber: driver.licenseNumber || "",
     aadhaarImage: driver.aadhaarImage || "",
-    licenseImage: driver.licenseImage || "",
+    licenseImage: driver.licenseImage || "" ,
     stripeAccountId: driver.stripeAccountId || "",
     activePayment: driver.activePayment || false,
   };

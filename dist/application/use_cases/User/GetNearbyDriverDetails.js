@@ -57,10 +57,11 @@ let GetNearbyDriverDetails = class GetNearbyDriverDetails {
         // 4️⃣ Get distance for this specific driver
         const distances = await this.distanceService.getDistances({ latitude, longitude }, [driverLocation]);
         const distance = distances[driverId] || null;
-        return (0, DriverResponseDto_1.toDriverResponse)({
+        const driverData = {
             ...driver,
             distance
-        });
+        };
+        return (0, DriverResponseDto_1.toDriverResponse)(driverData);
     }
 };
 exports.GetNearbyDriverDetails = GetNearbyDriverDetails;

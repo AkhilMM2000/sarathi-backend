@@ -46,6 +46,7 @@ export class AuthController {
     }
   }
 
+  
   async forgotPassword(req: Request, res: Response, next: NextFunction) {
     try {
       // 1. DTO Validation

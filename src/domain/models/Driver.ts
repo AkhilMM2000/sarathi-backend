@@ -1,7 +1,7 @@
-import { ObjectId } from "mongoose";
+import { Types } from "mongoose";
 
 export interface Driver {
-    _id?:ObjectId;
+    _id?: Types.ObjectId | string;
     name: string;
     email: string;
     mobile: string;

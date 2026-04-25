@@ -57,7 +57,8 @@ let MongoDriverRepository = class MongoDriverRepository extends BaseRepository_1
     async findDriverById(driverId) {
         try {
             return await Driverschema_1.default.findById(driverId)
-                .select("-createdAt -updatedAt -__v"); // Exclude fields
+                .select("-createdAt -updatedAt -__v")
+                .lean();
         }
         catch (error) {
             console.error("Error finding driver by ID:", error);

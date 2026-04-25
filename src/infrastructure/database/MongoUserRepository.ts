@@ -42,7 +42,7 @@ export class MongoUserRepository extends BaseRepository<User, UserDocument> impl
 
   async getUserById(userId: string): Promise<User | null> {
     if (!isValidObjectId(userId)) return null; 
-    return super.findById(userId);
+    return super.findById(userId); // BaseRepository findById already uses lean()
   }
   
   

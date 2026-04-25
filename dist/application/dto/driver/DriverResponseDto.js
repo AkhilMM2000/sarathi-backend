@@ -6,10 +6,8 @@ exports.toDriverListResponse = exports.toDriverFullResponse = exports.toDriverRe
  */
 const toDriverResponse = (driver) => {
     return {
-        _id: driver._id?.toString() || "",
+        _id: driver._id ? driver._id.toString() : "",
         name: driver.name || "",
-        email: driver.email || "",
-        mobile: driver.mobile || "",
         profileImage: driver.profileImage || "",
         location: driver.location || { latitude: 0, longitude: 0 },
         place: driver.place || "",
@@ -27,6 +25,8 @@ exports.toDriverResponse = toDriverResponse;
 const toDriverFullResponse = (driver) => {
     return {
         ...(0, exports.toDriverResponse)(driver),
+        email: driver.email || "",
+        mobile: driver.mobile || "",
         aadhaarNumber: driver.aadhaarNumber || "",
         licenseNumber: driver.licenseNumber || "",
         aadhaarImage: driver.aadhaarImage || "",

@@ -45,7 +45,7 @@ let MongoUserRepository = class MongoUserRepository extends BaseRepository_1.Bas
     async getUserById(userId) {
         if (!(0, mongoose_1.isValidObjectId)(userId))
             return null;
-        return super.findById(userId);
+        return super.findById(userId); // BaseRepository findById already uses lean()
     }
     async getUsers() {
         try {

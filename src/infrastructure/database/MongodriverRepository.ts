@@ -55,7 +55,8 @@ export class MongoDriverRepository extends BaseRepository<Driver, IDriver> imple
   async findDriverById(driverId: string): Promise<Driver | null> {
     try {
       return await DriverModel.findById(driverId)
-      .select("-createdAt -updatedAt -__v") // Exclude fields
+      .select("-createdAt -updatedAt -__v")
+      .lean() as Driver | null;
     
     } catch (error) {
       console.error("Error finding driver by ID:", error);
