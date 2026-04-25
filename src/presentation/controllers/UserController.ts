@@ -58,25 +58,24 @@ export class UserController {
     private walletTransactionUsecase: IWalletTransaction,
     @inject(TOKENS.SUBMIT_REVIEW_USECASE)
     private submitReviewUsecase: ISubmitDriverReview,
-    @inject( USECASE_TOKENS.GET_NEARBY_DRIVER_DETAILS_USECASE)
-  private getNearbyDriverDetailsUseCase:IGetNearbyDriverDetailsUseCase
-  ) {}
+    @inject(USECASE_TOKENS.GET_NEARBY_DRIVER_DETAILS_USECASE)
+    private getNearbyDriverDetailsUseCase: IGetNearbyDriverDetailsUseCase
+  ) { }
 
   async register(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
 
-     
+
       // 1. DTO Validation
       const validatedData = ZodHelper.validate(RegisterSchema, req.body);
 
       // 2. Execute Use Case
       const result = await this.registerUsecase.execute(validatedData as any);
-     
       // 3. Response
-      res.status(HTTP_STATUS_CODES.CREATED).json({ 
-        success: true, 
-        message: INFO_MESSAGES.USER.REGISTERED, 
-        user: result 
+      res.status(HTTP_STATUS_CODES.CREATED).json({
+        success: true,
+        message: INFO_MESSAGES.USER.REGISTERED,
+        user: result
       });
     } catch (error: any) {
       if (error instanceof z.ZodError) {
@@ -138,7 +137,7 @@ export class UserController {
     }
   }
 
-  
+
   async login(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       // 1. DTO Validation
@@ -281,7 +280,7 @@ export class UserController {
   async updateUser(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const userId = req.params.id;
-      
+
       // 1. DTO Validation
       const validatedData = ZodHelper.validate(UpdateUserSchema, req.body);
 
@@ -329,7 +328,7 @@ export class UserController {
 
       // 2. Query Validation (Automatic page/limit numeric coercion)
       const { page, limit, search, lat, lng } = ZodHelper.validate(FetchDriversSchema, req.query);
-console.log(page, limit, search, lat, lng,'page limit search lat lng')
+     
       // 3. Execute the use case
       const paginatedDrivers = await this.findNearbyDrivers.execute(
         userId,
@@ -339,10 +338,10 @@ console.log(page, limit, search, lat, lng,'page limit search lat lng')
         lat,
         lng
       );
-console.log(paginatedDrivers,'paginated drivers')
+      console.log(paginatedDrivers,'paginated drivers')
       // 4. Send paginated Response DTOs
-      res.status(HTTP_STATUS_CODES.OK).json({ 
-        success: true, 
+      res.status(HTTP_STATUS_CODES.OK).json({
+        success: true,
         drivers: paginatedDrivers
       });
     } catch (error: any) {
@@ -358,10 +357,10 @@ console.log(paginatedDrivers,'paginated drivers')
   }
   async getDriverDetails(req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> {
     try {
-      
+
       // 1. Param Validation
       const { driverId } = ZodHelper.validate(DriverIdParamSchema, req.params);
-console.log(req.query,'query')
+      console.log(req.query, 'query')
       // 2. Query Validation (Optional coordinates)
       const { lat, lng } = ZodHelper.validate(GetNearbyDriverQuerySchema, req.query);
 
@@ -369,10 +368,10 @@ console.log(req.query,'query')
 
       // 3. Execute and return safe Response DTO
       const driver = await this.getNearbyDriverDetailsUseCase.execute(userId!, driverId, lat, lng);
-      console.log(driver,userId!, driverId, lat, lng,'driver');
+      console.log(driver,'reach here ');
       res.status(HTTP_STATUS_CODES.OK).json(driver);
     } catch (error: any) {
-      console.log(error,'error')
+      console.log(error, 'error')
       if (error instanceof z.ZodError) {
         res.status(HTTP_STATUS_CODES.BAD_REQUEST).json({
           success: false,
@@ -428,7 +427,7 @@ console.log(req.query,'query')
 
       // 2. Execute
       const driver = await this.getDriverProfileUsecase.execute(driverId);
-      console.log(driver,'driver')
+      console.log(driver, 'driver')
       if (!driver) {
         throw new AuthError(ERROR_MESSAGES.DRIVER_NOT_FOUND, HTTP_STATUS_CODES.NOT_FOUND);
       }
