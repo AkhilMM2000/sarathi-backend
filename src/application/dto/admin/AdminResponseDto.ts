@@ -38,12 +38,12 @@ export interface AdminDriverResponseDto {
  */
 export const toAdminUserResponse = (user: User & { vehicleCount?: number }): AdminUserResponseDto => {
   return {
-    _id: user.id || (user as any)._id?.toString() || "",
+    _id: user._id?.toString() || "",
     name: user.name || "",
     email: user.email || "",
     mobile: user.mobile || "",
-    profileImage: user.profileImage || "",
-    isBlock: user.isBlock || false,
+    profileImage: user.profile || "",
+    isBlock: !!user.isBlock,
     vehicleCount: user.vehicleCount || 0,
     createdAt: user.createdAt instanceof Date ? user.createdAt.toISOString() : String(user.createdAt)
   };
@@ -51,7 +51,7 @@ export const toAdminUserResponse = (user: User & { vehicleCount?: number }): Adm
 
 export const toAdminDriverResponse = (driver: Driver): AdminDriverResponseDto => {
   return {
-    _id: driver.id || (driver as any)._id?.toString() || "",
+    _id: driver._id?.toString() || "",
     name: driver.name || "",
     email: driver.email || "",
     mobile: driver.mobile || "",
