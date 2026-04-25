@@ -1,6 +1,5 @@
-import { Driver } from "../../../../domain/models/Driver";
-import { EditDriverProfileRequest } from "../../../../presentation/dto/driver/DriverRequestDTO";
+import { DriverFullResponseDto } from "../../../dto/driver/DriverResponseDto";
 
 export interface IEditDriverProfile {
-  execute(driverId: string, updateData: EditDriverProfileRequest | Partial<Driver>): Promise<Driver | null>;
+  execute(driverId: string, updateData: any): Promise<DriverFullResponseDto | null>;
 }

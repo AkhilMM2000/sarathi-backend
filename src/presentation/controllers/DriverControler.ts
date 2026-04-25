@@ -19,8 +19,9 @@ import { IGetBooking } from "../../application/use_cases/Driver/interfaces/IGetU
 import { IVerifyDriverPaymentAccount } from "../../application/use_cases/Driver/interfaces/IVerifyDriverPaymentAccount";
 import { ZodHelper } from "../dto/common/ZodHelper";
 import { RegisterDriverSchema, VerifyDriverOtpSchema, DriverLoginSchema, ResendDriverOtpSchema, EditDriverProfileSchema, OnboardDriverSchema, UserIdParamSchema, DriverBookingPaginationSchema, VerifyAccountSchema } from "../dto/driver/DriverRequestDTO";
-import { toDriverResponse, toDriverFullResponse } from "../dto/user/DriverDTO";
-import { toUserResponse, DriverIdParamSchema } from "../dto/user/UserDTO";
+import { toUserResponse } from "../../application/dto/user/UserResponseDto";
+import { toDriverFullResponse } from "../../application/dto/driver/DriverResponseDto";
+import { DriverIdParamSchema } from "../dto/user/UserDTO";
 import { z } from "zod";
 @injectable()
 export class DriverController {
@@ -149,7 +150,7 @@ private verifyDriverPaymentAccount: IVerifyDriverPaymentAccount
       }
 
       // Return sanitized full profile for the driver's dashboard
-      res.status(HTTP_STATUS_CODES.OK).json({ success: true, driver: toDriverFullResponse(driver) });
+      res.status(HTTP_STATUS_CODES.OK).json({ success: true, driver });
     } catch (error) {
       next(error)
     }
@@ -166,8 +167,8 @@ private verifyDriverPaymentAccount: IVerifyDriverPaymentAccount
         throw new AuthError(ERROR_MESSAGES.USER_NOT_FOUND, HTTP_STATUS_CODES.NOT_FOUND);
       }
       
-      // 3. Response Mapping
-      res.status(HTTP_STATUS_CODES.OK).json({ success: true, user: toUserResponse(user) });
+      // 3. Response 
+      res.status(HTTP_STATUS_CODES.OK).json({ success: true, user });
     } catch (error: any) {
        if (error instanceof z.ZodError) {
         res.status(HTTP_STATUS_CODES.BAD_REQUEST).json({
@@ -200,7 +201,7 @@ private verifyDriverPaymentAccount: IVerifyDriverPaymentAccount
         throw new AuthError(ERROR_MESSAGES.DRIVER_NOT_FOUND, HTTP_STATUS_CODES.NOT_FOUND);
       }
         
-      res.status(HTTP_STATUS_CODES.OK).json({success: true, driver: toDriverFullResponse(updatedDriver) });
+      res.status(HTTP_STATUS_CODES.OK).json({success: true, driver: updatedDriver });
     } catch (error: any) {
       if (error instanceof z.ZodError) {
         res.status(HTTP_STATUS_CODES.BAD_REQUEST).json({

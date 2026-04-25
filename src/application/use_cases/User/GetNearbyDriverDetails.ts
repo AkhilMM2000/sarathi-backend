@@ -5,7 +5,9 @@ import { GoogleDistanceService } from "../../services/GoogleDistanceService";
 import { AuthError } from "../../../domain/errors/Autherror";
 import { TOKENS } from "../../../constants/Tokens";
 import { HTTP_STATUS_CODES } from "../../../constants/HttpStatusCode";
-import { DriverWithDistance, IGetNearbyDriverDetailsUseCase } from "../Interfaces/IGetNearbyDriverDetailsUseCase"; 
+import { DriverResponseDto } from "../../dto/driver/DriverResponseDto";
+import { IGetNearbyDriverDetailsUseCase } from "../Interfaces/IGetNearbyDriverDetailsUseCase"; 
+import { toDriverResponse } from "../../dto/driver/DriverResponseDto";
 
 @injectable()
 export class GetNearbyDriverDetails
@@ -20,7 +22,7 @@ export class GetNearbyDriverDetails
     private distanceService: GoogleDistanceService
   ) {}
 
-  async execute(userId: string, driverId: string, lat?: number, lng?: number): Promise<DriverWithDistance> {
+  async execute(userId: string, driverId: string, lat?: number, lng?: number): Promise<DriverResponseDto> {
     let latitude = lat;
     let longitude = lng;
 
@@ -63,14 +65,9 @@ export class GetNearbyDriverDetails
 
     const distance = distances[driverId] || null;
 
-    return {
-      _id: driverId,
-      name: driver.name,
-      profileImage: driver.profileImage,
-      location: driver.location,
-      place: driver.place,
-      averageRating: driver.averageRating,
-      distance: distance
-    };
+    return toDriverResponse({
+      ...driver,
+      distance
+    });
   }
 }

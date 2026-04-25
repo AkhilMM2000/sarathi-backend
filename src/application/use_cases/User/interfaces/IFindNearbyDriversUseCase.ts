@@ -1,4 +1,5 @@
-import { FindNearbyDriversResult } from "../userDTO/Nearbydriver";
+import { PaginatedResultDTO } from "../userDTO/Nearbydriver";
+import { DriverResponseDto } from "../../../dto/driver/DriverResponseDto";
 
 export interface IFindNearbyDriversUseCase {
   execute(
@@ -8,5 +9,5 @@ export interface IFindNearbyDriversUseCase {
     placeKey?: string,
     lat?: number,
     lng?: number
-  ): Promise<FindNearbyDriversResult>;
+  ): Promise<PaginatedResultDTO<DriverResponseDto>>;
 }

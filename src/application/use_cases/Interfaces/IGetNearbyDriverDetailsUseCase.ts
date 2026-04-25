@@ -1,14 +1,4 @@
-import { Driver } from "../../../domain/models/Driver";
-
-export interface DriverWithDistance {
-  _id: string;
-  name: string;
-  profileImage?: string;
-  location: any;
-  place?: string;
-  averageRating?: number;
-  distance: number | null;
-}
+import { DriverResponseDto } from "../../dto/driver/DriverResponseDto";
 
 export interface IGetNearbyDriverDetailsUseCase {
   execute(
@@ -16,5 +6,5 @@ export interface IGetNearbyDriverDetailsUseCase {
     driverId: string,
     lat?: number,
     lng?: number
-  ): Promise<DriverWithDistance>;
+  ): Promise<DriverResponseDto>;
 }

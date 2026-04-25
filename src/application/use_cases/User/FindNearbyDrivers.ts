@@ -6,8 +6,9 @@ import { AuthError } from "../../../domain/errors/Autherror";
 import { TOKENS } from "../../../constants/Tokens";
 import { ERROR_MESSAGES } from "../../../constants/ErrorMessages";
 import { HTTP_STATUS_CODES } from "../../../constants/HttpStatusCode";
-import { FindNearbyDriversResult } from "./userDTO/Nearbydriver";
+import { PaginatedResultDTO } from "./userDTO/Nearbydriver";
 import { IFindNearbyDriversUseCase } from "./interfaces/IFindNearbyDriversUseCase";
+import { DriverResponseDto, toDriverListResponse } from "../../dto/driver/DriverResponseDto";
 
 @injectable()
 export class FindNearbyDrivers implements IFindNearbyDriversUseCase{
@@ -17,7 +18,7 @@ export class FindNearbyDrivers implements IFindNearbyDriversUseCase{
     @inject(TOKENS.GOOGLE_DISTANCE_SERVICE) private distanceService: GoogleDistanceService
   ) {}
 
-   async execute(userId: string, page: number = 1, limit: number = 2, placeKey?: string, lat?: number, lng?: number): Promise<FindNearbyDriversResult> {
+   async execute(userId: string, page: number = 1, limit: number = 2, placeKey?: string, lat?: number, lng?: number): Promise<PaginatedResultDTO<DriverResponseDto>> {
     let latitude = lat;
     let longitude = lng;
 
@@ -80,9 +81,11 @@ export class FindNearbyDrivers implements IFindNearbyDriversUseCase{
     });
     console.log(driversWithDistance,'driverwith distance')
     // 6️⃣ Sort & return with pagination info
+    const sortedDrivers = driversWithDistance.sort((a, b) => (a.distance ?? 0) - (b.distance ?? 0));
+    
     return {
       ...paginatedResult,
-      data: driversWithDistance.sort((a, b) => (a.distance ?? 0) - (b.distance ?? 0)),
+      data: toDriverListResponse(sortedDrivers as any),
     };
   }
   

@@ -1,5 +1,5 @@
-import { Driver } from "../../../../domain/models/Driver";
+import { DriverResponseDto } from "../../../dto/driver/DriverResponseDto";
 
 export interface IGetDriverProfile {
-  execute(driverId: string): Promise<Driver | null>;
+  execute(driverId: string): Promise<DriverResponseDto | null>;
 }

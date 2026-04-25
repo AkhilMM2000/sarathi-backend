@@ -25,7 +25,6 @@ import { IFindNearbyDriversUseCase } from "../../application/use_cases/User/inte
 import { IGetNearbyDriverDetailsUseCase } from "../../application/use_cases/Interfaces/IGetNearbyDriverDetailsUseCase";
 import { ZodHelper } from "../dto/common/ZodHelper";
 import { AddVehicleSchema, CreatePaymentIntentSchema, DriverIdParamSchema, EditVehicleSchema, FetchDriversSchema, GetNearbyDriverQuerySchema, LoginSchema, RegisterSchema, ResendOtpSchema, SubmitReviewSchema, UpdateUserSchema, VehicleIdParamSchema, VerifyOtpSchema, WalletPaginationSchema } from "../dto/user/UserDTO";
-import { toDriverListResponse, toDriverResponse } from "../dto/user/DriverDTO";
 import { z } from "zod";
 
 @injectable()
@@ -353,13 +352,10 @@ console.log(page, limit, search, lat, lng,'page limit search lat lng')
         lng
       );
 console.log(paginatedDrivers,'paginated drivers')
-      // 4. Map to safe Response DTOs
+      // 4. Send paginated Response DTOs
       res.status(HTTP_STATUS_CODES.OK).json({ 
         success: true, 
-        drivers: {
-          ...paginatedDrivers,
-          data: toDriverListResponse(paginatedDrivers.data)
-        }
+        drivers: paginatedDrivers
       });
     } catch (error: any) {
       if (error instanceof z.ZodError) {
@@ -383,10 +379,10 @@ console.log(req.query,'query')
 
       const userId = req.user?.id
 
-      // 3. Execute and map to safe Response DTO
+      // 3. Execute and return safe Response DTO
       const driver = await this.getNearbyDriverDetailsUseCase.execute(userId!, driverId, lat, lng);
-console.log(driver,userId!, driverId, lat, lng,'driver');
-      res.status(HTTP_STATUS_CODES.OK).json(toDriverResponse(driver));
+      console.log(driver,userId!, driverId, lat, lng,'driver');
+      res.status(HTTP_STATUS_CODES.OK).json(driver);
     } catch (error: any) {
       console.log(error,'error')
       if (error instanceof z.ZodError) {
@@ -452,10 +448,10 @@ console.log(driver,userId!, driverId, lat, lng,'driver');
         throw new AuthError(ERROR_MESSAGES.DRIVER_NOT_FOUND, HTTP_STATUS_CODES.NOT_FOUND);
       }
 
-      // 3. Response Mapping
+      // 3. Return safe Response DTO
       res
         .status(HTTP_STATUS_CODES.OK)
-        .json({ success: true, driver: toDriverResponse(driver) });
+        .json({ success: true, driver });
     } catch (error: any) {
       if (error instanceof z.ZodError) {
         res.status(HTTP_STATUS_CODES.BAD_REQUEST).json({
