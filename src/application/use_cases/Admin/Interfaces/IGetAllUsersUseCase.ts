@@ -1,5 +1,5 @@
-import { UserWithVehicleCount } from "../../../../domain/repositories/IUserepository";
+import { AdminUserResponseDto } from "../../../dto/admin/AdminResponseDto";
 
 export interface IGetAllUsersUseCase {
-  execute(): Promise<UserWithVehicleCount[] | null>;
+  execute(): Promise<AdminUserResponseDto[]>;
 }

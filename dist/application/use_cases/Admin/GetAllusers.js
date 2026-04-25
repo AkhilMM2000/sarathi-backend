@@ -15,12 +15,14 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.GetAllUsers = void 0;
 const tsyringe_1 = require("tsyringe");
 const Tokens_1 = require("../../../constants/Tokens");
+const AdminResponseDto_1 = require("../../dto/admin/AdminResponseDto");
 let GetAllUsers = class GetAllUsers {
     constructor(userRepository) {
         this.userRepository = userRepository;
     }
     async execute() {
-        return await this.userRepository.getUsers();
+        const users = await this.userRepository.getUsers();
+        return (0, AdminResponseDto_1.toAdminUserListResponse)(users || []);
     }
 };
 exports.GetAllUsers = GetAllUsers;

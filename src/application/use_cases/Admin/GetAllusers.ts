@@ -1,10 +1,8 @@
-
-
-
 import { inject, injectable } from "tsyringe";
-import { IUserRepository ,UserWithVehicleCount} from "../../../domain/repositories/IUserepository";
+import { IUserRepository } from "../../../domain/repositories/IUserepository";
 import { TOKENS } from "../../../constants/Tokens";
 import { IGetAllUsersUseCase } from "./Interfaces/IGetAllUsersUseCase";
+import { AdminUserResponseDto, toAdminUserListResponse } from "../../dto/admin/AdminResponseDto";
 
 @injectable()
 export class GetAllUsers implements IGetAllUsersUseCase  {
@@ -12,7 +10,8 @@ export class GetAllUsers implements IGetAllUsersUseCase  {
     @inject(TOKENS.IUSER_REPO) private userRepository: IUserRepository,
   ) {}
 
-  async execute(): Promise<UserWithVehicleCount[]|null> {
-    return await this.userRepository.getUsers()
+  async execute(): Promise<AdminUserResponseDto[]> {
+    const users = await this.userRepository.getUsers();
+    return toAdminUserListResponse(users || []);
   }
 }

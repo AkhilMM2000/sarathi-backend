@@ -17,6 +17,7 @@ const tsyringe_1 = require("tsyringe");
 const Autherror_1 = require("../../../domain/errors/Autherror");
 const Tokens_1 = require("../../../constants/Tokens");
 const HttpStatusCode_1 = require("../../../constants/HttpStatusCode");
+const AdminResponseDto_1 = require("../../dto/admin/AdminResponseDto");
 let AdminChangeDriverStatus = class AdminChangeDriverStatus {
     constructor(driverRepository, notificationService) {
         this.driverRepository = driverRepository;
@@ -24,13 +25,14 @@ let AdminChangeDriverStatus = class AdminChangeDriverStatus {
     }
     async execute(driverId, status, reason) {
         if (!["pending", "approved", "rejected"].includes(status)) {
-            throw new Autherror_1.AuthError("Invalid status value.", HttpStatusCode_1.HTTP_STATUS_CODES.BAD_REQUEST); // Bad Request
+            throw new Autherror_1.AuthError("Invalid status value.", HttpStatusCode_1.HTTP_STATUS_CODES.BAD_REQUEST);
         }
         if (status === "rejected" && !reason) {
-            throw new Autherror_1.AuthError("Rejection reason is required.", HttpStatusCode_1.HTTP_STATUS_CODES.UNPROCESSABLE_ENTITY); // Unprocessable Entity
+            throw new Autherror_1.AuthError("Rejection reason is required.", HttpStatusCode_1.HTTP_STATUS_CODES.UNPROCESSABLE_ENTITY);
         }
         await this.notificationService.adminChangeDriverStatusNotification(driverId, { status, reason });
-        return await this.driverRepository.updateStatus(driverId, status, reason);
+        const updatedDriver = await this.driverRepository.updateStatus(driverId, status, reason);
+        return updatedDriver ? (0, AdminResponseDto_1.toAdminDriverResponse)(updatedDriver) : null;
     }
 };
 exports.AdminChangeDriverStatus = AdminChangeDriverStatus;

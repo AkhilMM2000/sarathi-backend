@@ -1,11 +1,11 @@
 import { inject, injectable } from "tsyringe";
 import { IDriverRepository } from "../../../domain/repositories/IDriverepository";
-import { Driver } from "../../../domain/models/Driver";
 import { AuthError } from "../../../domain/errors/Autherror";
 import { INotificationService } from "../../services/NotificationService";
 import { TOKENS } from "../../../constants/Tokens";
 import { HTTP_STATUS_CODES } from "../../../constants/HttpStatusCode";
 import { IAdminChangeDriverStatusUseCase } from "./Interfaces/IAdminChangeDriverStatus";
+import { AdminDriverResponseDto, toAdminDriverResponse } from "../../dto/admin/AdminResponseDto";
 
 @injectable()
 export class AdminChangeDriverStatus implements IAdminChangeDriverStatusUseCase  {
@@ -19,22 +19,19 @@ export class AdminChangeDriverStatus implements IAdminChangeDriverStatusUseCase 
     driverId: string,
     status: "pending" | "approved" | "rejected",
     reason?: string
-  ): Promise<Driver | null> {
+  ): Promise<AdminDriverResponseDto | null> {
 
     if (!["pending", "approved", "rejected"].includes(status)) {
-        throw new AuthError("Invalid status value.", HTTP_STATUS_CODES.BAD_REQUEST); // Bad Request
+        throw new AuthError("Invalid status value.", HTTP_STATUS_CODES.BAD_REQUEST);
       }
       
-     
       if (status === "rejected" && !reason) {
-        throw new AuthError("Rejection reason is required.", HTTP_STATUS_CODES.UNPROCESSABLE_ENTITY); // Unprocessable Entity
+        throw new AuthError("Rejection reason is required.", HTTP_STATUS_CODES.UNPROCESSABLE_ENTITY);
       }
       
     await this.notificationService.adminChangeDriverStatusNotification(driverId, { status, reason });
-    return await this.driverRepository.updateStatus(driverId, status, reason);
-
+    const updatedDriver = await this.driverRepository.updateStatus(driverId, status, reason);
+    
+    return updatedDriver ? toAdminDriverResponse(updatedDriver) : null;
   }
 }
-
-
-

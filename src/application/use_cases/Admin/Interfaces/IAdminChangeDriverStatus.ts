@@ -1,9 +1,9 @@
-import { Driver } from "../../../../domain/models/Driver";
+import { AdminDriverResponseDto } from "../../../dto/admin/AdminResponseDto";
 
 export interface IAdminChangeDriverStatusUseCase {
   execute(
     driverId: string,
     status: "pending" | "approved" | "rejected",
     reason?: string
-  ): Promise<Driver | null>  // or Driver if you want strict typing
+  ): Promise<AdminDriverResponseDto | null>
 }

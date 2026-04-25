@@ -15,12 +15,17 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.GetDrivers = void 0;
 const tsyringe_1 = require("tsyringe");
 const Tokens_1 = require("../../../constants/Tokens");
+const AdminResponseDto_1 = require("../../dto/admin/AdminResponseDto");
 let GetDrivers = class GetDrivers {
     constructor(driverRepository) {
         this.driverRepository = driverRepository;
     }
     async execute(page, limit) {
-        return await this.driverRepository.getDrivers(page, limit);
+        const result = await this.driverRepository.getDrivers(page, limit);
+        return {
+            ...result,
+            data: (0, AdminResponseDto_1.toAdminDriverListResponse)(result.data)
+        };
     }
 };
 exports.GetDrivers = GetDrivers;

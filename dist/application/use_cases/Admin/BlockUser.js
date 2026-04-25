@@ -17,6 +17,7 @@ const tsyringe_1 = require("tsyringe");
 const Autherror_1 = require("../../../domain/errors/Autherror");
 const Tokens_1 = require("../../../constants/Tokens");
 const HttpStatusCode_1 = require("../../../constants/HttpStatusCode");
+const AdminResponseDto_1 = require("../../dto/admin/AdminResponseDto");
 let BlockUserUseCase = class BlockUserUseCase {
     constructor(userRepository) {
         this.userRepository = userRepository;
@@ -24,9 +25,9 @@ let BlockUserUseCase = class BlockUserUseCase {
     async execute(userId, status) {
         const blockedUser = await this.userRepository.blockOrUnblockUser(userId, status);
         if (!blockedUser) {
-            throw new Autherror_1.AuthError("User not found or already blocked", HttpStatusCode_1.HTTP_STATUS_CODES.NOT_FOUND);
+            throw new Autherror_1.AuthError("User not found or already in the desired block status", HttpStatusCode_1.HTTP_STATUS_CODES.NOT_FOUND);
         }
-        return blockedUser;
+        return (0, AdminResponseDto_1.toAdminUserResponse)(blockedUser);
     }
 };
 exports.BlockUserUseCase = BlockUserUseCase;
