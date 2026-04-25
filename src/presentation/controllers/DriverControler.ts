@@ -2,7 +2,7 @@ import { NextFunction, Request, Response } from "express";
 import { inject, injectable } from "tsyringe";
 import { AuthError } from "../../domain/errors/Autherror";
 import { AuthenticatedRequest } from "../../middleware/authMiddleware";
-import { PaginatedResult, rideHistory } from "../../domain/repositories/IBookingrepository";
+import { PaginatedResult } from "../../domain/repositories/IBookingrepository";
 import { ERROR_MESSAGES } from "../../constants/ErrorMessages";
 import { IRegisterDriverUseCase } from "../../application/use_cases/Driver/interfaces/IRegisterDriverUseCase";
 import { USECASE_TOKENS } from "../../constants/UseCaseTokens";
@@ -245,8 +245,7 @@ export class DriverController {
       const { page, limit } = ZodHelper.validate(DriverBookingPaginationSchema, req.query);
 
       // 2. Execute
-      const paginatedBookings: PaginatedResult<rideHistory> =
-        await this._getUserBookingsUsecase.execute(driverId, page, limit);
+      const paginatedBookings = await this._getUserBookingsUsecase.execute(driverId, page, limit);
 
       // 3. Response 
       res.status(HTTP_STATUS_CODES.OK).json({

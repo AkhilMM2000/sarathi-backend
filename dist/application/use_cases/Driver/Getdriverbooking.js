@@ -15,12 +15,17 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.GetUserBookings = void 0;
 const tsyringe_1 = require("tsyringe");
 const Tokens_1 = require("../../../constants/Tokens");
+const BookingResponseDto_1 = require("../../dto/booking/BookingResponseDto");
 let GetUserBookings = class GetUserBookings {
     constructor(bookingRepo) {
         this.bookingRepo = bookingRepo;
     }
     async execute(driverId, page = 1, limit = 2) {
-        return await this.bookingRepo.findBookingsByDriver(driverId, page, limit);
+        const result = await this.bookingRepo.findBookingsByDriver(driverId, page, limit);
+        return {
+            ...result,
+            data: (0, BookingResponseDto_1.toRideHistoryListResponse)(result.data)
+        };
     }
 };
 exports.GetUserBookings = GetUserBookings;
