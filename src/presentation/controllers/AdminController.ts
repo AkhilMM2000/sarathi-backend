@@ -20,21 +20,21 @@ import { AdminLoginSchema, UserIdParamSchema, UpdateUserStatusSchema, DriverIdPa
 export class AdminController {
   constructor(
      @inject(TOKENS.LOGIN_USECASE)
-     private loginUsecase: ILogin,
+     private _loginUsecase: ILogin,
     @inject(USECASE_TOKENS.GET_ALL_USERS_USECASE)
-     private getAllUsersUseCase: IGetAllUsersUseCase,
+     private _getAllUsersUseCase: IGetAllUsersUseCase,
       @inject(USECASE_TOKENS.BLOCK_USER_USECASE)
-    private blockUserUseCase: IBlockUserUseCase,
+    private _blockUserUseCase: IBlockUserUseCase,
      @inject(USECASE_TOKENS.GET_DRIVERS_USECASE)
-    private getDriversUseCase: IGetDriversUseCase,
+    private _getDriversUseCase: IGetDriversUseCase,
     @inject(USECASE_TOKENS.ADMIN_CHANGE_DRIVER_STATUS_USECASE)
-   private changeDriverStatusUseCase: IAdminChangeDriverStatusUseCase,
+   private _changeDriverStatusUseCase: IAdminChangeDriverStatusUseCase,
    @inject(USECASE_TOKENS.BLOCK_OR_UNBLOCK_DRIVER_USECASE)
-    private blockOrUnblockDriverUseCase: IBlockOrUnblockDriverUseCase,
+    private _blockOrUnblockDriverUseCase: IBlockOrUnblockDriverUseCase,
     @inject(TOKENS.GET_VEHICLES_BY_USER_USECASE)
-    private getVehiclebyUserUsecase: IGetVehiclesByUserUseCase,
+    private _getVehicleByUserUseCase: IGetVehiclesByUserUseCase,
     @inject(USECASE_TOKENS.GET_ADMIN_DASHBOARD_STATS_USECASE)
-    private getAdminDashboardStatsUseCase: IGetAdminDashboardStatsUseCase,
+    private _getAdminDashboardStatsUseCase: IGetAdminDashboardStatsUseCase,
   ){}
 
   async login(req: Request, res: Response, next: NextFunction) {
@@ -43,7 +43,7 @@ export class AdminController {
       const { email, password, role } = ZodHelper.validate(AdminLoginSchema, req.body);
 
       // 2. Execute
-      const { accessToken, refreshToken } = await this.loginUsecase.execute(email, password, role);
+      const { accessToken, refreshToken } = await this._loginUsecase.execute(email, password, role);
 
       const refreshTokenKey = `${role}RefreshToken`;
 
@@ -51,10 +51,11 @@ export class AdminController {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
         sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
-        maxAge: 7 * 24 * 60 * 60 * 1000,
+        maxAge: Number(process.env.COOKIE_MAX_AGE) || 7 * 24 * 60 * 60 * 1000,
       });
 
       res.status(HTTP_STATUS_CODES.OK).json({
+        success: true,
         accessToken,
         role,
         message: "your admin login successfull",
@@ -70,7 +71,7 @@ export class AdminController {
       const { page, limit } = ZodHelper.validate(AdminPaginationSchema, req.query);
 
       // 2. Execute
-      const usersWithVehicleCount = await this.getAllUsersUseCase.execute();
+      const usersWithVehicleCount = await this._getAllUsersUseCase.execute();
 
       res.status(HTTP_STATUS_CODES.OK).json({
         success: true,
@@ -89,7 +90,7 @@ export class AdminController {
       const { isBlock } = ZodHelper.validate(UpdateUserStatusSchema, req.body);
     
       // 2. Execute
-      const blockedUser = await this.blockUserUseCase.execute(userId, isBlock);
+      const blockedUser = await this._blockUserUseCase.execute(userId, isBlock);
 
       res.status(HTTP_STATUS_CODES.OK).json({
         success: true,
@@ -109,7 +110,7 @@ export class AdminController {
       const { page, limit } = ZodHelper.validate(AdminPaginationSchema, req.query);
 
       // 2. Execute
-      const paginatedDrivers = await this.getDriversUseCase.execute(page, limit);
+      const paginatedDrivers = await this._getDriversUseCase.execute(page, limit);
 
       res.status(HTTP_STATUS_CODES.OK).json({
         success: true,
@@ -127,7 +128,7 @@ export class AdminController {
       const { status, reason } = ZodHelper.validate(ChangeDriverStatusSchema, req.body);
 
       // 2. Execute the use case
-      const updatedDriver = await this.changeDriverStatusUseCase.execute(driverId, status, reason);
+      const updatedDriver = await this._changeDriverStatusUseCase.execute(driverId, status, reason);
 
       if (!updatedDriver) {
         throw new AuthError(ERROR_MESSAGES.DRIVER_NOT_FOUND,HTTP_STATUS_CODES.NOT_FOUND)
@@ -149,7 +150,7 @@ export class AdminController {
       const { isBlock } = ZodHelper.validate(HandleBlockStatusSchema, req.body);
 
       // 2. Execute the use case
-      await this.blockOrUnblockDriverUseCase.execute(driverId, isBlock);
+      await this._blockOrUnblockDriverUseCase.execute(driverId, isBlock);
 
       res.status(HTTP_STATUS_CODES.OK).json({ success:true, message: `Driver ${isBlock ? "blocked" : "unblocked"} successfully` });
     } catch (error: any) {
@@ -163,7 +164,7 @@ export class AdminController {
       const { userId } = ZodHelper.validate(UserIdParamSchema, req.params);
       
       // 2. Execute
-      const vehicles = await this.getVehiclebyUserUsecase.execute(userId);
+      const vehicles = await this._getVehicleByUserUseCase.execute(userId);
       
       res.status(HTTP_STATUS_CODES.OK).json({ success: true, data: vehicles });
     } catch (error:any) {
@@ -173,7 +174,7 @@ export class AdminController {
 
   async getDashboardStats(req: Request, res: Response, next: NextFunction) {
     try {
-      const stats = await this.getAdminDashboardStatsUseCase.execute();
+      const stats = await this._getAdminDashboardStatsUseCase.execute();
       res.status(HTTP_STATUS_CODES.OK).json({
         success: true,
         data: stats,
