@@ -16,13 +16,13 @@ import { AuthError } from "../../domain/errors/Autherror";
 export class AuthController {
   constructor(
     @inject(USECASE_TOKENS.REFRESH_TOKEN_USECASE)
-    private refreshTokenUseCase: IRefreshTokenUseCase,
+    private _refreshTokenUseCase: IRefreshTokenUseCase,
     @inject(USECASE_TOKENS.FORGOT_PASSWORD_USECASE)
-    private forgotPasswordUseCase: IForgotPasswordUseCase,
+    private _forgotPasswordUseCase: IForgotPasswordUseCase,
     @inject(USECASE_TOKENS.RESET_PASSWORD_USECASE)
-    private resetPasswordUseCase: IResetPasswordUseCase,
+    private _resetPasswordUseCase: IResetPasswordUseCase,
     @inject(USECASE_TOKENS.CHANGE_PASSWORD_USECASE)
-    private changePasswordUseCase: IChangePasswordUseCase
+    private _changePasswordUseCase: IChangePasswordUseCase
   ) {}
 
   async refreshToken(req: Request, res: Response, next: NextFunction) {
@@ -38,7 +38,7 @@ export class AuthController {
       }
 
       // 2. Execute
-      const result = await this.refreshTokenUseCase.execute(refreshToken, role);
+      const result = await this._refreshTokenUseCase.execute(refreshToken, role);
 
       res.status(HTTP_STATUS_CODES.OK).json({ success: true, accessToken: result });
     } catch (error) {
@@ -53,7 +53,7 @@ export class AuthController {
       const { email, role } = ZodHelper.validate(ForgotPasswordSchema, req.body);
 
       // 2. Execute
-      await this.forgotPasswordUseCase.execute(email, role);
+      await this._forgotPasswordUseCase.execute(email, role);
       res.status(HTTP_STATUS_CODES.OK).json({ 
         success: true, 
         message: `check ${role} mail for reset password` 
@@ -69,7 +69,7 @@ export class AuthController {
       const { token, newPassword, role } = ZodHelper.validate(ResetPasswordSchema, req.body);
 
       // 2. Execute
-      await this.resetPasswordUseCase.execute(token, newPassword, role);
+      await this._resetPasswordUseCase.execute(token, newPassword, role);
 
       res.status(HTTP_STATUS_CODES.OK).json({
         success: true,
@@ -112,7 +112,7 @@ export class AuthController {
       const { oldPassword, newPassword, role } = ZodHelper.validate(ChangePasswordSchema, req.body);
 
       // 2. Execute
-      await this.changePasswordUseCase.execute(userId, oldPassword, newPassword, role);
+      await this._changePasswordUseCase.execute(userId, oldPassword, newPassword, role);
 
       res.status(HTTP_STATUS_CODES.OK).json({ 
         success: true,

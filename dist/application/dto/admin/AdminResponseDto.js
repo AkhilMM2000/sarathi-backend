@@ -6,12 +6,12 @@ exports.toAdminUserListResponse = exports.toAdminDriverListResponse = exports.to
  */
 const toAdminUserResponse = (user) => {
     return {
-        _id: user.id || user._id?.toString() || "",
+        _id: user._id?.toString() || "",
         name: user.name || "",
         email: user.email || "",
         mobile: user.mobile || "",
-        profileImage: user.profileImage || "",
-        isBlock: user.isBlock || false,
+        profileImage: user.profile || "",
+        isBlock: !!user.isBlock,
         vehicleCount: user.vehicleCount || 0,
         createdAt: user.createdAt instanceof Date ? user.createdAt.toISOString() : String(user.createdAt)
     };
@@ -19,7 +19,7 @@ const toAdminUserResponse = (user) => {
 exports.toAdminUserResponse = toAdminUserResponse;
 const toAdminDriverResponse = (driver) => {
     return {
-        _id: driver.id || driver._id?.toString() || "",
+        _id: driver._id?.toString() || "",
         name: driver.name || "",
         email: driver.email || "",
         mobile: driver.mobile || "",

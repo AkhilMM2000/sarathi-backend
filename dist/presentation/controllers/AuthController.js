@@ -21,11 +21,11 @@ const ZodHelper_1 = require("../schemas/common/ZodHelper");
 const AuthRequestDTO_1 = require("../schemas/auth/AuthRequestDTO");
 const Autherror_1 = require("../../domain/errors/Autherror");
 let AuthController = class AuthController {
-    constructor(refreshTokenUseCase, forgotPasswordUseCase, resetPasswordUseCase, changePasswordUseCase) {
-        this.refreshTokenUseCase = refreshTokenUseCase;
-        this.forgotPasswordUseCase = forgotPasswordUseCase;
-        this.resetPasswordUseCase = resetPasswordUseCase;
-        this.changePasswordUseCase = changePasswordUseCase;
+    constructor(_refreshTokenUseCase, _forgotPasswordUseCase, _resetPasswordUseCase, _changePasswordUseCase) {
+        this._refreshTokenUseCase = _refreshTokenUseCase;
+        this._forgotPasswordUseCase = _forgotPasswordUseCase;
+        this._resetPasswordUseCase = _resetPasswordUseCase;
+        this._changePasswordUseCase = _changePasswordUseCase;
     }
     async refreshToken(req, res, next) {
         try {
@@ -37,7 +37,7 @@ let AuthController = class AuthController {
                 throw new Autherror_1.AuthError(ErrorMessages_1.ERROR_MESSAGES.REFRESHTOKEN_NOTFOUND, HttpStatusCode_1.HTTP_STATUS_CODES.FORBIDDEN);
             }
             // 2. Execute
-            const result = await this.refreshTokenUseCase.execute(refreshToken, role);
+            const result = await this._refreshTokenUseCase.execute(refreshToken, role);
             res.status(HttpStatusCode_1.HTTP_STATUS_CODES.OK).json({ success: true, accessToken: result });
         }
         catch (error) {
@@ -49,7 +49,7 @@ let AuthController = class AuthController {
             // 1. DTO Validation
             const { email, role } = ZodHelper_1.ZodHelper.validate(AuthRequestDTO_1.ForgotPasswordSchema, req.body);
             // 2. Execute
-            await this.forgotPasswordUseCase.execute(email, role);
+            await this._forgotPasswordUseCase.execute(email, role);
             res.status(HttpStatusCode_1.HTTP_STATUS_CODES.OK).json({
                 success: true,
                 message: `check ${role} mail for reset password`
@@ -64,7 +64,7 @@ let AuthController = class AuthController {
             // 1. DTO Validation
             const { token, newPassword, role } = ZodHelper_1.ZodHelper.validate(AuthRequestDTO_1.ResetPasswordSchema, req.body);
             // 2. Execute
-            await this.resetPasswordUseCase.execute(token, newPassword, role);
+            await this._resetPasswordUseCase.execute(token, newPassword, role);
             res.status(HttpStatusCode_1.HTTP_STATUS_CODES.OK).json({
                 success: true,
                 message: `${role} Password reset successful`,
@@ -102,7 +102,7 @@ let AuthController = class AuthController {
             // 1. DTO Validation
             const { oldPassword, newPassword, role } = ZodHelper_1.ZodHelper.validate(AuthRequestDTO_1.ChangePasswordSchema, req.body);
             // 2. Execute
-            await this.changePasswordUseCase.execute(userId, oldPassword, newPassword, role);
+            await this._changePasswordUseCase.execute(userId, oldPassword, newPassword, role);
             res.status(HttpStatusCode_1.HTTP_STATUS_CODES.OK).json({
                 success: true,
                 message: "Password changed successfully."
