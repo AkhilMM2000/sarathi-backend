@@ -29,7 +29,5 @@ package-lock.json
 .augment/
 .claude/
 skills-lock.json
-dist/
-build/
 .output/
 .DS_Store
