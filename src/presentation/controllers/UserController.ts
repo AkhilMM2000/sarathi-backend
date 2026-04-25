@@ -31,35 +31,35 @@ import { z } from "zod";
 export class UserController {
   constructor(
     @inject(TOKENS.REGISTER_USER_USECASE)
-    private registerUsecase: IRegisterUser,
+    private _registerUsecase: IRegisterUser,
     @inject(TOKENS.GET_USER_DATA_USECASE)
-    private getUserDataUsecase: IGetUserData,
+    private _getUserDataUsecase: IGetUserData,
     @inject(TOKENS.VERIFY_OTP_USECAE)
-    private verifyOtpUsecase: IVerifyOtp,
+    private _verifyOtpUsecase: IVerifyOtp,
     @inject(TOKENS.RESEND_OTP_USECASE)
-    private resendOtpUsecase: IResendOTP,
+    private _resendOtpUsecase: IResendOTP,
     @inject(TOKENS.LOGIN_USECASE)
-    private loginUsecase: ILogin,
+    private _loginUsecase: ILogin,
     @inject(TOKENS.ADD_VEHICLE_USECASE)
-    private addVehicleUsecase: IAddVehicleUseCase,
+    private _addVehicleUsecase: IAddVehicleUseCase,
     @inject(TOKENS.EDIT_VEHICLE_USECASE)
-    private editVehicleUsecase: IEditVehicleUseCase,
+    private _editVehicleUsecase: IEditVehicleUseCase,
     @inject(TOKENS.GET_VEHICLES_BY_USER_USECASE)
-    private getVehiclebyUserUsecase: IGetVehiclesByUserUseCase,
+    private _getVehiclebyUserUsecase: IGetVehiclesByUserUseCase,
     @inject(TOKENS.UPDATE_USER_USECASE)
-    private updateuserUsecase: IUpdateUserData,
+    private _updateuserUsecase: IUpdateUserData,
     @inject(USECASE_TOKENS.FIND_NEARBY_DRIVERS_USECASE)
-    private findNearbyDrivers: IFindNearbyDriversUseCase,
+    private _findNearbyDrivers: IFindNearbyDriversUseCase,
     @inject(TOKENS.CREATE_PAYMENT_INTENT_USECASE)
-    private createPaymentUsecase: ICreatePaymentIntent,
+    private _createPaymentUsecase: ICreatePaymentIntent,
     @inject(TOKENS.GET_DRIVER_PROFILE_USECASE)
-    private getDriverProfileUsecase: IGetDriverProfile,
+    private _getDriverProfileUsecase: IGetDriverProfile,
     @inject(TOKENS.WALLET_TRANSACTION_USECASE)
-    private walletTransactionUsecase: IWalletTransaction,
+    private _walletTransactionUsecase: IWalletTransaction,
     @inject(TOKENS.SUBMIT_REVIEW_USECASE)
-    private submitReviewUsecase: ISubmitDriverReview,
+    private _submitReviewUsecase: ISubmitDriverReview,
     @inject(USECASE_TOKENS.GET_NEARBY_DRIVER_DETAILS_USECASE)
-    private getNearbyDriverDetailsUseCase: IGetNearbyDriverDetailsUseCase
+    private _getNearbyDriverDetailsUseCase: IGetNearbyDriverDetailsUseCase
   ) { }
 
   async register(req: Request, res: Response, next: NextFunction): Promise<void> {
@@ -70,7 +70,7 @@ export class UserController {
       const validatedData = ZodHelper.validate(RegisterSchema, req.body);
 
       // 2. Execute Use Case
-      const result = await this.registerUsecase.execute(validatedData as any);
+      const result = await this._registerUsecase.execute(validatedData as any);
       // 3. Response
       res.status(HTTP_STATUS_CODES.CREATED).json({
         success: true,
@@ -94,14 +94,14 @@ export class UserController {
       const { email, otp } = ZodHelper.validate(VerifyOtpSchema, req.body);
 
       // 2. Execute Use Case
-      const { accessToken, refreshToken, user } = await this.verifyOtpUsecase.execute(email, otp, "user");
+      const { accessToken, refreshToken, user } = await this._verifyOtpUsecase.execute(email, otp, "user");
 
       // 3. Set Cookie and Response
       res.cookie(`userRefreshToken`, refreshToken, {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
         sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
-        maxAge: 7 * 24 * 60 * 60 * 1000,
+        maxAge: Number(process.env.COOKIE_MAX_AGE) || 7 * 24 * 60 * 60 * 1000,
       });
       res.status(HTTP_STATUS_CODES.OK).json({ success: true, accessToken, user });
     } catch (error: any) {
@@ -121,7 +121,7 @@ export class UserController {
       const { email, role } = ZodHelper.validate(ResendOtpSchema, req.body);
 
       // 2. Execute Use Case
-      const result = await this.resendOtpUsecase.execute(email, role);
+      const result = await this._resendOtpUsecase.execute(email, role);
 
       // 3. Response
       res.status(HTTP_STATUS_CODES.OK).json({ success: true, ...result });
@@ -144,7 +144,7 @@ export class UserController {
       const { email, password, role } = ZodHelper.validate(LoginSchema, req.body);
 
       // 2. Execute Use Case
-      const result = await this.loginUsecase.execute(email, password, role);
+      const result = await this._loginUsecase.execute(email, password, role);
 
       // 3. Set Cookie and Response
       const refreshTokenKey = `${role}RefreshToken`;
@@ -153,7 +153,7 @@ export class UserController {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
         sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
-        maxAge: 7 * 24 * 60 * 60 * 1000,
+        maxAge: Number(process.env.COOKIE_MAX_AGE) || 7 * 24 * 60 * 60 * 1000,
       });
       res.status(HTTP_STATUS_CODES.OK).json({
         accessToken: result.accessToken,
@@ -189,7 +189,7 @@ export class UserController {
       }
 
       // 2. Execute Use Case
-      const vehicle = await this.addVehicleUsecase.execute({
+      const vehicle = await this._addVehicleUsecase.execute({
         ...validatedData,
         userId: userId,
       });
@@ -214,7 +214,7 @@ export class UserController {
       const validatedData = ZodHelper.validate(EditVehicleSchema, req.body);
 
       // 2. Execute Use Case
-      const updatedVehicle = await this.editVehicleUsecase.execute(
+      const updatedVehicle = await this._editVehicleUsecase.execute(
         vehicleId,
         validatedData
       );
@@ -246,7 +246,7 @@ export class UserController {
         );
       }
 
-      const vehicles = await this.getVehiclebyUserUsecase.execute(userId!);
+      const vehicles = await this._getVehiclebyUserUsecase.execute(userId!);
 
       res.status(HTTP_STATUS_CODES.OK).json({ success: true, data: vehicles });
     } catch (error) {
@@ -269,7 +269,7 @@ export class UserController {
         );
       }
 
-      const user = await this.getUserDataUsecase.execute(userId);
+      const user = await this._getUserDataUsecase.execute(userId);
 
       res.status(HTTP_STATUS_CODES.OK).json({ success: true, user });
     } catch (error) {
@@ -292,7 +292,7 @@ export class UserController {
       }
 
       // 2. Execute Use Case with sanitized data
-      const user = await this.updateuserUsecase.execute(userId, validatedData);
+      const user = await this._updateuserUsecase.execute(userId, validatedData);
 
       res.status(HTTP_STATUS_CODES.OK).json({
         success: true,
@@ -330,7 +330,7 @@ export class UserController {
       const { page, limit, search, lat, lng } = ZodHelper.validate(FetchDriversSchema, req.query);
      
       // 3. Execute the use case
-      const paginatedDrivers = await this.findNearbyDrivers.execute(
+      const paginatedDrivers = await this._findNearbyDrivers.execute(
         userId,
         page,
         limit,
@@ -367,7 +367,7 @@ export class UserController {
       const userId = req.user?.id
 
       // 3. Execute and return safe Response DTO
-      const driver = await this.getNearbyDriverDetailsUseCase.execute(userId!, driverId, lat, lng);
+      const driver = await this._getNearbyDriverDetailsUseCase.execute(userId!, driverId, lat, lng);
       console.log(driver,'reach here ');
       res.status(HTTP_STATUS_CODES.OK).json(driver);
     } catch (error: any) {
@@ -396,7 +396,7 @@ export class UserController {
       );
 
       // 2. Execute Use Case
-      const result = await this.createPaymentUsecase.execute({
+      const result = await this._createPaymentUsecase.execute({
         amount,
         driverId,
       });
@@ -426,7 +426,7 @@ export class UserController {
       });
 
       // 2. Execute
-      const driver = await this.getDriverProfileUsecase.execute(driverId);
+      const driver = await this._getDriverProfileUsecase.execute(driverId);
       console.log(driver, 'driver')
       if (!driver) {
         throw new AuthError(ERROR_MESSAGES.DRIVER_NOT_FOUND, HTTP_STATUS_CODES.NOT_FOUND);
@@ -467,12 +467,12 @@ export class UserController {
 
       // 2. Execute
       const transactionHistory =
-        await this.walletTransactionUsecase.getTransactionHistory(
+        await this._walletTransactionUsecase.getTransactionHistory(
           userId,
           page,
           limit
         );
-      const ballence = await this.walletTransactionUsecase.getWalletBalance(
+      const ballence = await this._walletTransactionUsecase.getWalletBalance(
         userId
       );
 
@@ -511,7 +511,7 @@ export class UserController {
       }
 
       // 2. Execute
-      const createdReview = await this.submitReviewUsecase.execute({
+      const createdReview = await this._submitReviewUsecase.execute({
         driverId,
         userId,
         rideId,
