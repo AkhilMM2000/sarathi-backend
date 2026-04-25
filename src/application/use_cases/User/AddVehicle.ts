@@ -1,10 +1,10 @@
 import { inject, injectable } from "tsyringe";
 import { IVehicleRepository } from "../../../domain/repositories/IVehicleRepository";
-import { Vehicle} from "../../../domain/models/Vehicle";
 import { AuthError } from "../../../domain/errors/Autherror";
 import { TOKENS } from "../../../constants/Tokens";
 import { HTTP_STATUS_CODES } from "../../../constants/HttpStatusCode";
 import { IAddVehicleUseCase } from "../Interfaces/IAddvehicle";
+import { VehicleResponseDto, toVehicleResponse } from "../../dto/vehicle/VehicleResponseDto";
 
 @injectable()
 export class AddVehicle implements IAddVehicleUseCase {
@@ -12,9 +12,9 @@ export class AddVehicle implements IAddVehicleUseCase {
     @inject(TOKENS.VEHICLE_REPO) private vehicleRepository: IVehicleRepository
   ) {}
 
-  async execute(vehicleData: Vehicle): Promise<Vehicle> {
+  async execute(vehicleData: any): Promise<VehicleResponseDto> {
     // List of required fields
-    const requiredFields: (keyof Vehicle)[] = [
+    const requiredFields = [
       "userId",
       "vehicleImage",
       "rcBookImage",
@@ -33,7 +33,7 @@ export class AddVehicle implements IAddVehicleUseCase {
     }
 
     // Save vehicle if all validations pass
-    return await this.vehicleRepository.addVehicle(vehicleData);
+    const savedVehicle = await this.vehicleRepository.addVehicle(vehicleData);
+    return toVehicleResponse(savedVehicle);
   }
-
 }

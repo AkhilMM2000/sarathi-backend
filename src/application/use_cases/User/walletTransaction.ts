@@ -1,10 +1,10 @@
 import { IWalletRepository } from "../../../domain/repositories/IWalletRepository";
 import { AuthError } from "../../../domain/errors/Autherror";
-import { WalletTransaction } from "../../../domain/models/Wallet";
 import { inject, injectable } from "tsyringe";
 import { HTTP_STATUS_CODES } from "../../../constants/HttpStatusCode";
 import { IWalletTransaction } from "./interfaces/IWalletTransaction";
 import { TOKENS } from "../../../constants/Tokens";
+import { WalletTransactionHistoryResponseDto, toWalletTransactionHistoryResponse } from "../../dto/wallet/WalletDto";
 
 @injectable()
 export class WalletTransactionUseCase implements IWalletTransaction {
@@ -16,12 +16,13 @@ export class WalletTransactionUseCase implements IWalletTransaction {
     userId: string,
     page: number,
     limit: number
-  ): Promise<{ transactions: WalletTransaction[]; total: number }> {
+  ): Promise<WalletTransactionHistoryResponseDto> {
     const wallet = await this.walletRepository.getWalletByUserId(userId);
     if (!wallet) {
       throw new AuthError("Wallet not found.", HTTP_STATUS_CODES.NOT_FOUND);
     }
-    return await this.walletRepository.getTransactions(userId, page, limit);
+    const { transactions, total } = await this.walletRepository.getTransactions(userId, page, limit);
+    return toWalletTransactionHistoryResponse(transactions, total, page, limit);
   }
 
   async getWalletBalance(userId: string): Promise<number> {

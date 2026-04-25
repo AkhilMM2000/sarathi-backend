@@ -1,5 +1,5 @@
-import { Vehicle } from "../../../../domain/models/Vehicle";
+import { VehicleResponseDto } from "../../../dto/vehicle/VehicleResponseDto";
 
 export interface IGetVehiclesByUserUseCase {
-  execute(userId: string): Promise<Vehicle[]>;
+  execute(userId: string): Promise<VehicleResponseDto[]>;
 }

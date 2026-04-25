@@ -1,8 +1,8 @@
 import { injectable, inject } from "tsyringe";
 import { IVehicleRepository } from "../../../domain/repositories/IVehicleRepository";
-import { Vehicle } from "../../../domain/models/Vehicle";
 import { TOKENS } from "../../../constants/Tokens";
 import { IGetVehiclesByUserUseCase } from "./interfaces/IGetVehiclesByUserUseCase";
+import { VehicleResponseDto, toVehicleListResponse } from "../../dto/vehicle/VehicleResponseDto";
 
 @injectable()
 export class GetVehiclesByUser implements IGetVehiclesByUserUseCase{
@@ -10,9 +10,8 @@ export class GetVehiclesByUser implements IGetVehiclesByUserUseCase{
     @inject(TOKENS.VEHICLE_REPO) private vehicleRepository: IVehicleRepository
   ) {}
 
-  async execute(userId: string): Promise<Vehicle[]> {
-   
-    
-    return await this.vehicleRepository.getVehiclesByUser(userId);
+  async execute(userId: string): Promise<VehicleResponseDto[]> {
+    const vehicles = await this.vehicleRepository.getVehiclesByUser(userId);
+    return toVehicleListResponse(vehicles);
   }
 }

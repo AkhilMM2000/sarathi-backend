@@ -1,6 +1,4 @@
-// src/domain/usecases/INearbyDriverUseCase.ts
-import { PaginatedResultDTO } from "../userDTO/Nearbydriver";
-import { NearbyDriverDTO } from "../userDTO/Nearbydriver";
+import { FindNearbyDriversResult } from "../../../dto/driver/DriverResponseDto";
 
 export interface INearbyDriverUseCase {
   execute(
@@ -8,5 +6,5 @@ export interface INearbyDriverUseCase {
     page?: number,
     limit?: number,
     placeKey?: string
-  ): Promise<PaginatedResultDTO<NearbyDriverDTO>>;
+  ): Promise<FindNearbyDriversResult>;
 }

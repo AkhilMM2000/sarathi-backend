@@ -1,4 +1,4 @@
-import { Vehicle } from "../../../../domain/models/Vehicle"; 
+import { VehicleResponseDto } from "../../../dto/vehicle/VehicleResponseDto"; 
 export interface IEditVehicleUseCase {
-  execute(vehicleId: string, updateData: Partial<Vehicle>): Promise<Vehicle | null>;
+  execute(vehicleId: string, updateData: any): Promise<VehicleResponseDto | null>;
 }

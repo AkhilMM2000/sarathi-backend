@@ -1,11 +1,10 @@
 import { inject, injectable } from "tsyringe";
 import { IDriverReviewRepository } from "../../../domain/repositories/IDriverReviewRepository";
 import { IDriverRepository } from "../../../domain/repositories/IDriverepository"; 
-import { DriverReview } from "../../../domain/models/DriverReview"; 
 import { AuthError } from "../../../domain/errors/Autherror";
 import { HTTP_STATUS_CODES } from "../../../constants/HttpStatusCode";
 import { TOKENS } from "../../../constants/Tokens";
-import { SubmitDriverReviewInput } from "./userDTO/CreateReviewInput";
+import { SubmitReviewRequestDto, ReviewResponseDto } from "../../dto/review/ReviewDto";
 import { ISubmitDriverReview } from "./interfaces/ISubmitDriverReview";
 
 @injectable()
@@ -17,7 +16,7 @@ export class SubmitDriverReview implements ISubmitDriverReview{
     private driverRepo: IDriverRepository
   ) {}
 
-  async execute(input: SubmitDriverReviewInput): Promise<DriverReview> {
+  async execute(input: SubmitReviewRequestDto): Promise<ReviewResponseDto> {
     const { driverId, userId, rideId, rating, review } = input;
 
     const alreadyReviewed = await this.reviewRepo.hasUserAlreadyReviewed(driverId, userId);
@@ -25,7 +24,7 @@ export class SubmitDriverReview implements ISubmitDriverReview{
       throw new AuthError("You have already reviewed this driver.",HTTP_STATUS_CODES.BAD_REQUEST);
     }
 
-    const newReview = await this.reviewRepo.createReview({
+    await this.reviewRepo.createReview({
       driverId,
       userId,
       rideId,
@@ -47,6 +46,9 @@ export class SubmitDriverReview implements ISubmitDriverReview{
       averageRating: parseFloat(updatedAverage.toFixed(2)),
     });
 
-    return newReview;
+    return {
+      success: true,
+      message: "Review submitted successfully"
+    };
   }
 }

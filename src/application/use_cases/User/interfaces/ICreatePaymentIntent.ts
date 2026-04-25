@@ -1,5 +1,5 @@
-import { CreatePaymentIntentRequestDTO,CreatePaymentIntentResponseDTO } from "../userDTO/CreatePaymentIntentDTO"; 
+import { CreatePaymentIntentRequestDto, CreatePaymentIntentResponseDto } from "../../../dto/payment/PaymentDto"; 
 
 export interface ICreatePaymentIntent {
-  execute(request: CreatePaymentIntentRequestDTO): Promise<CreatePaymentIntentResponseDTO>;
+  execute(request: CreatePaymentIntentRequestDto): Promise<CreatePaymentIntentResponseDto>;
 }

@@ -1,5 +1,5 @@
-import { Vehicle } from "../../../domain/models/Vehicle";
+import { VehicleResponseDto } from "../../dto/vehicle/VehicleResponseDto";
 
 export interface IAddVehicleUseCase {
-  execute(vehicleData: Vehicle): Promise<Vehicle>;
+  execute(vehicleData: any): Promise<VehicleResponseDto>;
 }

@@ -192,7 +192,7 @@ export class UserController {
       // 2. Execute Use Case
       const vehicle = await this.addVehicleUsecase.execute({
         ...validatedData,
-        userId: userId as any,
+        userId: userId,
       });
 
       res.status(HTTP_STATUS_CODES.OK).json({ success: true, data: vehicle });
@@ -220,9 +220,7 @@ export class UserController {
         validatedData
       );
 
-      res
-        .status(HTTP_STATUS_CODES.OK)
-        .json({ success: true, data: updatedVehicle });
+      res.status(HTTP_STATUS_CODES.OK).json({ success: true, data: updatedVehicle });
     } catch (error: any) {
       if (error instanceof z.ZodError) {
         res.status(HTTP_STATUS_CODES.BAD_REQUEST).json({
@@ -405,10 +403,7 @@ console.log(req.query,'query')
       });
 
       // 3. Response 
-      res.status(HTTP_STATUS_CODES.OK).json({
-        clientSecret: result.clientSecret,
-        paymentIntentId: result.paymentIntentId,
-      });
+      res.status(HTTP_STATUS_CODES.OK).json(result);
     } catch (error: any) {
       if (error instanceof z.ZodError) {
         res.status(HTTP_STATUS_CODES.BAD_REQUEST).json({
@@ -483,9 +478,7 @@ console.log(req.query,'query')
       );
 
       // 3. Response
-      res
-        .status(HTTP_STATUS_CODES.OK)
-        .json({ success: true, transactionHistory, ballence });
+      res.status(HTTP_STATUS_CODES.OK).json({ success: true, ...transactionHistory, ballence });
     } catch (error: any) {
       if (error instanceof z.ZodError) {
         res.status(HTTP_STATUS_CODES.BAD_REQUEST).json({
@@ -528,9 +521,7 @@ console.log(req.query,'query')
       });
 
       // 3. Response
-      res
-        .status(HTTP_STATUS_CODES.CREATED)
-        .json({ message: "Review submitted", review: createdReview });
+      res.status(HTTP_STATUS_CODES.CREATED).json(createdReview);
     } catch (error: any) {
       if (error instanceof z.ZodError) {
         res.status(HTTP_STATUS_CODES.BAD_REQUEST).json({

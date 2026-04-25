@@ -1,11 +1,10 @@
-
 import { inject, injectable } from 'tsyringe';
 import { IStripeService } from '../../../domain/services/IStripeService'; 
 import { IDriverRepository } from '../../../domain/repositories/IDriverepository';
 import { AuthError } from '../../../domain/errors/Autherror';
 import { HTTP_STATUS_CODES } from '../../../constants/HttpStatusCode';
 import { TOKENS } from '../../../constants/Tokens';
-import { CreatePaymentIntentRequestDTO, CreatePaymentIntentResponseDTO } from './userDTO/CreatePaymentIntentDTO';
+import { CreatePaymentIntentRequestDto, CreatePaymentIntentResponseDto } from '../../dto/payment/PaymentDto';
 import { ICreatePaymentIntent } from './interfaces/ICreatePaymentIntent';
 
 
@@ -22,17 +21,15 @@ export class CreatePaymentIntent implements ICreatePaymentIntent {
   async execute({
     amount,
     driverId,
-  }: CreatePaymentIntentRequestDTO): Promise<CreatePaymentIntentResponseDTO>{
+  }: CreatePaymentIntentRequestDto): Promise<CreatePaymentIntentResponseDto>{
     const platformFee = Math.floor(amount * 0.1); // 10% platform fee
-const driver = await this.driverRepository.findDriverById(driverId);
+    const driver = await this.driverRepository.findDriverById(driverId);
 
-console.log(driver?.stripeAccountId)
-if(driver){
-  if(!driver.stripeAccountId){
-    throw new AuthError("Driver not found or not onboarded",  HTTP_STATUS_CODES.NOT_FOUND);
-  }
-  
-}
+    if(driver){
+      if(!driver.stripeAccountId){
+        throw new AuthError("Driver not found or not onboarded",  HTTP_STATUS_CODES.NOT_FOUND);
+      }
+    }
 
     return await this.stripeService.createPaymentIntent({
       amount,

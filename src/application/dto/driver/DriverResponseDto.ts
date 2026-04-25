@@ -71,3 +71,11 @@ export const toDriverFullResponse = (driver: Partial<Driver>): DriverFullRespons
 export const toDriverListResponse = (drivers: (Partial<Driver> & { distance?: number | null })[]): DriverResponseDto[] => {
   return drivers.map(toDriverResponse);
 };
+export interface PaginatedResultDTO<T> {
+  data: T[];
+  total: number;
+  page: number;
+  totalPages: number;
+}
+
+export type FindNearbyDriversResult = PaginatedResultDTO<DriverResponseDto>;

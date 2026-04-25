@@ -6,7 +6,7 @@ import { AuthError } from "../../../domain/errors/Autherror";
 import { TOKENS } from "../../../constants/Tokens";
 import { ERROR_MESSAGES } from "../../../constants/ErrorMessages";
 import { HTTP_STATUS_CODES } from "../../../constants/HttpStatusCode";
-import { PaginatedResultDTO } from "./userDTO/Nearbydriver";
+import { FindNearbyDriversResult } from "../../dto/driver/DriverResponseDto";
 import { IFindNearbyDriversUseCase } from "./interfaces/IFindNearbyDriversUseCase";
 import { DriverResponseDto, toDriverListResponse } from "../../dto/driver/DriverResponseDto";
 
@@ -18,7 +18,7 @@ export class FindNearbyDrivers implements IFindNearbyDriversUseCase{
     @inject(TOKENS.GOOGLE_DISTANCE_SERVICE) private distanceService: GoogleDistanceService
   ) {}
 
-   async execute(userId: string, page: number = 1, limit: number = 2, placeKey?: string, lat?: number, lng?: number): Promise<PaginatedResultDTO<DriverResponseDto>> {
+   async execute(userId: string, page: number = 1, limit: number = 2, placeKey?: string, lat?: number, lng?: number): Promise<FindNearbyDriversResult> {
     let latitude = lat;
     let longitude = lng;
 

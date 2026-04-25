@@ -1,11 +1,11 @@
-import { WalletTransaction } from "../../../../domain/models/Wallet"; 
+import { WalletTransactionHistoryResponseDto } from "../../../dto/wallet/WalletDto"; 
 
 export interface IWalletTransaction {
   getTransactionHistory(
     userId: string,
     page: number,
     limit: number
-  ): Promise<{ transactions: WalletTransaction[]; total: number }>;
+  ): Promise<WalletTransactionHistoryResponseDto>;
 
   getWalletBalance(userId: string): Promise<number>;
 }
