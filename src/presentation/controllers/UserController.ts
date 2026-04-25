@@ -69,11 +69,10 @@ export class UserController {
       // 1. DTO Validation
       const validatedData = ZodHelper.validate(RegisterSchema, req.body);
 
-      // 2. Execute Use Case (Unchanged signature)
-      // Note: registerUsecase returns { message: string } during the OTP phase
+      // 2. Execute Use Case
       const result = await this.registerUsecase.execute(validatedData as any);
      
-      // 3. Response Mapping
+      // 3. Response
       res.status(HTTP_STATUS_CODES.CREATED).json({ 
         success: true, 
         message: INFO_MESSAGES.USER.REGISTERED, 
@@ -96,8 +95,7 @@ export class UserController {
       const { email, otp } = ZodHelper.validate(VerifyOtpSchema, req.body);
 
       // 2. Execute Use Case
-      const { accessToken, refreshToken, user } =
-        await this.verifyOtpUsecase.execute(email, otp, "user");
+      const { accessToken, refreshToken, user } = await this.verifyOtpUsecase.execute(email, otp, "user");
 
       // 3. Set Cookie and Response
       res.cookie(`userRefreshToken`, refreshToken, {
@@ -106,9 +104,7 @@ export class UserController {
         sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
         maxAge: 7 * 24 * 60 * 60 * 1000,
       });
-      res
-        .status(HTTP_STATUS_CODES.OK)
-        .json({ success: true, accessToken, user });
+      res.status(HTTP_STATUS_CODES.OK).json({ success: true, accessToken, user });
     } catch (error: any) {
       if (error instanceof z.ZodError) {
         res.status(HTTP_STATUS_CODES.BAD_REQUEST).json({
@@ -129,9 +125,7 @@ export class UserController {
       const result = await this.resendOtpUsecase.execute(email, role);
 
       // 3. Response
-      res
-        .status(HTTP_STATUS_CODES.OK)
-        .json({ success: true, message: result.message });
+      res.status(HTTP_STATUS_CODES.OK).json({ success: true, ...result });
     } catch (error: any) {
       if (error instanceof z.ZodError) {
         res.status(HTTP_STATUS_CODES.BAD_REQUEST).json({
@@ -151,24 +145,20 @@ export class UserController {
       const { email, password, role } = ZodHelper.validate(LoginSchema, req.body);
 
       // 2. Execute Use Case
-      const { accessToken, refreshToken } = await this.loginUsecase.execute(
-        email,
-        password,
-        role
-      );
+      const result = await this.loginUsecase.execute(email, password, role);
 
       // 3. Set Cookie and Response
       const refreshTokenKey = `${role}RefreshToken`;
 
-      res.cookie(refreshTokenKey, refreshToken, {
+      res.cookie(refreshTokenKey, result.refreshToken, {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
         sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
         maxAge: 7 * 24 * 60 * 60 * 1000,
       });
       res.status(HTTP_STATUS_CODES.OK).json({
-        accessToken,
-        role,
+        accessToken: result.accessToken,
+        role: result.role,
       });
     } catch (error: any) {
       if (error instanceof z.ZodError) {

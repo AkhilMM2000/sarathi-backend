@@ -10,7 +10,7 @@ import { IHashService } from "../services/HashService";
 import { TOKENS } from "../../constants/Tokens";
 import { HTTP_STATUS_CODES } from "../../constants/HttpStatusCode";
 import { ILogin } from "./Interfaces/ILogin";
-import { LoginResponseDto } from "./Data_transerObj/LoginDto";
+import { LoginResponseDto } from "../dto/auth/AuthResponseDto";
 dotenv.config();
 @injectable()
 export class Login implements ILogin {

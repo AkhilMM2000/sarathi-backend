@@ -11,7 +11,7 @@ import { ReferralCodeService } from "../services/ReferralCodeService";
 import { TOKENS } from "../../constants/Tokens";
 import { HTTP_STATUS_CODES } from "../../constants/HttpStatusCode";
 import { ERROR_MESSAGES } from "../../constants/ErrorMessages";
-import { VerifyOtpResponseDto } from "./Data_transerObj/VerifyOtpResponseDto";
+import { VerifyOtpResponseDto } from "../dto/auth/AuthResponseDto";
 import { IVerifyOtp } from "./Interfaces/IVerifyOtp";
 dotenv.config();
 @injectable()
@@ -111,6 +111,6 @@ console.log('userData',userData);
         id: savedUser._id ? savedUser._id.toString() : "",
         role,
       },
-    };
+    } as VerifyOtpResponseDto;
   }
 }

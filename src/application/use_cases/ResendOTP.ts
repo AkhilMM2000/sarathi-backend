@@ -5,7 +5,7 @@ import { TOKENS } from "../../constants/Tokens";
 import { INFO_MESSAGES } from "../../constants/Info_Messages";
 import { AuthError } from "../../domain/errors/Autherror";
 import { ERROR_MESSAGES } from "../../constants/ErrorMessages";
-import { ResendOtpResponseDto } from "./Data_transerObj/ResendOtpResponseDto";
+import { ResendOtpResponseDto } from "../dto/auth/AuthResponseDto";
 import { IResendOTP } from "./Interfaces/IResendOTP";
 @injectable()
 export class ResendOTP implements IResendOTP {

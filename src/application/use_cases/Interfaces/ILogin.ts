@@ -1,8 +1,10 @@
 
+import { LoginResponseDto } from "../../dto/auth/AuthResponseDto";
 
-import {  LoginResponseDto  } from "../Data_transerObj/LoginDto";
 export interface ILogin {
-  execute( email: string,
+  execute(
+    email: string,
     password: string,
-    role: "user" | "driver" | "admin"): Promise<LoginResponseDto>;
+    role: "user" | "driver" | "admin"
+  ): Promise<LoginResponseDto>;
 }

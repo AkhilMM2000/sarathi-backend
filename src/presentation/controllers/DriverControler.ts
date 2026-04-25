@@ -77,8 +77,7 @@ private verifyDriverPaymentAccount: IVerifyDriverPaymentAccount
       const { email, otp } = ZodHelper.validate(VerifyDriverOtpSchema, req.body);
 
       // 2. Execute
-      const { accessToken, refreshToken, user } =
-        await this.verifyOtpUsecase.execute(email, otp, "driver");
+      const { accessToken, refreshToken, user } = await this.verifyOtpUsecase.execute(email, otp, "driver");
       
       // 3. Set Cookie and Response
       res.cookie(`driverRefreshToken`, refreshToken, {
@@ -87,9 +86,7 @@ private verifyDriverPaymentAccount: IVerifyDriverPaymentAccount
         sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
         maxAge: 7 * 24 * 60 * 60 * 1000,
       });
-      res
-        .status(HTTP_STATUS_CODES.OK)
-        .json({ success: true, accessToken, user });
+      res.status(HTTP_STATUS_CODES.OK).json({ success: true, accessToken, user });
     } catch (error: any) {
       if (error instanceof z.ZodError) {
         res.status(HTTP_STATUS_CODES.BAD_REQUEST).json({
@@ -108,24 +105,20 @@ private verifyDriverPaymentAccount: IVerifyDriverPaymentAccount
       const { email, password, role } = ZodHelper.validate(DriverLoginSchema, req.body);
 
       // 2. Execute
-      const { accessToken, refreshToken } = await this.loginUsecase.execute(
-        email,
-        password,
-        role
-      );
+      const result = await this.loginUsecase.execute(email, password, role);
 
       // 3. Set Cookie and Response
       const refreshTokenKey = `${role}RefreshToken`;
 
-      res.cookie(refreshTokenKey, refreshToken, {
+      res.cookie(refreshTokenKey, result.refreshToken, {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
         sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
         maxAge: 7 * 24 * 60 * 60 * 1000,
       });
       res.status(HTTP_STATUS_CODES.OK).json({
-        accessToken,
-        role,
+        accessToken: result.accessToken,
+        role: result.role,
       });
     } catch (error: any) {
       if (error instanceof z.ZodError) {
@@ -306,7 +299,7 @@ async verifyAccount(req: Request, res: Response,next:NextFunction): Promise<void
       const result = await this.resendOtpUsecase.execute(email, role);
 
       // 3. Response
-      res.status(HTTP_STATUS_CODES.OK).json({ success: true, message: result.message });
+      res.status(HTTP_STATUS_CODES.OK).json({ success: true, ...result });
     } catch (error: any) {
       if (error instanceof z.ZodError) {
         res.status(HTTP_STATUS_CODES.BAD_REQUEST).json({
