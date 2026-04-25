@@ -26,27 +26,27 @@ import { z } from "zod";
 @injectable()
 export class DriverController {
 
- constructor(
+  constructor(
     @inject(USECASE_TOKENS.REGISTER_DRIVER_USECASE)
-    private registerDriverUseCase: IRegisterDriverUseCase,
+    private _registerDriverUseCase: IRegisterDriverUseCase,
     @inject(TOKENS.VERIFY_OTP_USECAE)
-    private verifyOtpUsecase: IVerifyOtp,
+    private _verifyOtpUsecase: IVerifyOtp,
     @inject(TOKENS.LOGIN_USECASE)
-    private loginUsecase: ILogin,
+    private _loginUsecase: ILogin,
     @inject(TOKENS.GET_DRIVER_PROFILE_USECASE)
-    private getDriverProfileUsecase: IGetDriverProfile,
+    private _getDriverProfileUsecase: IGetDriverProfile,
     @inject(TOKENS.GET_USER_DATA_USECASE)
-    private getUserDataUsecase: IGetUserData,
+    private _getUserDataUsecase: IGetUserData,
     @inject(TOKENS.RESEND_OTP_USECASE)
-    private resendOtpUsecase: IResendOTP,
+    private _resendOtpUsecase: IResendOTP,
      @inject(USECASE_TOKENS.EDIT_DRIVER_PROFILE)
-    private editDriverProfileUseCase: IEditDriverProfile,
+    private _editDriverProfileUseCase: IEditDriverProfile,
       @inject(USECASE_TOKENS.ONBOARD_DRIVER_USECASE)
-    private onboardDriverUseCase: IOnboardDriverUseCase,
+    private _onboardDriverUseCase: IOnboardDriverUseCase,
     @inject(USECASE_TOKENS.GET_USERBOOKINGS_USECASE)
-    private getUserBookingsUsecase:IGetBooking,
+    private _getUserBookingsUsecase:IGetBooking,
     @inject(USECASE_TOKENS.VERIFY_DRIVER_PAYMENT_ACCOUNT_USECASE)
-private verifyDriverPaymentAccount: IVerifyDriverPaymentAccount
+    private _verifyDriverPaymentAccount: IVerifyDriverPaymentAccount
   ) {}
 
    async registerDriver(req: Request, res: Response, next: NextFunction): Promise<void> {
@@ -56,7 +56,7 @@ private verifyDriverPaymentAccount: IVerifyDriverPaymentAccount
       const validatedData = ZodHelper.validate(RegisterDriverSchema, req.body);
 
       // 2. Execute
-      const response = await this.registerDriverUseCase.execute(validatedData);
+      const response = await this._registerDriverUseCase.execute(validatedData);
       
       // 3. Response
       res.status(HTTP_STATUS_CODES.OK).json({ success: true, ...response });
@@ -77,14 +77,14 @@ private verifyDriverPaymentAccount: IVerifyDriverPaymentAccount
       const { email, otp } = ZodHelper.validate(VerifyDriverOtpSchema, req.body);
 
       // 2. Execute
-      const { accessToken, refreshToken, user } = await this.verifyOtpUsecase.execute(email, otp, "driver");
+      const { accessToken, refreshToken, user } = await this._verifyOtpUsecase.execute(email, otp, "driver");
       
       // 3. Set Cookie and Response
       res.cookie(`driverRefreshToken`, refreshToken, {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
         sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
-        maxAge: 7 * 24 * 60 * 60 * 1000,
+        maxAge: Number(process.env.COOKIE_MAX_AGE) || 7 * 24 * 60 * 60 * 1000,
       });
       res.status(HTTP_STATUS_CODES.OK).json({ success: true, accessToken, user });
     } catch (error: any) {
@@ -105,7 +105,7 @@ private verifyDriverPaymentAccount: IVerifyDriverPaymentAccount
       const { email, password, role } = ZodHelper.validate(DriverLoginSchema, req.body);
 
       // 2. Execute
-      const result = await this.loginUsecase.execute(email, password, role);
+      const result = await this._loginUsecase.execute(email, password, role);
 
       // 3. Set Cookie and Response
       const refreshTokenKey = `${role}RefreshToken`;
@@ -114,7 +114,7 @@ private verifyDriverPaymentAccount: IVerifyDriverPaymentAccount
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
         sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
-        maxAge: 7 * 24 * 60 * 60 * 1000,
+        maxAge: Number(process.env.COOKIE_MAX_AGE) || 7 * 24 * 60 * 60 * 1000,
       });
       res.status(HTTP_STATUS_CODES.OK).json({
         accessToken: result.accessToken,
@@ -137,7 +137,7 @@ private verifyDriverPaymentAccount: IVerifyDriverPaymentAccount
       if (!driverId) {
        throw new AuthError(ERROR_MESSAGES.DRIVER_ID_NOT_FOUND,HTTP_STATUS_CODES.BAD_REQUEST)
     }
-      const driver = await this.getDriverProfileUsecase.execute(driverId);
+      const driver = await this._getDriverProfileUsecase.execute(driverId);
       if (!driver) {
         throw new AuthError(ERROR_MESSAGES.DRIVER_NOT_FOUND, HTTP_STATUS_CODES.NOT_FOUND);
       }
@@ -155,7 +155,7 @@ private verifyDriverPaymentAccount: IVerifyDriverPaymentAccount
       const { id } = ZodHelper.validate(UserIdParamSchema, req.params); 
 
       // 2. Execute
-      const user = await this.getUserDataUsecase.execute(id);
+      const user = await this._getUserDataUsecase.execute(id);
       if (!user) {
         throw new AuthError(ERROR_MESSAGES.USER_NOT_FOUND, HTTP_STATUS_CODES.NOT_FOUND);
       }
@@ -185,7 +185,7 @@ private verifyDriverPaymentAccount: IVerifyDriverPaymentAccount
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { _id, ...updateData } = validatedData;
       
-      const updatedDriver = await this.editDriverProfileUseCase.execute(
+      const updatedDriver = await this._editDriverProfileUseCase.execute(
         driverId,
         updateData
       );
@@ -220,7 +220,7 @@ private verifyDriverPaymentAccount: IVerifyDriverPaymentAccount
       }
 
       // 2. Execute
-      const onboardingUrl = await this.onboardDriverUseCase.execute(email, driverId);
+      const onboardingUrl = await this._onboardDriverUseCase.execute(email, driverId);
 
       res.status(HTTP_STATUS_CODES.OK).json({ url: onboardingUrl });
     } catch (error: any) {
@@ -246,7 +246,7 @@ private verifyDriverPaymentAccount: IVerifyDriverPaymentAccount
 
       // 2. Execute
       const paginatedBookings: PaginatedResult<rideHistory> =
-        await this.getUserBookingsUsecase.execute(driverId, page, limit);
+        await this._getUserBookingsUsecase.execute(driverId, page, limit);
 
       // 3. Response 
       res.status(HTTP_STATUS_CODES.OK).json({
@@ -273,7 +273,7 @@ async verifyAccount(req: Request, res: Response,next:NextFunction): Promise<void
       const { driverId } = ZodHelper.validate(VerifyAccountSchema, req.body);
     
       // 2. Execute
-      await this.verifyDriverPaymentAccount.execute(driverId);
+      await this._verifyDriverPaymentAccount.execute(driverId);
 
       // 3. Response
       res.status(HTTP_STATUS_CODES.OK).json({ success: true, message: 'Payment activated for driver' });
@@ -296,7 +296,7 @@ async verifyAccount(req: Request, res: Response,next:NextFunction): Promise<void
       const { email, role } = ZodHelper.validate(ResendDriverOtpSchema, req.body);
 
       // 2. Execute
-      const result = await this.resendOtpUsecase.execute(email, role);
+      const result = await this._resendOtpUsecase.execute(email, role);
 
       // 3. Response
       res.status(HTTP_STATUS_CODES.OK).json({ success: true, ...result });

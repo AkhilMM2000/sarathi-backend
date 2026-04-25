@@ -23,24 +23,24 @@ const ZodHelper_1 = require("../dto/common/ZodHelper");
 const DriverRequestDTO_1 = require("../dto/driver/DriverRequestDTO");
 const zod_1 = require("zod");
 let DriverController = class DriverController {
-    constructor(registerDriverUseCase, verifyOtpUsecase, loginUsecase, getDriverProfileUsecase, getUserDataUsecase, resendOtpUsecase, editDriverProfileUseCase, onboardDriverUseCase, getUserBookingsUsecase, verifyDriverPaymentAccount) {
-        this.registerDriverUseCase = registerDriverUseCase;
-        this.verifyOtpUsecase = verifyOtpUsecase;
-        this.loginUsecase = loginUsecase;
-        this.getDriverProfileUsecase = getDriverProfileUsecase;
-        this.getUserDataUsecase = getUserDataUsecase;
-        this.resendOtpUsecase = resendOtpUsecase;
-        this.editDriverProfileUseCase = editDriverProfileUseCase;
-        this.onboardDriverUseCase = onboardDriverUseCase;
-        this.getUserBookingsUsecase = getUserBookingsUsecase;
-        this.verifyDriverPaymentAccount = verifyDriverPaymentAccount;
+    constructor(_registerDriverUseCase, _verifyOtpUsecase, _loginUsecase, _getDriverProfileUsecase, _getUserDataUsecase, _resendOtpUsecase, _editDriverProfileUseCase, _onboardDriverUseCase, _getUserBookingsUsecase, _verifyDriverPaymentAccount) {
+        this._registerDriverUseCase = _registerDriverUseCase;
+        this._verifyOtpUsecase = _verifyOtpUsecase;
+        this._loginUsecase = _loginUsecase;
+        this._getDriverProfileUsecase = _getDriverProfileUsecase;
+        this._getUserDataUsecase = _getUserDataUsecase;
+        this._resendOtpUsecase = _resendOtpUsecase;
+        this._editDriverProfileUseCase = _editDriverProfileUseCase;
+        this._onboardDriverUseCase = _onboardDriverUseCase;
+        this._getUserBookingsUsecase = _getUserBookingsUsecase;
+        this._verifyDriverPaymentAccount = _verifyDriverPaymentAccount;
     }
     async registerDriver(req, res, next) {
         try {
             // 1. DTO Validation
             const validatedData = ZodHelper_1.ZodHelper.validate(DriverRequestDTO_1.RegisterDriverSchema, req.body);
             // 2. Execute
-            const response = await this.registerDriverUseCase.execute(validatedData);
+            const response = await this._registerDriverUseCase.execute(validatedData);
             // 3. Response
             res.status(HttpStatusCode_1.HTTP_STATUS_CODES.OK).json({ success: true, ...response });
         }
@@ -60,13 +60,13 @@ let DriverController = class DriverController {
             // 1. DTO Validation
             const { email, otp } = ZodHelper_1.ZodHelper.validate(DriverRequestDTO_1.VerifyDriverOtpSchema, req.body);
             // 2. Execute
-            const { accessToken, refreshToken, user } = await this.verifyOtpUsecase.execute(email, otp, "driver");
+            const { accessToken, refreshToken, user } = await this._verifyOtpUsecase.execute(email, otp, "driver");
             // 3. Set Cookie and Response
             res.cookie(`driverRefreshToken`, refreshToken, {
                 httpOnly: true,
                 secure: process.env.NODE_ENV === "production",
                 sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
-                maxAge: 7 * 24 * 60 * 60 * 1000,
+                maxAge: Number(process.env.COOKIE_MAX_AGE) || 7 * 24 * 60 * 60 * 1000,
             });
             res.status(HttpStatusCode_1.HTTP_STATUS_CODES.OK).json({ success: true, accessToken, user });
         }
@@ -86,14 +86,14 @@ let DriverController = class DriverController {
             // 1. DTO Validation
             const { email, password, role } = ZodHelper_1.ZodHelper.validate(DriverRequestDTO_1.DriverLoginSchema, req.body);
             // 2. Execute
-            const result = await this.loginUsecase.execute(email, password, role);
+            const result = await this._loginUsecase.execute(email, password, role);
             // 3. Set Cookie and Response
             const refreshTokenKey = `${role}RefreshToken`;
             res.cookie(refreshTokenKey, result.refreshToken, {
                 httpOnly: true,
                 secure: process.env.NODE_ENV === "production",
                 sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
-                maxAge: 7 * 24 * 60 * 60 * 1000,
+                maxAge: Number(process.env.COOKIE_MAX_AGE) || 7 * 24 * 60 * 60 * 1000,
             });
             res.status(HttpStatusCode_1.HTTP_STATUS_CODES.OK).json({
                 accessToken: result.accessToken,
@@ -117,7 +117,7 @@ let DriverController = class DriverController {
             if (!driverId) {
                 throw new Autherror_1.AuthError(ErrorMessages_1.ERROR_MESSAGES.DRIVER_ID_NOT_FOUND, HttpStatusCode_1.HTTP_STATUS_CODES.BAD_REQUEST);
             }
-            const driver = await this.getDriverProfileUsecase.execute(driverId);
+            const driver = await this._getDriverProfileUsecase.execute(driverId);
             if (!driver) {
                 throw new Autherror_1.AuthError(ErrorMessages_1.ERROR_MESSAGES.DRIVER_NOT_FOUND, HttpStatusCode_1.HTTP_STATUS_CODES.NOT_FOUND);
             }
@@ -133,7 +133,7 @@ let DriverController = class DriverController {
             // 1. Param Validation
             const { id } = ZodHelper_1.ZodHelper.validate(DriverRequestDTO_1.UserIdParamSchema, req.params);
             // 2. Execute
-            const user = await this.getUserDataUsecase.execute(id);
+            const user = await this._getUserDataUsecase.execute(id);
             if (!user) {
                 throw new Autherror_1.AuthError(ErrorMessages_1.ERROR_MESSAGES.USER_NOT_FOUND, HttpStatusCode_1.HTTP_STATUS_CODES.NOT_FOUND);
             }
@@ -160,7 +160,7 @@ let DriverController = class DriverController {
             // We remove _id from body if present to avoid type conflicts with params driverId
             // eslint-disable-next-line @typescript-eslint/no-unused-vars
             const { _id, ...updateData } = validatedData;
-            const updatedDriver = await this.editDriverProfileUseCase.execute(driverId, updateData);
+            const updatedDriver = await this._editDriverProfileUseCase.execute(driverId, updateData);
             if (!updatedDriver) {
                 throw new Autherror_1.AuthError(ErrorMessages_1.ERROR_MESSAGES.DRIVER_NOT_FOUND, HttpStatusCode_1.HTTP_STATUS_CODES.NOT_FOUND);
             }
@@ -186,7 +186,7 @@ let DriverController = class DriverController {
                 throw new Autherror_1.AuthError('driverId is required', HttpStatusCode_1.HTTP_STATUS_CODES.BAD_REQUEST);
             }
             // 2. Execute
-            const onboardingUrl = await this.onboardDriverUseCase.execute(email, driverId);
+            const onboardingUrl = await this._onboardDriverUseCase.execute(email, driverId);
             res.status(HttpStatusCode_1.HTTP_STATUS_CODES.OK).json({ url: onboardingUrl });
         }
         catch (error) {
@@ -209,7 +209,7 @@ let DriverController = class DriverController {
             // 1. Query Validation
             const { page, limit } = ZodHelper_1.ZodHelper.validate(DriverRequestDTO_1.DriverBookingPaginationSchema, req.query);
             // 2. Execute
-            const paginatedBookings = await this.getUserBookingsUsecase.execute(driverId, page, limit);
+            const paginatedBookings = await this._getUserBookingsUsecase.execute(driverId, page, limit);
             // 3. Response 
             res.status(HttpStatusCode_1.HTTP_STATUS_CODES.OK).json({
                 data: paginatedBookings.data,
@@ -234,7 +234,7 @@ let DriverController = class DriverController {
             // 1. DTO Validation
             const { driverId } = ZodHelper_1.ZodHelper.validate(DriverRequestDTO_1.VerifyAccountSchema, req.body);
             // 2. Execute
-            await this.verifyDriverPaymentAccount.execute(driverId);
+            await this._verifyDriverPaymentAccount.execute(driverId);
             // 3. Response
             res.status(HttpStatusCode_1.HTTP_STATUS_CODES.OK).json({ success: true, message: 'Payment activated for driver' });
         }
@@ -254,7 +254,7 @@ let DriverController = class DriverController {
             // 1. DTO Validation
             const { email, role } = ZodHelper_1.ZodHelper.validate(DriverRequestDTO_1.ResendDriverOtpSchema, req.body);
             // 2. Execute
-            const result = await this.resendOtpUsecase.execute(email, role);
+            const result = await this._resendOtpUsecase.execute(email, role);
             // 3. Response
             res.status(HttpStatusCode_1.HTTP_STATUS_CODES.OK).json({ success: true, ...result });
         }
