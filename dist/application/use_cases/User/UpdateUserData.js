@@ -18,6 +18,7 @@ const Autherror_1 = require("../../../domain/errors/Autherror");
 const Tokens_1 = require("../../../constants/Tokens");
 const ErrorMessages_1 = require("../../../constants/ErrorMessages");
 const HttpStatusCode_1 = require("../../../constants/HttpStatusCode");
+const UserResponseDto_1 = require("../../dto/user/UserResponseDto");
 let UpdateUserData = class UpdateUserData {
     constructor(userRepository) {
         this.userRepository = userRepository;
@@ -26,13 +27,15 @@ let UpdateUserData = class UpdateUserData {
         if (!userId) {
             throw new Autherror_1.AuthError(ErrorMessages_1.ERROR_MESSAGES.USER_ID_NOT_FOUND, HttpStatusCode_1.HTTP_STATUS_CODES.BAD_REQUEST);
         }
-        console.log(updateData);
         const user = await this.userRepository.getUserById(userId);
         if (!user) {
             throw new Autherror_1.AuthError(ErrorMessages_1.ERROR_MESSAGES.USER_NOT_FOUND, HttpStatusCode_1.HTTP_STATUS_CODES.NOT_FOUND);
         }
         const updatedUser = await this.userRepository.updateUser(userId, updateData);
-        return updatedUser;
+        if (!updatedUser) {
+            throw new Autherror_1.AuthError(ErrorMessages_1.ERROR_MESSAGES.USER_NOT_FOUND, HttpStatusCode_1.HTTP_STATUS_CODES.NOT_FOUND);
+        }
+        return (0, UserResponseDto_1.toUserResponse)(updatedUser);
     }
 };
 exports.UpdateUserData = UpdateUserData;

@@ -24,7 +24,7 @@ import { USECASE_TOKENS } from "../../constants/UseCaseTokens";
 import { IFindNearbyDriversUseCase } from "../../application/use_cases/User/interfaces/IFindNearbyDriversUseCase";
 import { IGetNearbyDriverDetailsUseCase } from "../../application/use_cases/Interfaces/IGetNearbyDriverDetailsUseCase";
 import { ZodHelper } from "../dto/common/ZodHelper";
-import { AddVehicleSchema, CreatePaymentIntentSchema, DriverIdParamSchema, EditVehicleSchema, FetchDriversSchema, GetNearbyDriverQuerySchema, LoginSchema, RegisterSchema, ResendOtpSchema, SubmitReviewSchema, toUserResponse, UpdateUserSchema, VehicleIdParamSchema, VerifyOtpSchema, WalletPaginationSchema } from "../dto/user/UserDTO";
+import { AddVehicleSchema, CreatePaymentIntentSchema, DriverIdParamSchema, EditVehicleSchema, FetchDriversSchema, GetNearbyDriverQuerySchema, LoginSchema, RegisterSchema, ResendOtpSchema, SubmitReviewSchema, UpdateUserSchema, VehicleIdParamSchema, VerifyOtpSchema, WalletPaginationSchema } from "../dto/user/UserDTO";
 import { toDriverListResponse, toDriverResponse } from "../dto/user/DriverDTO";
 import { z } from "zod";
 
@@ -285,7 +285,7 @@ export class UserController {
 
       const user = await this.getUserDataUsecase.execute(userId);
 
-      res.status(HTTP_STATUS_CODES.OK).json({ success: true, user: toUserResponse(user as any) });
+      res.status(HTTP_STATUS_CODES.OK).json({ success: true, user });
     } catch (error) {
       next(error);
     }
@@ -306,17 +306,12 @@ export class UserController {
       }
 
       // 2. Execute Use Case with sanitized data
-      const updatedUser = await this.updateuserUsecase.execute(userId, validatedData);
-
-      // 3. Response Mapping
-      if (!updatedUser) {
-        throw new AuthError(ERROR_MESSAGES.USER_NOT_FOUND, HTTP_STATUS_CODES.NOT_FOUND);
-      }
+      const user = await this.updateuserUsecase.execute(userId, validatedData);
 
       res.status(HTTP_STATUS_CODES.OK).json({
         success: true,
         message: "User Profile Updated Sucessfully",
-        user: toUserResponse(updatedUser as any),
+        user,
       });
     } catch (error: any) {
       if (error instanceof z.ZodError) {

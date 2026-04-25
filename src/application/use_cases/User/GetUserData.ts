@@ -5,7 +5,7 @@ import { TOKENS } from "../../../constants/Tokens";
 import { HTTP_STATUS_CODES } from "../../../constants/HttpStatusCode";
 import { ERROR_MESSAGES } from "../../../constants/ErrorMessages";
 import { IGetUserData } from "./interfaces/IGetUserData";
-import { User } from "../../../domain/models/User";
+import { UserResponseDto, toUserResponse } from "../../dto/user/UserResponseDto";
 
 @injectable() 
 export class GetUserData  implements IGetUserData{
@@ -13,17 +13,17 @@ export class GetUserData  implements IGetUserData{
     @inject(TOKENS.IUSER_REPO) private userRepository: IUserRepository
   ) {}
 
-  async execute(userId: string): Promise<User | null>{
+  async execute(userId: string): Promise<UserResponseDto>{
     if (!userId) {
       throw new AuthError(ERROR_MESSAGES.USER_ID_NOT_FOUND,HTTP_STATUS_CODES.BAD_REQUEST);
     }
-console.log(userId);
+
     const user = await this.userRepository.getUserById(userId);
     if (!user) {
       throw new AuthError(ERROR_MESSAGES.USER_NOT_FOUND,HTTP_STATUS_CODES.NOT_FOUND);
     }
 
-    return user;
+    return toUserResponse(user);
   }
 }
 

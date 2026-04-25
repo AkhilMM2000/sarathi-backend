@@ -215,7 +215,7 @@ let UserController = class UserController {
                 throw new Autherror_1.AuthError(ErrorMessages_1.ERROR_MESSAGES.USER_ID_NOT_FOUND, HttpStatusCode_1.HTTP_STATUS_CODES.BAD_REQUEST);
             }
             const user = await this.getUserDataUsecase.execute(userId);
-            res.status(HttpStatusCode_1.HTTP_STATUS_CODES.OK).json({ success: true, user: (0, UserDTO_1.toUserResponse)(user) });
+            res.status(HttpStatusCode_1.HTTP_STATUS_CODES.OK).json({ success: true, user });
         }
         catch (error) {
             next(error);
@@ -230,15 +230,11 @@ let UserController = class UserController {
                 throw new Autherror_1.AuthError(ErrorMessages_1.ERROR_MESSAGES.USER_ID_NOT_FOUND, HttpStatusCode_1.HTTP_STATUS_CODES.BAD_REQUEST);
             }
             // 2. Execute Use Case with sanitized data
-            const updatedUser = await this.updateuserUsecase.execute(userId, validatedData);
-            // 3. Response Mapping
-            if (!updatedUser) {
-                throw new Autherror_1.AuthError(ErrorMessages_1.ERROR_MESSAGES.USER_NOT_FOUND, HttpStatusCode_1.HTTP_STATUS_CODES.NOT_FOUND);
-            }
+            const user = await this.updateuserUsecase.execute(userId, validatedData);
             res.status(HttpStatusCode_1.HTTP_STATUS_CODES.OK).json({
                 success: true,
                 message: "User Profile Updated Sucessfully",
-                user: (0, UserDTO_1.toUserResponse)(updatedUser),
+                user,
             });
         }
         catch (error) {

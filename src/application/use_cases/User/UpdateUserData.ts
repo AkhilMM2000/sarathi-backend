@@ -1,11 +1,12 @@
 import { inject, injectable } from "tsyringe";
 import { IUserRepository } from "../../../domain/repositories/IUserepository";
 import { AuthError } from "../../../domain/errors/Autherror"; 
-import { User } from "../../../domain/models/User";
 import { TOKENS } from "../../../constants/Tokens";
 import { ERROR_MESSAGES } from "../../../constants/ErrorMessages";
 import { HTTP_STATUS_CODES } from "../../../constants/HttpStatusCode";
 import { IUpdateUserData } from "./interfaces/IUpdateUserData";
+import { UpdateUserRequestDto } from "../../dto/user/UserRequestDto";
+import { UserResponseDto, toUserResponse } from "../../dto/user/UserResponseDto";
 
 @injectable()
 export class UpdateUserData implements IUpdateUserData  {
@@ -13,11 +14,10 @@ export class UpdateUserData implements IUpdateUserData  {
     @inject(TOKENS.IUSER_REPO) private userRepository: IUserRepository
   ) {}
 
-  async execute(userId: string, updateData: Partial<User>):Promise<Partial<User|null>>{
+  async execute(userId: string, updateData: UpdateUserRequestDto): Promise<UserResponseDto>{
     if (!userId) {
       throw new AuthError(ERROR_MESSAGES.USER_ID_NOT_FOUND, HTTP_STATUS_CODES.BAD_REQUEST);
     }
-console.log(updateData);
 
     const user = await this.userRepository.getUserById(userId);
     if (!user) {
@@ -25,6 +25,10 @@ console.log(updateData);
     }
 
     const updatedUser = await this.userRepository.updateUser(userId, updateData);
-    return updatedUser;
+    if (!updatedUser) {
+      throw new AuthError(ERROR_MESSAGES.USER_NOT_FOUND, HTTP_STATUS_CODES.NOT_FOUND);
+    }
+    
+    return toUserResponse(updatedUser);
   }
 }

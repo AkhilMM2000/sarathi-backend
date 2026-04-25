@@ -1,5 +1,5 @@
-import { User } from "../../../../domain/models/User";
+import { UserResponseDto } from "../../../dto/user/UserResponseDto";
 
 export interface IGetUserData {
-  execute(userId: string): Promise<User | null>; 
+  execute(userId: string): Promise<UserResponseDto>; 
 }
