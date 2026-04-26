@@ -3,10 +3,10 @@ import { injectable } from "tsyringe";
 
 @injectable()
 export class EmailService {
-  private transporter;
+  private _transporter;
 
   constructor() {
-    this.transporter = nodemailer.createTransport({
+    this._transporter = nodemailer.createTransport({
       service: "gmail",
       auth: {
         user: process.env.EMAIL_USER, 
@@ -49,7 +49,7 @@ export class EmailService {
     };
     
     try {
-      await this.transporter.sendMail(mailOptions);
+      await this._transporter.sendMail(mailOptions);
     } catch (error: any) {
       console.error("Nodemailer OTP Error: ", error);
       // In development, log the OTP regardless so progress is possible
@@ -92,6 +92,6 @@ export class EmailService {
     };
     
 
-    await this.transporter.sendMail(mailOptions);
+    await this._transporter.sendMail(mailOptions);
   }
 }

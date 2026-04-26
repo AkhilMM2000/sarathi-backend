@@ -14,21 +14,21 @@ const axios_1 = __importDefault(require("axios"));
 const tsyringe_1 = require("tsyringe");
 let GoogleDistanceService = class GoogleDistanceService {
     constructor() {
-        this.API_URL = process.env.GOOGLEMAP_API_URL;
-        this.API_KEY = process.env.GOOGLE_MAPS_API_KEY;
+        this._API_URL = process.env.GOOGLEMAP_API_URL;
+        this._API_KEY = process.env.GOOGLE_MAPS_API_KEY;
     }
     async getDistances(userLocation, drivers) {
-        if (!this.API_KEY) {
+        if (!this._API_KEY) {
             throw new Error("Google Maps API Key is missing");
         }
         const origins = `${userLocation.latitude},${userLocation.longitude}`;
         const destinations = drivers.map(d => `${d.latitude},${d.longitude}`).join("|");
         try {
-            const response = await axios_1.default.get(this.API_URL, {
+            const response = await axios_1.default.get(this._API_URL, {
                 params: {
                     origins,
                     destinations,
-                    key: this.API_KEY,
+                    key: this._API_KEY,
                     units: "metric",
                 },
             });

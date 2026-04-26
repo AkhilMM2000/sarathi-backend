@@ -10,7 +10,7 @@ import { DriverFullResponseDto, toDriverFullResponse } from "../../dto/driver/Dr
 @injectable()
 export class EditDriverProfile implements IEditDriverProfile  {
   constructor(
-    @inject(TOKENS.IDRIVER_REPO) private driverRepository: IDriverRepository
+    @inject(TOKENS.IDRIVER_REPO) private _driverRepository: IDriverRepository
   ) {}
 
   async execute(driverId: string, updateData: any): Promise<DriverFullResponseDto|null> {
@@ -18,12 +18,12 @@ export class EditDriverProfile implements IEditDriverProfile  {
       throw new AuthError(ERROR_MESSAGES.DRIVER_ID_NOT_FOUND, HTTP_STATUS_CODES.BAD_REQUEST);
     }
 
-    const existingDriver = await this.driverRepository.findDriverById(driverId);
+    const existingDriver = await this._driverRepository.findDriverById(driverId);
     if (!existingDriver) {
       throw new AuthError(ERROR_MESSAGES.DRIVER_NOT_FOUND, HTTP_STATUS_CODES.NOT_FOUND);
     }
 
-    const updatedDriver = await this.driverRepository.update(driverId, updateData);
+    const updatedDriver = await this._driverRepository.update(driverId, updateData);
     if (!updatedDriver) return null;
 
     return toDriverFullResponse(updatedDriver);

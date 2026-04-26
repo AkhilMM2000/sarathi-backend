@@ -18,14 +18,14 @@ const Autherror_1 = require("../../domain/errors/Autherror");
 const HttpStatusCode_1 = require("../../constants/HttpStatusCode");
 const Tokens_1 = require("../../constants/Tokens");
 let GenerateChatSignedUrl = class GenerateChatSignedUrl {
-    constructor(fileStorageService) {
-        this.fileStorageService = fileStorageService;
+    constructor(_fileStorageService) {
+        this._fileStorageService = _fileStorageService;
     }
     async execute(fileType, userId) {
         if (!fileType || !userId) {
             throw new Autherror_1.AuthError("File type and userId are requires", HttpStatusCode_1.HTTP_STATUS_CODES.BAD_REQUEST);
         }
-        return this.fileStorageService.chatSignedUrl(fileType, userId);
+        return this._fileStorageService.chatSignedUrl(fileType, userId);
     }
 };
 exports.GenerateChatSignedUrl = GenerateChatSignedUrl;

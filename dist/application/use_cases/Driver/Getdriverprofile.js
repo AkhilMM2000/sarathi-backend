@@ -20,14 +20,14 @@ const ErrorMessages_1 = require("../../../constants/ErrorMessages");
 const HttpStatusCode_1 = require("../../../constants/HttpStatusCode");
 const DriverResponseDto_1 = require("../../dto/driver/DriverResponseDto");
 let GetDriverProfile = class GetDriverProfile {
-    constructor(driverRepository) {
-        this.driverRepository = driverRepository;
+    constructor(_driverRepository) {
+        this._driverRepository = _driverRepository;
     }
     async execute(driverId) {
         if (!driverId) {
             throw new Autherror_1.AuthError(ErrorMessages_1.ERROR_MESSAGES.DRIVER_ID_NOT_FOUND, HttpStatusCode_1.HTTP_STATUS_CODES.BAD_REQUEST);
         }
-        const driver = await this.driverRepository.findDriverById(driverId);
+        const driver = await this._driverRepository.findDriverById(driverId);
         if (!driver) {
             throw new Autherror_1.AuthError(ErrorMessages_1.ERROR_MESSAGES.DRIVER_NOT_FOUND, HttpStatusCode_1.HTTP_STATUS_CODES.NOT_FOUND);
         }

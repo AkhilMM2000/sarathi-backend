@@ -9,12 +9,12 @@ import { GetEstimatedFareRequest } from "../../../presentation/schemas/booking/B
 export class GetEstimatedFare implements IGetEstimatedFare{
   constructor(
     @inject(TOKENS.IFARE_CALCULATE_SERVICE)
-    private fareCalculatorService: IFareCalculatorService
+    private _fareCalculatorService: IFareCalculatorService
   ) {}
 
 
   async execute(params: GetEstimatedFareRequest): Promise<number> {
  
-    return this.fareCalculatorService.calculate(params);
+    return this._fareCalculatorService.calculate(params);
   }
 }

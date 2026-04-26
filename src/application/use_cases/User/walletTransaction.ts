@@ -9,7 +9,7 @@ import { WalletTransactionHistoryResponseDto, toWalletTransactionHistoryResponse
 @injectable()
 export class WalletTransactionUseCase implements IWalletTransaction {
   constructor(
-    @inject(TOKENS.WALLET_REPO) private walletRepository: IWalletRepository
+    @inject(TOKENS.WALLET_REPO) private _walletRepository: IWalletRepository
   ) {}
 
   async getTransactionHistory(
@@ -17,16 +17,16 @@ export class WalletTransactionUseCase implements IWalletTransaction {
     page: number,
     limit: number
   ): Promise<WalletTransactionHistoryResponseDto> {
-    const wallet = await this.walletRepository.getWalletByUserId(userId);
+    const wallet = await this._walletRepository.getWalletByUserId(userId);
     if (!wallet) {
       throw new AuthError("Wallet not found.", HTTP_STATUS_CODES.NOT_FOUND);
     }
-    const { transactions, total } = await this.walletRepository.getTransactions(userId, page, limit);
+    const { transactions, total } = await this._walletRepository.getTransactions(userId, page, limit);
     return toWalletTransactionHistoryResponse(transactions, total, page, limit);
   }
 
   async getWalletBalance(userId: string): Promise<number> {
-    const wallet = await this.walletRepository.getWalletByUserId(userId);
+    const wallet = await this._walletRepository.getWalletByUserId(userId);
     if (!wallet) {
       throw new AuthError("Wallet not found.", HTTP_STATUS_CODES.NOT_FOUND);
     }

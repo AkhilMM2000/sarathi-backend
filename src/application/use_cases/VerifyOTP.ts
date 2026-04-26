@@ -17,16 +17,16 @@ dotenv.config();
 @injectable()
 export class VerifyOTP implements IVerifyOtp {
   constructor(
-    @inject(TOKENS.IUSER_REPO) private userRepository: IUserRepository,
-    @inject(TOKENS.IDRIVER_REPO) private driverRepository: IDriverRepository,
-      @inject(TOKENS.USER_REGISTERSTORE) private store: IRedisrepository,
-      @inject(TOKENS.WALLET_SERVICE) private walletService:WalletService ,
-      @inject(TOKENS.REFERAL_CODE_SERVICE) private referralCodeService: ReferralCodeService
+    @inject(TOKENS.IUSER_REPO) private _userRepository: IUserRepository,
+    @inject(TOKENS.IDRIVER_REPO) private _driverRepository: IDriverRepository,
+      @inject(TOKENS.USER_REGISTERSTORE) private _store: IRedisrepository,
+      @inject(TOKENS.WALLET_SERVICE) private _walletService:WalletService ,
+      @inject(TOKENS.REFERAL_CODE_SERVICE) private _referralCodeService: ReferralCodeService
   ) {}
 
   async execute(email: string, otp: string, role: "user" | "driver"): Promise<VerifyOtpResponseDto> {
  
-    const userData = await this.store.getUser(email);
+    const userData = await this._store.getUser(email);
 
 console.log('userData',userData);
 
@@ -36,7 +36,7 @@ console.log('userData',userData);
    
 
     // Choose repository based on role
-    const repository = role === "user" ? this.userRepository : this.driverRepository;
+    const repository = role === "user" ? this._userRepository : this._driverRepository;
 
     let savedUser;
     if (role === "driver") {
@@ -70,7 +70,7 @@ console.log('userData',userData);
 
       
       if (userData.referralCode) {
-        const referalExists = await this.userRepository.findByReferralCode(userData.referralCode);
+        const referalExists = await this._userRepository.findByReferralCode(userData.referralCode);
         if (referalExists) {
           userData.referredBy = referalExists._id;
            userData.referalPay=true
@@ -80,15 +80,15 @@ console.log('userData',userData);
       
      
       savedUser = await repository.create(userData);
-      const loggesUser=await this.userRepository.findByEmail(userData.email)
-      const code = this.referralCodeService.generate(loggesUser?._id?.toString());
+      const loggesUser=await this._userRepository.findByEmail(userData.email)
+      const code = this._referralCodeService.generate(loggesUser?._id?.toString());
     
       if (loggesUser?._id) {
-        await this.userRepository.updateUser(loggesUser._id.toString(), { referralCode: code });
+        await this._userRepository.updateUser(loggesUser._id.toString(), { referralCode: code });
       }
         
       if (savedUser?._id) {
-        await this.walletService.createWallet(savedUser._id.toString());
+        await this._walletService.createWallet(savedUser._id.toString());
       }
 
     }

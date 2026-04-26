@@ -1,1 +1,1 @@
-{"version":3,"file":"Autherror.js","sourceRoot":"","sources":["../../../src/domain/errors/Autherror.ts"],"names":[],"mappings":";;;AAAA,2CAAwC;AAExC,MAAa,SAAU,SAAQ,qBAAS;IACtC,YAAY,OAAe,EAAE,aAAqB,GAAG;QACnD,KAAK,CAAC,OAAO,EAAE,UAAU,CAAC,CAAC;IAC7B,CAAC;CACF;AAJD,8BAIC"}
+{"version":3,"file":"Autherror.js","sourceRoot":"","sources":["../../../src/domain/errors/Autherror.ts"],"names":[],"mappings":";;;AAAA,2CAAwC;AACxC,mEAAmE;AACnE,MAAa,SAAU,SAAQ,qBAAS;IACtC,YAAY,OAAe,EAAE,aAAqB,kCAAiB,CAAC,WAAW;QAC7E,KAAK,CAAC,OAAO,EAAE,UAAU,CAAC,CAAC;IAC7B,CAAC;CACF;AAJD,8BAIC"}

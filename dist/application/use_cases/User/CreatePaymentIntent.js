@@ -18,19 +18,19 @@ const Autherror_1 = require("../../../domain/errors/Autherror");
 const HttpStatusCode_1 = require("../../../constants/HttpStatusCode");
 const Tokens_1 = require("../../../constants/Tokens");
 let CreatePaymentIntent = class CreatePaymentIntent {
-    constructor(stripeService, driverRepository) {
-        this.stripeService = stripeService;
-        this.driverRepository = driverRepository;
+    constructor(_stripeService, _driverRepository) {
+        this._stripeService = _stripeService;
+        this._driverRepository = _driverRepository;
     }
     async execute({ amount, driverId, }) {
         const platformFee = Math.floor(amount * 0.1); // 10% platform fee
-        const driver = await this.driverRepository.findDriverById(driverId);
+        const driver = await this._driverRepository.findDriverById(driverId);
         if (driver) {
             if (!driver.stripeAccountId) {
                 throw new Autherror_1.AuthError("Driver not found or not onboarded", HttpStatusCode_1.HTTP_STATUS_CODES.NOT_FOUND);
             }
         }
-        return await this.stripeService.createPaymentIntent({
+        return await this._stripeService.createPaymentIntent({
             amount,
             driverStripeAccountId: driver?.stripeAccountId || '',
             platformFee,

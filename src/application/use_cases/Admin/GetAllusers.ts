@@ -7,11 +7,11 @@ import { AdminUserResponseDto, toAdminUserListResponse } from "../../dto/admin/A
 @injectable()
 export class GetAllUsers implements IGetAllUsersUseCase  {
   constructor(
-    @inject(TOKENS.IUSER_REPO) private userRepository: IUserRepository,
+    @inject(TOKENS.IUSER_REPO) private _userRepository: IUserRepository,
   ) {}
 
   async execute(): Promise<AdminUserResponseDto[]> {
-    const users = await this.userRepository.getUsers();
+    const users = await this._userRepository.getUsers();
     return toAdminUserListResponse(users || []);
   }
 }

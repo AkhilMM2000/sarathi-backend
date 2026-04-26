@@ -18,9 +18,9 @@ const tsyringe_1 = require("tsyringe");
 const chatService_1 = require("../services/chatService");
 const Tokens_1 = require("../../constants/Tokens");
 let SaveMessageUseCase = class SaveMessageUseCase {
-    constructor(chatRepository, chatService) {
-        this.chatRepository = chatRepository;
-        this.chatService = chatService;
+    constructor(_chatRepository, _chatService) {
+        this._chatRepository = _chatRepository;
+        this._chatService = _chatService;
     }
     async execute({ bookingId, senderId, senderRole, type, text, fileUrl, }) {
         const bookingObjectId = new mongoose_1.Types.ObjectId(bookingId);
@@ -32,7 +32,7 @@ let SaveMessageUseCase = class SaveMessageUseCase {
         if ((type === 'image' || type === 'pdf') && !fileUrl) {
             throw new Error(`${type.toUpperCase()} message must include a fileUrl.`);
         }
-        let chat = await this.chatRepository.findChatByBookingId(bookingId);
+        let chat = await this._chatRepository.findChatByBookingId(bookingId);
         const newMessage = {
             senderId: senderObjectId,
             senderRole,
@@ -42,7 +42,7 @@ let SaveMessageUseCase = class SaveMessageUseCase {
             createdAt: new Date(),
         };
         if (!chat) {
-            chat = await this.chatRepository.createChat({
+            chat = await this._chatRepository.createChat({
                 bookingId: bookingObjectId,
                 participants: [
                     { participantId: senderObjectId, role: senderRole },
@@ -51,8 +51,8 @@ let SaveMessageUseCase = class SaveMessageUseCase {
             });
             return newMessage;
         }
-        await this.chatService.addParticipantIfNeeded(chat._id.toString(), senderObjectId, senderRole);
-        return await this.chatRepository.addMessageToChat(bookingId, newMessage);
+        await this._chatService.addParticipantIfNeeded(chat._id.toString(), senderObjectId, senderRole);
+        return await this._chatRepository.addMessageToChat(bookingId, newMessage);
     }
 };
 exports.SaveMessageUseCase = SaveMessageUseCase;

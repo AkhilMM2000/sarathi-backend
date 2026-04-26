@@ -16,14 +16,14 @@ exports.GenerateSignedUrl = void 0;
 const tsyringe_1 = require("tsyringe");
 const Tokens_1 = require("../../constants/Tokens");
 let GenerateSignedUrl = class GenerateSignedUrl {
-    constructor(fileStorageService) {
-        this.fileStorageService = fileStorageService;
+    constructor(_fileStorageService) {
+        this._fileStorageService = _fileStorageService;
     }
     async execute(fileType, fileName) {
         if (!fileType || !fileName) {
             throw new Error("File type and file name are required");
         }
-        return this.fileStorageService.getSignedUrl(fileType, fileName);
+        return this._fileStorageService.getSignedUrl(fileType, fileName);
     }
 };
 exports.GenerateSignedUrl = GenerateSignedUrl;

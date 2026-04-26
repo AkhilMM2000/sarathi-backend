@@ -15,11 +15,11 @@ export class GetNearbyDriverDetails
 {
   constructor(
     @inject(TOKENS.IDRIVER_REPO)
-    private driverRepository: IDriverRepository,
+    private _driverRepository: IDriverRepository,
     @inject(TOKENS.IUSER_REPO)
-    private userRepository: IUserRepository,
+    private _userRepository: IUserRepository,
     @inject(TOKENS.GOOGLE_DISTANCE_SERVICE)
-    private distanceService: GoogleDistanceService
+    private _distanceService: GoogleDistanceService
   ) {}
 
   async execute(userId: string, driverId: string, lat?: number, lng?: number): Promise<DriverResponseDto> {
@@ -29,7 +29,7 @@ export class GetNearbyDriverDetails
     // 1️⃣ Fetch the user's location from the database if not provided
     if (latitude === undefined || longitude === undefined) {
       
-      const user = await this.userRepository.getUserById(userId);
+      const user = await this._userRepository.getUserById(userId);
      
       if (!user?.location) {
         throw new AuthError("User location not found. Please provide coordinates or update your profile.", HTTP_STATUS_CODES.BAD_REQUEST);
@@ -38,7 +38,7 @@ export class GetNearbyDriverDetails
       longitude = user.location.longitude;
     }
     // 2️⃣ Fetch the specific driver directly
-    const driver = await this.driverRepository.findDriverById(driverId);
+    const driver = await this._driverRepository.findDriverById(driverId);
 
     if (!driver) {
       throw new AuthError("Driver not found", HTTP_STATUS_CODES.NOT_FOUND);
@@ -58,7 +58,7 @@ export class GetNearbyDriverDetails
         };
 
     // 4️⃣ Get distance for this specific driver
-    const distances = await this.distanceService.getDistances(
+    const distances = await this._distanceService.getDistances(
       { latitude, longitude },
       [driverLocation]
     );

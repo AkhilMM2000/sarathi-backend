@@ -11,20 +11,20 @@ import { ISubmitDriverReview } from "./interfaces/ISubmitDriverReview";
 export class SubmitDriverReview implements ISubmitDriverReview{
   constructor(
     @inject(TOKENS.DRIVER_REVIEW_REPO)
-    private reviewRepo: IDriverReviewRepository,
+    private _reviewRepo: IDriverReviewRepository,
     @inject(TOKENS.IDRIVER_REPO)
-    private driverRepo: IDriverRepository
+    private _driverRepo: IDriverRepository
   ) {}
 
   async execute(input: SubmitReviewRequestDto): Promise<ReviewResponseDto> {
     const { driverId, userId, rideId, rating, review } = input;
 
-    const alreadyReviewed = await this.reviewRepo.hasUserAlreadyReviewed(driverId, userId);
+    const alreadyReviewed = await this._reviewRepo.hasUserAlreadyReviewed(driverId, userId);
     if (alreadyReviewed) {
       throw new AuthError("You have already reviewed this driver.",HTTP_STATUS_CODES.BAD_REQUEST);
     }
 
-    await this.reviewRepo.createReview({
+    await this._reviewRepo.createReview({
       driverId,
       userId,
       rideId,
@@ -33,14 +33,14 @@ export class SubmitDriverReview implements ISubmitDriverReview{
     });
 
     // Fetch current rating stats
-    const driver = await this.driverRepo.findDriverById(driverId);
+    const driver = await this._driverRepo.findDriverById(driverId);
     if (!driver) throw new AuthError("Driver not found",HTTP_STATUS_CODES.NOT_FOUND);
 
     const updatedTotalPoints = (driver.totalRatingPoints || 0) + rating;
     const updatedTotalRatings = (driver.totalRatings || 0) + 1;
     const updatedAverage = updatedTotalPoints / updatedTotalRatings;
 
-    await this.driverRepo.updateRatingStats(driverId, {
+    await this._driverRepo.updateRatingStats(driverId, {
       totalRatingPoints: updatedTotalPoints,
       totalRatings: updatedTotalRatings,
       averageRating: parseFloat(updatedAverage.toFixed(2)),

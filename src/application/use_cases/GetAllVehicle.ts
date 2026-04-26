@@ -8,13 +8,13 @@ import { TOKENS } from "../../constants/Tokens";
 
 export class GetAllVehicle {
   constructor(
-    @inject(TOKENS.VEHICLE_REPO) private vehicleRepository: IVehicleRepository
+    @inject(TOKENS.VEHICLE_REPO) private _vehicleRepository: IVehicleRepository
 
 
   ) {}
 
   async execute(): Promise<Vehicle[]> {
-    return await this.vehicleRepository.findAll();
+    return await this._vehicleRepository.findAll();
   }
 }
 

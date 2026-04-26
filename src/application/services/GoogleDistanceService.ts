@@ -3,11 +3,11 @@ import { injectable } from "tsyringe";
 
 @injectable()
 export class GoogleDistanceService {
-  private readonly API_URL = process.env.GOOGLEMAP_API_URL! 
-  private readonly API_KEY = process.env.GOOGLE_MAPS_API_KEY! 
+  private readonly _API_URL = process.env.GOOGLEMAP_API_URL! 
+  private readonly _API_KEY = process.env.GOOGLE_MAPS_API_KEY! 
 
   async getDistances(userLocation: { latitude: number; longitude: number }, drivers: { id: string; latitude: number; longitude: number }[]) {
-    if (!this.API_KEY) {
+    if (!this._API_KEY) {
       throw new Error("Google Maps API Key is missing");
     }
 
@@ -15,11 +15,11 @@ export class GoogleDistanceService {
     const destinations = drivers.map(d => `${d.latitude},${d.longitude}`).join("|");
 
     try {
-      const response = await axios.get(this.API_URL, {
+      const response = await axios.get(this._API_URL, {
         params: {
           origins,
           destinations,
-          key: this.API_KEY,
+          key: this._API_KEY,
           units: "metric",
         },
       });

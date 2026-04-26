@@ -19,28 +19,28 @@ const HttpStatusCode_1 = require("../../../constants/HttpStatusCode");
 const Booking_1 = require("../../../domain/models/Booking");
 const Tokens_1 = require("../../../constants/Tokens");
 let WalletPayment = class WalletPayment {
-    constructor(walletRepository, bookingRepo, stripeService, driverRepository) {
-        this.walletRepository = walletRepository;
-        this.bookingRepo = bookingRepo;
-        this.stripeService = stripeService;
-        this.driverRepository = driverRepository;
+    constructor(_walletRepository, _bookingRepo, _stripeService, _driverRepository) {
+        this._walletRepository = _walletRepository;
+        this._bookingRepo = _bookingRepo;
+        this._stripeService = _stripeService;
+        this._driverRepository = _driverRepository;
     }
     async WalletRidePayment(rideId, userId, amount) {
         try {
             const Payment = {
                 paymentStatus: Booking_1.paymentStatus.COMPLETED,
             };
-            const Ride = await this.bookingRepo.findBookingById(rideId);
-            const driver = await this.driverRepository.findDriverById(Ride?.driverId.toString());
+            const Ride = await this._bookingRepo.findBookingById(rideId);
+            const driver = await this._driverRepository.findDriverById(Ride?.driverId.toString());
             if (!Ride) {
                 throw new Autherror_1.AuthError("Ride not found", HttpStatusCode_1.HTTP_STATUS_CODES.NOT_FOUND);
             }
             if (!driver?.stripeAccountId) {
                 throw new Autherror_1.AuthError("stripe connected account not found", HttpStatusCode_1.HTTP_STATUS_CODES.NOT_FOUND);
             }
-            await this.stripeService.transferToDriverFromWallet(Ride?.driverId.toString(), amount, driver?.stripeAccountId);
-            await this.bookingRepo.updateBooking(rideId, { ...Payment, walletDeduction: amount, driver_fee: Math.floor(amount * 0.9) });
-            await this.walletRepository.debitAmount(userId, amount, `ride on ${Ride?.startDate}`);
+            await this._stripeService.transferToDriverFromWallet(Ride?.driverId.toString(), amount, driver?.stripeAccountId);
+            await this._bookingRepo.updateBooking(rideId, { ...Payment, walletDeduction: amount, driver_fee: Math.floor(amount * 0.9) });
+            await this._walletRepository.debitAmount(userId, amount, `ride on ${Ride?.startDate}`);
         }
         catch (error) {
             throw new Autherror_1.AuthError("Failed to do ride wallet payment " + error.message, HttpStatusCode_1.HTTP_STATUS_CODES.INTERNAL_SERVER_ERROR);

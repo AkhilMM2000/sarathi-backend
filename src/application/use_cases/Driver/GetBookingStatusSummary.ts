@@ -8,12 +8,12 @@ import { IGetBookingStatusSummaryUseCase } from './interfaces/IGetBookingStatusS
 export class GetBookingStatusSummary implements IGetBookingStatusSummaryUseCase {
   constructor(
     @inject(TOKENS.IBOOKING_REPO)
-    private bookingRepo: IBookingRepository
+    private _bookingRepo: IBookingRepository
   ) {}
 
   async execute(driverId: string, year?: number, month?: number): Promise<Record<string, number>> {
    
-      return await this.bookingRepo.countBookingsByStatus(driverId, year, month);
+      return await this._bookingRepo.countBookingsByStatus(driverId, year, month);
    
   }
 }

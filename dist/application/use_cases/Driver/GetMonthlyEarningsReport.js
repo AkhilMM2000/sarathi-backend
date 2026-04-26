@@ -16,11 +16,11 @@ exports.GetDriverEarningsSummary = void 0;
 const tsyringe_1 = require("tsyringe");
 const Tokens_1 = require("../../../constants/Tokens");
 let GetDriverEarningsSummary = class GetDriverEarningsSummary {
-    constructor(bookingRepo) {
-        this.bookingRepo = bookingRepo;
+    constructor(_bookingRepo) {
+        this._bookingRepo = _bookingRepo;
     }
     async execute(driverId, year, month) {
-        return await this.bookingRepo.getDriverEarningsByMonth(driverId, year, month);
+        return await this._bookingRepo.getDriverEarningsByMonth(driverId, year, month);
     }
 };
 exports.GetDriverEarningsSummary = GetDriverEarningsSummary;

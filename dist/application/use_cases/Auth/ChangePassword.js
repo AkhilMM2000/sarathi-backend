@@ -19,32 +19,32 @@ const Tokens_1 = require("../../../constants/Tokens");
 const HttpStatusCode_1 = require("../../../constants/HttpStatusCode");
 const ErrorMessages_1 = require("../../../constants/ErrorMessages");
 let ChangePassword = class ChangePassword {
-    constructor(userRepository, driverRepository, hashService) {
-        this.userRepository = userRepository;
-        this.driverRepository = driverRepository;
-        this.hashService = hashService;
+    constructor(_userRepository, _driverRepository, _hashService) {
+        this._userRepository = _userRepository;
+        this._driverRepository = _driverRepository;
+        this._hashService = _hashService;
     }
     async execute(userId, oldPassword, newPassword, role) {
         let account;
         // Fetch account based on role
         if (role === "user" || role === "admin") {
-            account = await this.userRepository.getUserById(userId);
+            account = await this._userRepository.getUserById(userId);
         }
         else {
-            account = await this.driverRepository.findDriverById(userId);
+            account = await this._driverRepository.findDriverById(userId);
         }
         if (!account) {
             throw new Autherror_1.AuthError(ErrorMessages_1.ERROR_MESSAGES.ACCOUNT_NOTFOUND, HttpStatusCode_1.HTTP_STATUS_CODES.NOT_FOUND); // 404 Not Found
         }
-        const isPasswordValid = await this.hashService.compare(oldPassword, account.password);
+        const isPasswordValid = await this._hashService.compare(oldPassword, account.password);
         if (!isPasswordValid) {
             throw new Autherror_1.AuthError(ErrorMessages_1.ERROR_MESSAGES.INCORRECT_CURRENT_PASSWORD, HttpStatusCode_1.HTTP_STATUS_CODES.BAD_REQUEST); // 400 Bad Request
         }
         if (role === "user" || role === "admin") {
-            await this.userRepository.updateUser(userId, { password: newPassword });
+            await this._userRepository.updateUser(userId, { password: newPassword });
         }
         else {
-            await this.driverRepository.update(userId, { password: newPassword });
+            await this._driverRepository.update(userId, { password: newPassword });
         }
     }
 };

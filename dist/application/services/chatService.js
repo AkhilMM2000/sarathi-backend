@@ -16,16 +16,16 @@ exports.ChatService = void 0;
 const tsyringe_1 = require("tsyringe");
 const Tokens_1 = require("../../constants/Tokens");
 let ChatService = class ChatService {
-    constructor(chatRepository) {
-        this.chatRepository = chatRepository;
+    constructor(_chatRepository) {
+        this._chatRepository = _chatRepository;
     }
     async addParticipantIfNeeded(chatId, senderId, senderRole) {
-        const chat = await this.chatRepository.findById(chatId);
+        const chat = await this._chatRepository.findById(chatId);
         if (!chat)
             throw new Error('Chat not found');
         const isAlreadyParticipant = chat.participants.some((p) => p.participantId.equals(senderId));
         if (!isAlreadyParticipant) {
-            await this.chatRepository.addParticipant(chatId, {
+            await this._chatRepository.addParticipant(chatId, {
                 participantId: senderId,
                 role: senderRole,
             });

@@ -6,42 +6,43 @@ import { AuthService } from "../../services/AuthService";
 import { AuthError } from "../../../domain/errors/Autherror";
 import dotenv from "dotenv";
 import { TOKENS } from "../../../constants/Tokens";
+import { HTTP_STATUS_CODES } from "../../../constants/HttpStatusCode";
 
 dotenv.config();
 
 @injectable()
 export class GoogleAuthUseCase {
-  private client: OAuth2Client;
+  private _client: OAuth2Client;
 
   constructor(
-    @inject(TOKENS.IUSER_REPO) private userRepository: IUserRepository,
-    @inject(TOKENS.IDRIVER_REPO) private driverRepository: IDriverRepository
+    @inject(TOKENS.IUSER_REPO) private _userRepository: IUserRepository,
+    @inject(TOKENS.IDRIVER_REPO) private _driverRepository: IDriverRepository
   ) {
-    this.client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+    this._client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
   }
 
   async execute(googleToken: string, role: "user" | "driver") {
     try {
-      const ticket = await this.client.verifyIdToken({
+      const ticket = await this._client.verifyIdToken({
         idToken: googleToken,
         audience: process.env.GOOGLE_CLIENT_ID,
       });
  
       const payload = ticket.getPayload();
-      if (!payload) throw new AuthError("Invalid Google token", 400);
+      if (!payload) throw new AuthError("Invalid Google token", HTTP_STATUS_CODES.BAD_REQUEST);
 
       const { email, given_name, sub: googleId } = payload;
 
-      if (!email) throw new AuthError("Google account email is required", 400);
+      if (!email) throw new AuthError("Google account email is required", HTTP_STATUS_CODES.BAD_REQUEST);
 
       let user;
 
       if (role === "user") {
-        user = await this.userRepository.findByEmail(email);
+        user = await this._userRepository.findByEmail(email);
 
         if (!user) {
           // Register new user
-          user = await this.userRepository.create({
+          user = await this._userRepository.create({
               email,
               name: given_name|| "Google User",
               googleId,
@@ -57,14 +58,14 @@ export class GoogleAuthUseCase {
           
         }
       } else if (role === "driver") {
-        user = await this.driverRepository.findByEmail(email);
+        user = await this._driverRepository.findByEmail(email);
 
         if (!user) {
-          throw new AuthError("Driver not registered. Please register manually.", 401);
+          throw new AuthError("Driver not registered. Please register manually.", HTTP_STATUS_CODES.UNAUTHORIZED);
         }
       }
       if(!user){
-       throw new AuthError ('Not found user ',401)
+       throw new AuthError ('Not found user ',HTTP_STATUS_CODES.UNAUTHORIZED)
       }
 
       const accessToken = AuthService.generateAccessToken({
@@ -85,7 +86,7 @@ export class GoogleAuthUseCase {
       if (error instanceof AuthError) {
         throw error;
       }
-      throw new AuthError("Google authentication failed", 401);
+      throw new AuthError("Google authentication failed", HTTP_STATUS_CODES.UNAUTHORIZED);
     }
   }
 }

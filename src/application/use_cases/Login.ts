@@ -15,9 +15,9 @@ dotenv.config();
 @injectable()
 export class Login implements ILogin {
   constructor(
-    @inject(TOKENS.IUSER_REPO) private userRepository: IUserRepository,
-    @inject(TOKENS.IDRIVER_REPO) private driverRepository: IDriverRepository,
-    @inject(TOKENS.HASH_SERVICE) private hashService: IHashService
+    @inject(TOKENS.IUSER_REPO) private _userRepository: IUserRepository,
+    @inject(TOKENS.IDRIVER_REPO) private _driverRepository: IDriverRepository,
+    @inject(TOKENS.HASH_SERVICE) private _hashService: IHashService
   ) {}
   async execute(
     email: string,
@@ -28,7 +28,7 @@ export class Login implements ILogin {
 
     // --- User / Admin login ---
     if (role === "user" || role === "admin") {
-      const found = await this.userRepository.findByEmail(email);
+      const found = await this._userRepository.findByEmail(email);
       if (!found) {
         throw new AuthError(
           `${role} not found. Please register.`,
@@ -39,7 +39,7 @@ export class Login implements ILogin {
     }
     // --- Driver login ---
     else {
-      const found = await this.driverRepository.findByEmail(email);
+      const found = await this._driverRepository.findByEmail(email);
       if (!found) {
         throw new AuthError(
           "Driver not found. Please register.",
@@ -70,7 +70,7 @@ export class Login implements ILogin {
     }
 
     // --- Password check ---
-    const validPassword = await this.hashService.compare(
+    const validPassword = await this._hashService.compare(
       password,
       user.password
     );

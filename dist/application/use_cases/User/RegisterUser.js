@@ -21,25 +21,25 @@ const ErrorMessages_1 = require("../../../constants/ErrorMessages");
 const Tokens_1 = require("../../../constants/Tokens");
 const Info_Messages_1 = require("../../../constants/Info_Messages");
 let RegisterUser = class RegisterUser {
-    constructor(emailService, store, userRepository) {
-        this.emailService = emailService;
-        this.store = store;
-        this.userRepository = userRepository;
+    constructor(_emailService, _store, _userRepository) {
+        this._emailService = _emailService;
+        this._store = _store;
+        this._userRepository = _userRepository;
     }
     async execute(userData) {
         const { name, email, mobile, password, referralCode } = userData;
-        const CheckExistingUser = await this.userRepository.findByEmailOrMobile(email, mobile);
+        const CheckExistingUser = await this._userRepository.findByEmailOrMobile(email, mobile);
         if (CheckExistingUser) {
             throw new Autherror_1.AuthError(ErrorMessages_1.ERROR_MESSAGES.EMAIL_OR_MOBILE_EXIST, HttpStatusCode_1.HTTP_STATUS_CODES.CONFLICT);
         }
-        if (await this.store.getUser(email)) {
-            await this.store.removeUser(email);
+        if (await this._store.getUser(email)) {
+            await this._store.removeUser(email);
         }
         const otp = Math.floor(100000 + Math.random() * 900000).toString();
         const otpExpires = new Date(Date.now() + 5 * 60 * 1000);
-        await this.store.addUser(email, { name, email, mobile, password, referralCode, otp, otpExpires });
+        await this._store.addUser(email, { name, email, mobile, password, referralCode, otp, otpExpires });
         console.log(otp, 'ypur otp');
-        await this.emailService.sendOTP(email, otp);
+        await this._emailService.sendOTP(email, otp);
         return { message: Info_Messages_1.INFO_MESSAGES.USER.OTP };
     }
 };

@@ -11,12 +11,12 @@ interface GetMessagesInput {
 export class GetMessagesByBookingId implements IGetMessagesByBookingIdUseCase {
   constructor(
     @inject(TOKENS.CHAT_REPO)
-    private chatRepository: IChatRepository
+    private _chatRepository: IChatRepository
   ) {}
 
   async execute(input: GetMessagesInput): Promise<Message[]> {
     const { bookingId } = input;
-    const messages = await this.chatRepository.findMessagesByBookingId(bookingId);
+    const messages = await this._chatRepository.findMessagesByBookingId(bookingId);
     return messages;
   }
 }

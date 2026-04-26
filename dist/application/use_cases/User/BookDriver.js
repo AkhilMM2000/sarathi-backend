@@ -18,25 +18,26 @@ const Booking_1 = require("../../../domain/models/Booking");
 const mongoose_1 = require("mongoose");
 const Autherror_1 = require("../../../domain/errors/Autherror");
 const Tokens_1 = require("../../../constants/Tokens");
+const HttpStatusCode_1 = require("../../../constants/HttpStatusCode");
 let BookDriver = class BookDriver {
-    constructor(bookingRepo, fareCalculator, notificationService) {
-        this.bookingRepo = bookingRepo;
-        this.fareCalculator = fareCalculator;
-        this.notificationService = notificationService;
+    constructor(_bookingRepo, _fareCalculator, _notificationService) {
+        this._bookingRepo = _bookingRepo;
+        this._fareCalculator = _fareCalculator;
+        this._notificationService = _notificationService;
     }
     async execute(data) {
         const { driverId, startDate, endDate, bookingType } = data;
         if (endDate && startDate > endDate) {
-            throw new Autherror_1.AuthError("End date must be greater than start date", 400);
+            throw new Autherror_1.AuthError("End date must be greater than start date", HttpStatusCode_1.HTTP_STATUS_CODES.BAD_REQUEST);
         }
         // Step 1: Check if driver is already booked in that range
-        const isBooked = await this.bookingRepo.checkDriverAvailability(driverId, startDate, endDate);
+        const isBooked = await this._bookingRepo.checkDriverAvailability(driverId, startDate, endDate);
         console.log(!isBooked);
         if (!isBooked) {
-            throw new Autherror_1.AuthError("Driver is already booked for the selected time.", 400);
+            throw new Autherror_1.AuthError("Driver is already booked for the selected time.", HttpStatusCode_1.HTTP_STATUS_CODES.BAD_REQUEST);
         }
         //
-        const estimatedFare = this.fareCalculator.calculate({
+        const estimatedFare = this._fareCalculator.calculate({
             bookingType,
             estimatedKm: data.estimatedKm,
             startDate,
@@ -51,8 +52,8 @@ let BookDriver = class BookDriver {
             paymentMode: "stripe",
         };
         // Step 4: Save booking
-        const savedBooking = await this.bookingRepo.createBooking(newBooking);
-        await this.notificationService.sendBookingNotification(driverId, { startDate, newRide: savedBooking });
+        const savedBooking = await this._bookingRepo.createBooking(newBooking);
+        await this._notificationService.sendBookingNotification(driverId, { startDate, newRide: savedBooking });
         return savedBooking;
     }
 };

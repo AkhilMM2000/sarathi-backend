@@ -19,19 +19,19 @@ const HttpStatusCode_1 = require("../../../constants/HttpStatusCode");
 const Tokens_1 = require("../../../constants/Tokens");
 const WalletDto_1 = require("../../dto/wallet/WalletDto");
 let WalletTransactionUseCase = class WalletTransactionUseCase {
-    constructor(walletRepository) {
-        this.walletRepository = walletRepository;
+    constructor(_walletRepository) {
+        this._walletRepository = _walletRepository;
     }
     async getTransactionHistory(userId, page, limit) {
-        const wallet = await this.walletRepository.getWalletByUserId(userId);
+        const wallet = await this._walletRepository.getWalletByUserId(userId);
         if (!wallet) {
             throw new Autherror_1.AuthError("Wallet not found.", HttpStatusCode_1.HTTP_STATUS_CODES.NOT_FOUND);
         }
-        const { transactions, total } = await this.walletRepository.getTransactions(userId, page, limit);
+        const { transactions, total } = await this._walletRepository.getTransactions(userId, page, limit);
         return (0, WalletDto_1.toWalletTransactionHistoryResponse)(transactions, total, page, limit);
     }
     async getWalletBalance(userId) {
-        const wallet = await this.walletRepository.getWalletByUserId(userId);
+        const wallet = await this._walletRepository.getWalletByUserId(userId);
         if (!wallet) {
             throw new Autherror_1.AuthError("Wallet not found.", HttpStatusCode_1.HTTP_STATUS_CODES.NOT_FOUND);
         }

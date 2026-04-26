@@ -7,7 +7,7 @@ import { IGetDriverEarningsSummaryUseCase } from './interfaces/IGetDriverEarning
 export class GetDriverEarningsSummary implements IGetDriverEarningsSummaryUseCase {
   constructor(
     @inject(TOKENS.IBOOKING_REPO)
-    private bookingRepo: IBookingRepository
+    private _bookingRepo: IBookingRepository
   ) {}
 
     async execute(driverId: string, year: number, month?: number):Promise<{
@@ -15,8 +15,8 @@ export class GetDriverEarningsSummary implements IGetDriverEarningsSummaryUseCas
     totalEarnings: number;
     totalRides: number;
   }> {
-   
-      return await this.bookingRepo.getDriverEarningsByMonth(driverId, year, month);
+    
+      return await this._bookingRepo.getDriverEarningsByMonth(driverId, year, month);
     
   }
 }

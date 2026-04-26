@@ -16,11 +16,11 @@ exports.GetUserBookingsUseCase = void 0;
 const tsyringe_1 = require("tsyringe");
 const Tokens_1 = require("../../../constants/Tokens");
 let GetUserBookingsUseCase = class GetUserBookingsUseCase {
-    constructor(bookingRepo) {
-        this.bookingRepo = bookingRepo;
+    constructor(_bookingRepo) {
+        this._bookingRepo = _bookingRepo;
     }
     async execute(userId, page = 1, limit = 2) {
-        return await this.bookingRepo.findBookingsByUser(userId, page, limit);
+        return await this._bookingRepo.findBookingsByUser(userId, page, limit);
     }
 };
 exports.GetUserBookingsUseCase = GetUserBookingsUseCase;

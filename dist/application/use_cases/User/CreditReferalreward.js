@@ -18,29 +18,30 @@ const tsyringe_1 = require("tsyringe");
 const Autherror_1 = require("../../../domain/errors/Autherror");
 const WalletService_1 = require("../../services/WalletService");
 const Tokens_1 = require("../../../constants/Tokens");
+const HttpStatusCode_1 = require("../../../constants/HttpStatusCode");
 let CreditReferralReward = class CreditReferralReward {
-    constructor(userRepo, walletService) {
-        this.userRepo = userRepo;
-        this.walletService = walletService;
+    constructor(_userRepo, _walletService) {
+        this._userRepo = _userRepo;
+        this._walletService = _walletService;
     }
     async execute(userId, amount) {
-        const user = await this.userRepo.getUserById(userId);
+        const user = await this._userRepo.getUserById(userId);
         let referedUserName;
         if (!user) {
-            throw new Autherror_1.AuthError("User not found", 404);
+            throw new Autherror_1.AuthError("User not found", HttpStatusCode_1.HTTP_STATUS_CODES.NOT_FOUND);
         }
         const referredBy = user.referredBy;
         if (!referredBy) {
-            throw new Autherror_1.AuthError("No referral found for this user", 400);
+            throw new Autherror_1.AuthError("No referral found for this user", HttpStatusCode_1.HTTP_STATUS_CODES.BAD_REQUEST);
         }
         if (user.referredBy) {
-            const referedUser = await this.userRepo.getUserById(user?.referredBy?.toString());
+            const referedUser = await this._userRepo.getUserById(user?.referredBy?.toString());
             referedUserName = referedUser?.name;
         }
         // 1. Credit to referred user's wallet
-        await this.walletService.creditAmount(userId, amount, `Referral bonus for by register through${referedUserName} `);
-        await this.walletService.creditAmount(referredBy, amount, `Referral bonus for inviting ${user.name}`);
-        await this.userRepo.updateUser(userId, { referalPay: false });
+        await this._walletService.creditAmount(userId, amount, `Referral bonus for by register through${referedUserName} `);
+        await this._walletService.creditAmount(referredBy, amount, `Referral bonus for inviting ${user.name}`);
+        await this._userRepo.updateUser(userId, { referalPay: false });
     }
 };
 exports.CreditReferralReward = CreditReferralReward;

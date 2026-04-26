@@ -10,7 +10,7 @@ import { UserResponseDto, toUserResponse } from "../../dto/user/UserResponseDto"
 @injectable() 
 export class GetUserData  implements IGetUserData{
   constructor(
-    @inject(TOKENS.IUSER_REPO) private userRepository: IUserRepository
+    @inject(TOKENS.IUSER_REPO) private _userRepository: IUserRepository
   ) {}
 
   async execute(userId: string): Promise<UserResponseDto>{
@@ -18,7 +18,7 @@ export class GetUserData  implements IGetUserData{
       throw new AuthError(ERROR_MESSAGES.USER_ID_NOT_FOUND,HTTP_STATUS_CODES.BAD_REQUEST);
     }
 
-    const user = await this.userRepository.getUserById(userId);
+    const user = await this._userRepository.getUserById(userId);
     if (!user) {
       throw new AuthError(ERROR_MESSAGES.USER_NOT_FOUND,HTTP_STATUS_CODES.NOT_FOUND);
     }

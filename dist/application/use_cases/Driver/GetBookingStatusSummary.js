@@ -16,11 +16,11 @@ exports.GetBookingStatusSummary = void 0;
 const tsyringe_1 = require("tsyringe");
 const Tokens_1 = require("../../../constants/Tokens");
 let GetBookingStatusSummary = class GetBookingStatusSummary {
-    constructor(bookingRepo) {
-        this.bookingRepo = bookingRepo;
+    constructor(_bookingRepo) {
+        this._bookingRepo = _bookingRepo;
     }
     async execute(driverId, year, month) {
-        return await this.bookingRepo.countBookingsByStatus(driverId, year, month);
+        return await this._bookingRepo.countBookingsByStatus(driverId, year, month);
     }
 };
 exports.GetBookingStatusSummary = GetBookingStatusSummary;

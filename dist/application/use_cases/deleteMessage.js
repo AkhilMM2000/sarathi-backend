@@ -16,11 +16,11 @@ exports.DeleteMessageUseCase = void 0;
 const tsyringe_1 = require("tsyringe");
 const Tokens_1 = require("../../constants/Tokens");
 let DeleteMessageUseCase = class DeleteMessageUseCase {
-    constructor(chatRepository) {
-        this.chatRepository = chatRepository;
+    constructor(_chatRepository) {
+        this._chatRepository = _chatRepository;
     }
     async execute(chatId, messageId) {
-        await this.chatRepository.deleteMessage(chatId, messageId);
+        await this._chatRepository.deleteMessage(chatId, messageId);
     }
 };
 exports.DeleteMessageUseCase = DeleteMessageUseCase;

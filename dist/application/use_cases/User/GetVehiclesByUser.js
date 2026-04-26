@@ -17,11 +17,11 @@ const tsyringe_1 = require("tsyringe");
 const Tokens_1 = require("../../../constants/Tokens");
 const VehicleResponseDto_1 = require("../../dto/vehicle/VehicleResponseDto");
 let GetVehiclesByUser = class GetVehiclesByUser {
-    constructor(vehicleRepository) {
-        this.vehicleRepository = vehicleRepository;
+    constructor(_vehicleRepository) {
+        this._vehicleRepository = _vehicleRepository;
     }
     async execute(userId) {
-        const vehicles = await this.vehicleRepository.getVehiclesByUser(userId);
+        const vehicles = await this._vehicleRepository.getVehiclesByUser(userId);
         return (0, VehicleResponseDto_1.toVehicleListResponse)(vehicles);
     }
 };

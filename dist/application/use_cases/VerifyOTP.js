@@ -28,22 +28,22 @@ const HttpStatusCode_1 = require("../../constants/HttpStatusCode");
 const ErrorMessages_1 = require("../../constants/ErrorMessages");
 dotenv_1.default.config();
 let VerifyOTP = class VerifyOTP {
-    constructor(userRepository, driverRepository, store, walletService, referralCodeService) {
-        this.userRepository = userRepository;
-        this.driverRepository = driverRepository;
-        this.store = store;
-        this.walletService = walletService;
-        this.referralCodeService = referralCodeService;
+    constructor(_userRepository, _driverRepository, _store, _walletService, _referralCodeService) {
+        this._userRepository = _userRepository;
+        this._driverRepository = _driverRepository;
+        this._store = _store;
+        this._walletService = _walletService;
+        this._referralCodeService = _referralCodeService;
     }
     async execute(email, otp, role) {
-        const userData = await this.store.getUser(email);
+        const userData = await this._store.getUser(email);
         console.log('userData', userData);
         if (!userData)
             throw new Autherror_1.AuthError(ErrorMessages_1.ERROR_MESSAGES.USER_NOT_FOUND, HttpStatusCode_1.HTTP_STATUS_CODES.BAD_REQUEST);
         if (userData.otp !== otp || userData.otpExpires < new Date())
             throw new Autherror_1.AuthError(ErrorMessages_1.ERROR_MESSAGES.OTP_INVALID, HttpStatusCode_1.HTTP_STATUS_CODES.BAD_REQUEST);
         // Choose repository based on role
-        const repository = role === "user" ? this.userRepository : this.driverRepository;
+        const repository = role === "user" ? this._userRepository : this._driverRepository;
         let savedUser;
         if (role === "driver") {
             // Remove unwanted fields before saving
@@ -72,20 +72,20 @@ let VerifyOTP = class VerifyOTP {
         else {
             console.log("📌 Saving user to DB:", userData);
             if (userData.referralCode) {
-                const referalExists = await this.userRepository.findByReferralCode(userData.referralCode);
+                const referalExists = await this._userRepository.findByReferralCode(userData.referralCode);
                 if (referalExists) {
                     userData.referredBy = referalExists._id;
                     userData.referalPay = true;
                 }
             }
             savedUser = await repository.create(userData);
-            const loggesUser = await this.userRepository.findByEmail(userData.email);
-            const code = this.referralCodeService.generate(loggesUser?._id?.toString());
+            const loggesUser = await this._userRepository.findByEmail(userData.email);
+            const code = this._referralCodeService.generate(loggesUser?._id?.toString());
             if (loggesUser?._id) {
-                await this.userRepository.updateUser(loggesUser._id.toString(), { referralCode: code });
+                await this._userRepository.updateUser(loggesUser._id.toString(), { referralCode: code });
             }
             if (savedUser?._id) {
-                await this.walletService.createWallet(savedUser._id.toString());
+                await this._walletService.createWallet(savedUser._id.toString());
             }
         }
         if (!savedUser)

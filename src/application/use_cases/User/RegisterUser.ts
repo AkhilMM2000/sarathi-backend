@@ -12,15 +12,15 @@ import { INFO_MESSAGES } from "../../../constants/Info_Messages";
 @injectable()
 export class RegisterUser implements IRegisterUser {
   constructor(
-    @inject(TOKENS.EMAIL_SERVICE) private emailService: EmailService,
-    @inject(TOKENS.USER_REGISTERSTORE) private store: IRedisrepository,
-      @inject(TOKENS.IUSER_REPO) private userRepository: IUserRepository,
+    @inject(TOKENS.EMAIL_SERVICE) private _emailService: EmailService,
+    @inject(TOKENS.USER_REGISTERSTORE) private _store: IRedisrepository,
+      @inject(TOKENS.IUSER_REPO) private _userRepository: IUserRepository,
 ) {}
 
   async execute(userData: User):Promise<{ message: string }>  {
     const { name, email, mobile, password, referralCode } = userData;
    
-   const CheckExistingUser = await this.userRepository.findByEmailOrMobile(email,mobile);
+   const CheckExistingUser = await this._userRepository.findByEmailOrMobile(email,mobile);
 
    if(CheckExistingUser) {
      throw new AuthError(ERROR_MESSAGES.EMAIL_OR_MOBILE_EXIST, HTTP_STATUS_CODES.CONFLICT);
@@ -28,17 +28,17 @@ export class RegisterUser implements IRegisterUser {
    }
    
  
-    if (await this.store.getUser(email)) {
-      await this.store.removeUser(email)
+    if (await this._store.getUser(email)) {
+      await this._store.removeUser(email)
    
   }
   
   
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
     const otpExpires = new Date(Date.now() + 5 * 60 * 1000);
-    await this.store.addUser(email, { name, email, mobile, password, referralCode, otp, otpExpires });
+    await this._store.addUser(email, { name, email, mobile, password, referralCode, otp, otpExpires });
  console.log(otp,'ypur otp')
-    await this.emailService.sendOTP(email, otp);
+    await this._emailService.sendOTP(email, otp);
     
 
     return { message: INFO_MESSAGES.USER.OTP };

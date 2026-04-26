@@ -16,12 +16,12 @@ exports.GetMessagesByBookingId = void 0;
 const tsyringe_1 = require("tsyringe");
 const Tokens_1 = require("../../constants/Tokens");
 let GetMessagesByBookingId = class GetMessagesByBookingId {
-    constructor(chatRepository) {
-        this.chatRepository = chatRepository;
+    constructor(_chatRepository) {
+        this._chatRepository = _chatRepository;
     }
     async execute(input) {
         const { bookingId } = input;
-        const messages = await this.chatRepository.findMessagesByBookingId(bookingId);
+        const messages = await this._chatRepository.findMessagesByBookingId(bookingId);
         return messages;
     }
 };

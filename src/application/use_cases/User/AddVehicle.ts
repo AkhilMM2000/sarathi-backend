@@ -9,7 +9,7 @@ import { VehicleResponseDto, toVehicleResponse } from "../../dto/vehicle/Vehicle
 @injectable()
 export class AddVehicle implements IAddVehicleUseCase {
   constructor(
-    @inject(TOKENS.VEHICLE_REPO) private vehicleRepository: IVehicleRepository
+    @inject(TOKENS.VEHICLE_REPO) private _vehicleRepository: IVehicleRepository
   ) {}
 
   async execute(vehicleData: any): Promise<VehicleResponseDto> {
@@ -33,7 +33,7 @@ export class AddVehicle implements IAddVehicleUseCase {
     }
 
     // Save vehicle if all validations pass
-    const savedVehicle = await this.vehicleRepository.addVehicle(vehicleData);
+    const savedVehicle = await this._vehicleRepository.addVehicle(vehicleData);
     return toVehicleResponse(savedVehicle);
   }
 }

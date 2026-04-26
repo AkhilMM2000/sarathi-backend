@@ -8,28 +8,28 @@ import { TOKENS } from "../../constants/Tokens";
 
 @injectable()
 export class WalletService {
-  constructor( @inject(TOKENS.WALLET_REPO) private walletRepository: IWalletRepository) {}
+  constructor( @inject(TOKENS.WALLET_REPO) private _walletRepository: IWalletRepository) {}
 
   async createWallet(userId: string): Promise<Wallet> {
     try {
-      const existingWallet = await this.walletRepository.getWalletByUserId(userId);
+      const existingWallet = await this._walletRepository.getWalletByUserId(userId);
       if (existingWallet) {
         throw new AuthError("Wallet already exists for this user.",HTTP_STATUS_CODES.CONFLICT);
       }
-      return await this.walletRepository.createWallet(userId);
+      return await this._walletRepository.createWallet(userId);
     } catch (error: any) {
-      throw new AuthError("Failed to create wallet: " + error.message, 500);
+      throw new AuthError("Failed to create wallet: " + error.message, HTTP_STATUS_CODES.INTERNAL_SERVER_ERROR);
     }
   }
 
   async creditAmount(userId: string, amount: number, description: string): Promise<Wallet> {
     try {
-      const wallet = await this.walletRepository.getWalletByUserId(userId);
+      const wallet = await this._walletRepository.getWalletByUserId(userId);
       if (!wallet) {
         throw new AuthError("Wallet not found.",HTTP_STATUS_CODES.NOT_FOUND);
       }
 
-      const updatedWallet = await this.walletRepository.creditAmount(
+      const updatedWallet = await this._walletRepository.creditAmount(
         userId,
         amount,
         description
@@ -43,7 +43,7 @@ export class WalletService {
 
   async debitAmount(userId: string, amount: number, description: string): Promise<Wallet> {
     try {
-      const wallet = await this.walletRepository.getWalletByUserId(userId);
+      const wallet = await this._walletRepository.getWalletByUserId(userId);
       if (!wallet) {
         throw new AuthError("Wallet not found.", HTTP_STATUS_CODES.NOT_FOUND);
       }
@@ -52,7 +52,7 @@ export class WalletService {
         throw new AuthError("Insufficient wallet balance.", HTTP_STATUS_CODES.BAD_REQUEST);
       }
 
-      const updatedWallet = await this.walletRepository.debitAmount(
+      const updatedWallet = await this._walletRepository.debitAmount(
         userId,
         amount,
         description
@@ -66,7 +66,7 @@ export class WalletService {
 
   async getWalletByUserId(userId: string): Promise<Wallet | null> {
     try {
-      const wallet = await this.walletRepository.getWalletByUserId(userId);
+      const wallet = await this._walletRepository.getWalletByUserId(userId);
       if (!wallet) {
         throw new AuthError("Wallet not found.", HTTP_STATUS_CODES.NOT_FOUND);
       }

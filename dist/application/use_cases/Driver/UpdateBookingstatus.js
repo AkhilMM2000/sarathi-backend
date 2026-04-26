@@ -19,14 +19,14 @@ const Tokens_1 = require("../../../constants/Tokens");
 const HttpStatusCode_1 = require("../../../constants/HttpStatusCode");
 const ErrorMessages_1 = require("../../../constants/ErrorMessages");
 let UpdateBookingStatus = class UpdateBookingStatus {
-    constructor(bookingRepo, notificationService) {
-        this.bookingRepo = bookingRepo;
-        this.notificationService = notificationService;
+    constructor(_bookingRepo, _notificationService) {
+        this._bookingRepo = _bookingRepo;
+        this._notificationService = _notificationService;
     }
     async execute(input) {
         const { bookingId, status, reason, finalKm } = input;
         let finalFare = undefined;
-        const booking = await this.bookingRepo.findBookingById(bookingId);
+        const booking = await this._bookingRepo.findBookingById(bookingId);
         if (!booking) {
             throw new Autherror_1.AuthError(ErrorMessages_1.ERROR_MESSAGES.BOOKING_NOT_FOUND, HttpStatusCode_1.HTTP_STATUS_CODES.NOT_FOUND);
         }
@@ -43,15 +43,15 @@ let UpdateBookingStatus = class UpdateBookingStatus {
             finalFare = estimated + finalKm * ratePerKm;
         }
         if (status === "REJECTED" && reason) {
-            this.notificationService.rejectBookingNotification(booking.userId.toString(), { status, startDate: booking.startDate, bookingId, reason });
+            this._notificationService.rejectBookingNotification(booking.userId.toString(), { status, startDate: booking.startDate, bookingId, reason });
         }
         // Always update status, and optionally finalFare and reason
-        await this.bookingRepo.updateBooking(bookingId, {
+        await this._bookingRepo.updateBooking(bookingId, {
             status,
             ...(reason && { reason }),
             ...(finalFare !== undefined && { finalFare }),
         });
-        this.notificationService.sendBookingConfirmation(booking.userId.toString(), { status, startDate: booking.startDate, bookingId });
+        this._notificationService.sendBookingConfirmation(booking.userId.toString(), { status, startDate: booking.startDate, bookingId });
     }
 };
 exports.UpdateBookingStatus = UpdateBookingStatus;

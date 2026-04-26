@@ -21,17 +21,17 @@ const ErrorMessages_1 = require("../../../constants/ErrorMessages");
 const HttpStatusCode_1 = require("../../../constants/HttpStatusCode");
 const DriverResponseDto_1 = require("../../dto/driver/DriverResponseDto");
 let FindNearbyDrivers = class FindNearbyDrivers {
-    constructor(driverRepository, userRepository, distanceService) {
-        this.driverRepository = driverRepository;
-        this.userRepository = userRepository;
-        this.distanceService = distanceService;
+    constructor(_driverRepository, _userRepository, _distanceService) {
+        this._driverRepository = _driverRepository;
+        this._userRepository = _userRepository;
+        this._distanceService = _distanceService;
     }
     async execute(userId, page = 1, limit = 2, placeKey, lat, lng) {
         let latitude = lat;
         let longitude = lng;
         // 1️⃣ Fetch the user's location from the database if not provided
         if (latitude === undefined || longitude === undefined) {
-            const user = await this.userRepository.getUserById(userId);
+            const user = await this._userRepository.getUserById(userId);
             if (!user) {
                 throw new Autherror_1.AuthError(ErrorMessages_1.ERROR_MESSAGES.USER_NOT_FOUND, HttpStatusCode_1.HTTP_STATUS_CODES.NOT_FOUND);
             }
@@ -42,7 +42,7 @@ let FindNearbyDrivers = class FindNearbyDrivers {
             longitude = user.location.longitude;
         }
         // 2️⃣ Use paginated driver fetching from repository
-        const paginatedResult = await this.driverRepository.findActiveDrivers(page, limit, placeKey, latitude, longitude);
+        const paginatedResult = await this._driverRepository.findActiveDrivers(page, limit, placeKey, latitude, longitude);
         const drivers = paginatedResult.data;
         if (drivers.length === 0)
             return { ...paginatedResult, data: [] };
@@ -64,7 +64,7 @@ let FindNearbyDrivers = class FindNearbyDrivers {
             }
         });
         // 4️⃣ Get distances
-        const distances = await this.distanceService.getDistances({ latitude, longitude }, driverLocations);
+        const distances = await this._distanceService.getDistances({ latitude, longitude }, driverLocations);
         // 5️⃣ Add distance to driver
         const driversWithDistance = drivers.map((driver) => {
             const driverId = driver._id?.toString();

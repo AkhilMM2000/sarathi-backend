@@ -19,23 +19,23 @@ const Tokens_1 = require("../../../constants/Tokens");
 const HttpStatusCode_1 = require("../../../constants/HttpStatusCode");
 const ErrorMessages_1 = require("../../../constants/ErrorMessages");
 let ResetPasswordUseCase = class ResetPasswordUseCase {
-    constructor(store, userRepository, driverRepository) {
-        this.store = store;
-        this.userRepository = userRepository;
-        this.driverRepository = driverRepository;
+    constructor(_store, _userRepository, _driverRepository) {
+        this._store = _store;
+        this._userRepository = _userRepository;
+        this._driverRepository = _driverRepository;
     }
     async execute(token, newPassword, role) {
-        const userId = await this.store.getTokenUser(role, token);
+        const userId = await this._store.getTokenUser(role, token);
         if (!userId)
             throw new Autherror_1.AuthError(ErrorMessages_1.ERROR_MESSAGES.INVALID_TOKEN, HttpStatusCode_1.HTTP_STATUS_CODES.BAD_REQUEST);
         let user;
         if (role === 'user' || role === 'admin') {
-            user = await this.userRepository.getUserById(userId);
+            user = await this._userRepository.getUserById(userId);
             if (!user)
                 throw new Autherror_1.AuthError(ErrorMessages_1.ERROR_MESSAGES.USER_NOT_FOUND, HttpStatusCode_1.HTTP_STATUS_CODES.NOT_FOUND);
         }
         else if (role === 'driver') {
-            user = await this.driverRepository.findDriverById(userId);
+            user = await this._driverRepository.findDriverById(userId);
             if (!user)
                 throw new Autherror_1.AuthError(ErrorMessages_1.ERROR_MESSAGES.DRIVER_NOT_FOUND, HttpStatusCode_1.HTTP_STATUS_CODES.NOT_FOUND);
         }
@@ -45,16 +45,16 @@ let ResetPasswordUseCase = class ResetPasswordUseCase {
             };
             if (role === 'user' || role === 'admin') {
                 if (user._id) {
-                    await this.userRepository.updateUser(user._id.toString(), updatedData);
+                    await this._userRepository.updateUser(user._id.toString(), updatedData);
                 }
             }
             else if (role === 'driver') {
                 if (user._id) {
-                    await this.driverRepository.update(user._id.toString(), updatedData);
+                    await this._driverRepository.update(user._id.toString(), updatedData);
                 }
             }
             // Remove token from Redis after successful password reset
-            await this.store.removeTokenUser(role, token);
+            await this._store.removeTokenUser(role, token);
         }
         else {
             throw new Autherror_1.AuthError(ErrorMessages_1.ERROR_MESSAGES.USER_NOT_FOUND, HttpStatusCode_1.HTTP_STATUS_CODES.NOT_FOUND);

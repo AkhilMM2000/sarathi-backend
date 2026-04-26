@@ -12,15 +12,15 @@ import { IResetPasswordUseCase } from './interface/IResetPasswordUseCase';
 @injectable()
 export class ResetPasswordUseCase implements  IResetPasswordUseCase {
   constructor(
-    @inject(TOKENS.USER_REGISTERSTORE) private store: IRedisrepository,
-    @inject(TOKENS.IUSER_REPO) private userRepository: IUserRepository,
-    @inject(TOKENS.IDRIVER_REPO) private driverRepository: IDriverRepository,
+    @inject(TOKENS.USER_REGISTERSTORE) private _store: IRedisrepository,
+    @inject(TOKENS.IUSER_REPO) private _userRepository: IUserRepository,
+    @inject(TOKENS.IDRIVER_REPO) private _driverRepository: IDriverRepository,
     
   ) {}
 
   async execute(token: string, newPassword: string, role: 'user' | 'driver' | 'admin'):Promise<void> {
     
-    const userId = await this.store.getTokenUser(role, token);
+    const userId = await this._store.getTokenUser(role, token);
  
     
     if (!userId) throw new AuthError(ERROR_MESSAGES.INVALID_TOKEN, HTTP_STATUS_CODES.BAD_REQUEST);
@@ -28,10 +28,10 @@ export class ResetPasswordUseCase implements  IResetPasswordUseCase {
  
     let user;
     if (role === 'user' || role === 'admin') {
-      user = await this.userRepository.getUserById(userId);
+      user = await this._userRepository.getUserById(userId);
       if (!user) throw new AuthError(ERROR_MESSAGES.USER_NOT_FOUND, HTTP_STATUS_CODES.NOT_FOUND);
     } else if (role === 'driver') {
-      user = await this.driverRepository.findDriverById(userId);
+      user = await this._driverRepository.findDriverById(userId);
       if (!user) throw new AuthError(ERROR_MESSAGES.DRIVER_NOT_FOUND, HTTP_STATUS_CODES.NOT_FOUND);
     }
 
@@ -48,18 +48,18 @@ export class ResetPasswordUseCase implements  IResetPasswordUseCase {
 
       if (role === 'user' || role === 'admin') {
         if (user._id) {
-        await this.userRepository.updateUser(user._id.toString(), updatedData);
+        await this._userRepository.updateUser(user._id.toString(), updatedData);
   
         }
       } else if (role === 'driver') {
         if (user._id ) {
-          await this.driverRepository.update(user._id.toString(), updatedData);
+          await this._driverRepository.update(user._id.toString(), updatedData);
         }
       }
 
   
       // Remove token from Redis after successful password reset
-      await this.store.removeTokenUser(role, token);
+      await this._store.removeTokenUser(role, token);
 
       
     } else {

@@ -12,10 +12,10 @@ import { IForgotPasswordUseCase } from './interface/IForgotPasswordUseCase';
 @injectable()
 export class ForgotPasswordUseCase implements  IForgotPasswordUseCase  {
   constructor(
-    @inject(TOKENS.USER_REGISTERSTORE) private store: IRedisrepository,
-    @inject(TOKENS.IUSER_REPO) private userRepository: IUserRepository,
-    @inject(TOKENS.IDRIVER_REPO) private driverRepository: IDriverRepository,
-    @inject(TOKENS.EMAIL_SERVICE) private emailService: EmailService,
+    @inject(TOKENS.USER_REGISTERSTORE) private _store: IRedisrepository,
+    @inject(TOKENS.IUSER_REPO) private _userRepository: IUserRepository,
+    @inject(TOKENS.IDRIVER_REPO) private _driverRepository: IDriverRepository,
+    @inject(TOKENS.EMAIL_SERVICE) private _emailService: EmailService,
   ) {}
 
   async execute(email: string,role:'user'|'driver' | 'admin'):Promise<void> {
@@ -23,11 +23,11 @@ export class ForgotPasswordUseCase implements  IForgotPasswordUseCase  {
     console.log(email,role);
     
     if(role=='user' || role == 'admin'){
-     user= await this.userRepository.findByEmail(email);
+     user= await this._userRepository.findByEmail(email);
     if (!user) throw new AuthError(ERROR_MESSAGES.USER_NOT_FOUND,HTTP_STATUS_CODES.NOT_FOUND);
     }
     if(role=='driver'){
-        user= await this.driverRepository.findByEmail(email);
+        user= await this._driverRepository.findByEmail(email);
        
         
     if (!user) throw new AuthError(ERROR_MESSAGES.DRIVER_NOT_FOUND, HTTP_STATUS_CODES.NOT_FOUND); 
@@ -36,7 +36,7 @@ export class ForgotPasswordUseCase implements  IForgotPasswordUseCase  {
     // Generate token
     const token = uuidv4();
    
-    if (user?._id)   this.store.addTokenUser(role, token, user._id.toString()); 
+    if (user?._id)   this._store.addTokenUser(role, token, user._id.toString()); 
      
      
       
@@ -47,7 +47,7 @@ export class ForgotPasswordUseCase implements  IForgotPasswordUseCase  {
    
 
   
-     if(user?.email)   await this.emailService.sendForgotPasswordLink(user?.email,resetLink)
+     if(user?.email)   await this._emailService.sendForgotPasswordLink(user?.email,resetLink)
  
 
    

@@ -7,7 +7,7 @@ import { SignedUrlResponse } from "../../infrastructure/services/cloudstorageser
 @injectable()
 export class GenerateSignedUrl implements IGenerateSignedUrlUseCase  {
   constructor(
-    @inject(TOKENS.FILE_SERVICE) private fileStorageService: IFileStorageService
+    @inject(TOKENS.FILE_SERVICE) private _fileStorageService: IFileStorageService
   ) {}
 
   async execute(fileType: string, fileName: string):Promise<SignedUrlResponse>{
@@ -15,6 +15,6 @@ export class GenerateSignedUrl implements IGenerateSignedUrlUseCase  {
       throw new Error("File type and file name are required");
     }
 
-    return this.fileStorageService.getSignedUrl(fileType, fileName);
+    return this._fileStorageService.getSignedUrl(fileType, fileName);
   }
 }

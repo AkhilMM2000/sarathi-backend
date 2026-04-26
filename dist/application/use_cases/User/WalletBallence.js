@@ -18,14 +18,14 @@ const Autherror_1 = require("../../../domain/errors/Autherror");
 const HttpStatusCode_1 = require("../../../constants/HttpStatusCode");
 const Tokens_1 = require("../../../constants/Tokens");
 let WalletBallence = class WalletBallence {
-    constructor(walletRepository) {
-        this.walletRepository = walletRepository;
+    constructor(_walletRepository) {
+        this._walletRepository = _walletRepository;
     }
     async execute(userId) {
         if (!userId) {
             throw new Autherror_1.AuthError("user id required for walletballence", HttpStatusCode_1.HTTP_STATUS_CODES.NOT_FOUND);
         }
-        return this.walletRepository.walletBalance(userId);
+        return this._walletRepository.walletBalance(userId);
     }
 };
 exports.WalletBallence = WalletBallence;

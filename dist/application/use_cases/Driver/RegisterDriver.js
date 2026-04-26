@@ -20,22 +20,22 @@ const Tokens_1 = require("../../../constants/Tokens");
 const Autherror_1 = require("../../../domain/errors/Autherror");
 const HttpStatusCode_1 = require("../../../constants/HttpStatusCode");
 let RegisterDriver = class RegisterDriver {
-    constructor(emailService, store) {
-        this.emailService = emailService;
-        this.store = store;
+    constructor(_emailService, _store) {
+        this._emailService = _emailService;
+        this._store = _store;
     }
     async execute(driverData) {
         const { email } = driverData;
         console.log(driverData);
-        if (await this.store.getUser(email))
+        if (await this._store.getUser(email))
             throw new Autherror_1.AuthError("OTP already sent to this email", HttpStatusCode_1.HTTP_STATUS_CODES.CONFLICT);
         const otp = (0, crypto_1.randomInt)(100000, 999999).toString();
         const otpExpires = new Date(Date.now() + 10 * 60 * 1000);
         //store the data in the js map
-        await this.store.addUser(email, { ...driverData, otp, otpExpires });
+        await this._store.addUser(email, { ...driverData, otp, otpExpires });
         console.log(driverData);
         // Send OTP to driver's email
-        await this.emailService.sendOTP(email, otp);
+        await this._emailService.sendOTP(email, otp);
         return { message: "OTP sent successfully. Please verify your email." };
     }
 };

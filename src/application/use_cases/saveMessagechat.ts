@@ -16,8 +16,8 @@ interface SaveMessageDTO {
 @injectable()
 export class SaveMessageUseCase {
   constructor(
-    @inject(TOKENS.CHAT_REPO) private chatRepository: IChatRepository,
-    private chatService: ChatService
+    @inject(TOKENS.CHAT_REPO) private _chatRepository: IChatRepository,
+    private _chatService: ChatService
   ) {}
 
   async execute({
@@ -40,7 +40,7 @@ export class SaveMessageUseCase {
       throw new Error(`${type.toUpperCase()} message must include a fileUrl.`);
     }
 
-    let chat = await this.chatRepository.findChatByBookingId(bookingId);
+    let chat = await this._chatRepository.findChatByBookingId(bookingId);
 
     const newMessage = {
       senderId: senderObjectId,
@@ -52,7 +52,7 @@ export class SaveMessageUseCase {
     };
 
     if (!chat) {
-      chat = await this.chatRepository.createChat({
+      chat = await this._chatRepository.createChat({
         bookingId: bookingObjectId,
         participants: [
           { participantId: senderObjectId, role: senderRole },
@@ -63,9 +63,9 @@ export class SaveMessageUseCase {
       return newMessage;
     }
 
-    await this.chatService.addParticipantIfNeeded(chat._id!.toString(), senderObjectId, senderRole);
+    await this._chatService.addParticipantIfNeeded(chat._id!.toString(), senderObjectId, senderRole);
     
-    return await this.chatRepository.addMessageToChat(bookingId, newMessage);
+    return await this._chatRepository.addMessageToChat(bookingId, newMessage);
 
    
   }

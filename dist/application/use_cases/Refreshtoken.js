@@ -20,9 +20,9 @@ const Autherror_1 = require("../../domain/errors/Autherror");
 const ErrorMessages_1 = require("../../constants/ErrorMessages");
 const HttpStatusCode_1 = require("../../constants/HttpStatusCode");
 let RefreshToken = class RefreshToken {
-    constructor(userRepository, driverRepository) {
-        this.userRepository = userRepository;
-        this.driverRepository = driverRepository;
+    constructor(_userRepository, _driverRepository) {
+        this._userRepository = _userRepository;
+        this._driverRepository = _driverRepository;
     }
     async execute(refreshToken) {
         if (!refreshToken) {
@@ -37,7 +37,7 @@ let RefreshToken = class RefreshToken {
         // 2. Fetch User based on role found in the token
         let user = null;
         if (role === "user" || role === "admin") {
-            user = await this.userRepository.findByEmail(decoded.email);
+            user = await this._userRepository.findByEmail(decoded.email);
             if (!user) {
                 throw new Autherror_1.AuthError(ErrorMessages_1.ERROR_MESSAGES.USER_NOT_FOUND, HttpStatusCode_1.HTTP_STATUS_CODES.NOT_FOUND);
             }
@@ -47,7 +47,7 @@ let RefreshToken = class RefreshToken {
             }
         }
         else if (role === "driver") {
-            user = await this.driverRepository.findByEmail(decoded.email);
+            user = await this._driverRepository.findByEmail(decoded.email);
             if (!user) {
                 throw new Autherror_1.AuthError(ErrorMessages_1.ERROR_MESSAGES.DRIVER_NOT_FOUND, HttpStatusCode_1.HTTP_STATUS_CODES.NOT_FOUND);
             }

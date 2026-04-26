@@ -8,7 +8,7 @@ import { IWalletBalanceUseCase } from "./interfaces/IWalletBalanceUseCase";
 @injectable()
 export class WalletBallence implements IWalletBalanceUseCase {
 
-   constructor( @inject(TOKENS.WALLET_REPO) private walletRepository: IWalletRepository) {
+   constructor( @inject(TOKENS.WALLET_REPO) private _walletRepository: IWalletRepository) {
 
    }
    
@@ -17,6 +17,6 @@ export class WalletBallence implements IWalletBalanceUseCase {
       throw new AuthError("user id required for walletballence",HTTP_STATUS_CODES.NOT_FOUND);
     }
 
-    return this.walletRepository.walletBalance(userId);
+    return this._walletRepository.walletBalance(userId);
   }
 }

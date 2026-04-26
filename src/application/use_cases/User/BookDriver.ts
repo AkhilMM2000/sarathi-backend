@@ -19,37 +19,39 @@ export interface BookDriverInput {
   bookingType: BookingType
 }
  
+import { HTTP_STATUS_CODES } from "../../../constants/HttpStatusCode";
+
 @injectable()
 export class BookDriver implements IBookDriverUseCase  {
   constructor(
-    @inject(TOKENS.IBOOKING_REPO) private bookingRepo: IBookingRepository,
-    @inject(TOKENS.IFARE_CALCULATE_SERVICE) private fareCalculator: IFareCalculatorService,
+    @inject(TOKENS.IBOOKING_REPO) private _bookingRepo: IBookingRepository,
+    @inject(TOKENS.IFARE_CALCULATE_SERVICE) private _fareCalculator: IFareCalculatorService,
     @inject(TOKENS.NOTIFICATION_SERVICE)
-    private notificationService: INotificationService
+    private _notificationService: INotificationService
   ) {}
 
   async execute(data: BookDriverInput): Promise<Booking> {
     const { driverId, startDate, endDate, bookingType} = data;
 
 if(endDate && startDate > endDate) {
-      throw new AuthError("End date must be greater than start date", 400);
+      throw new AuthError("End date must be greater than start date", HTTP_STATUS_CODES.BAD_REQUEST);
     
   
 }
     // Step 1: Check if driver is already booked in that range
-    const isBooked = await this.bookingRepo.checkDriverAvailability(driverId, startDate, endDate);
+    const isBooked = await this._bookingRepo.checkDriverAvailability(driverId, startDate, endDate);
   console.log(!isBooked);
   
     if (!isBooked) {
      
     
       
-      throw new AuthError("Driver is already booked for the selected time.", 400);
+      throw new AuthError("Driver is already booked for the selected time.", HTTP_STATUS_CODES.BAD_REQUEST);
       
     }
 
     //
-    const estimatedFare = this.fareCalculator.calculate({
+    const estimatedFare = this._fareCalculator.calculate({
       bookingType,
       estimatedKm: data.estimatedKm,
       startDate,
@@ -67,8 +69,8 @@ if(endDate && startDate > endDate) {
     };
    
     // Step 4: Save booking
-    const savedBooking = await this.bookingRepo.createBooking(newBooking);
-   await this.notificationService.sendBookingNotification(driverId,{startDate,newRide:savedBooking});
+    const savedBooking = await this._bookingRepo.createBooking(newBooking);
+   await this._notificationService.sendBookingNotification(driverId,{startDate,newRide:savedBooking});
     return savedBooking;
   }
 }

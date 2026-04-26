@@ -7,11 +7,11 @@ import { IDashboardStats, IGetDriverDashboardStatsUseCase } from "./interfaces/I
 export class GetDriverDashboardStats implements IGetDriverDashboardStatsUseCase {
   constructor(
     @inject(TOKENS.IBOOKING_REPO)
-    private bookingRepo: IBookingRepository
+    private _bookingRepo: IBookingRepository
   ) {}
 
   async execute(driverId: string): Promise<IDashboardStats> {
-    const rawData = await this.bookingRepo.getDriverDashboardStats(driverId);
+    const rawData = await this._bookingRepo.getDriverDashboardStats(driverId);
 
     // Default structure if no data exists
     const stats: IDashboardStats = {

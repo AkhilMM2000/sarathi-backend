@@ -7,11 +7,11 @@ import { VehicleResponseDto, toVehicleListResponse } from "../../dto/vehicle/Veh
 @injectable()
 export class GetVehiclesByUser implements IGetVehiclesByUserUseCase{
   constructor(
-    @inject(TOKENS.VEHICLE_REPO) private vehicleRepository: IVehicleRepository
+    @inject(TOKENS.VEHICLE_REPO) private _vehicleRepository: IVehicleRepository
   ) {}
 
   async execute(userId: string): Promise<VehicleResponseDto[]> {
-    const vehicles = await this.vehicleRepository.getVehiclesByUser(userId);
+    const vehicles = await this._vehicleRepository.getVehiclesByUser(userId);
     return toVehicleListResponse(vehicles);
   }
 }

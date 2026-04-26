@@ -13,12 +13,12 @@ import { IWalletPaymentUseCase } from "./interfaces/IWalletPaymentUseCase";
 @injectable()
 export class WalletPayment  implements IWalletPaymentUseCase {
   constructor(
-    @inject(TOKENS.WALLET_REPO) private walletRepository: IWalletRepository,
+    @inject(TOKENS.WALLET_REPO) private _walletRepository: IWalletRepository,
     @inject(TOKENS.IBOOKING_REPO)
-    private bookingRepo: IBookingRepository,
+    private _bookingRepo: IBookingRepository,
     @inject(TOKENS.STRIPE_PAYMENT_SERVICE)
-    private stripeService: IStripeService,
-    @inject(TOKENS.IDRIVER_REPO) private driverRepository: IDriverRepository
+    private _stripeService: IStripeService,
+    @inject(TOKENS.IDRIVER_REPO) private _driverRepository: IDriverRepository
   ) {}
   async WalletRidePayment(rideId: string, userId: string, amount: number) {
     try {
@@ -26,8 +26,8 @@ export class WalletPayment  implements IWalletPaymentUseCase {
         paymentStatus: paymentStatus.COMPLETED,
       };
 
-      const Ride = await this.bookingRepo.findBookingById(rideId);
-      const driver = await this.driverRepository.findDriverById(
+      const Ride = await this._bookingRepo.findBookingById(rideId);
+      const driver = await this._driverRepository.findDriverById(
         Ride?.driverId.toString()!
       );
       if (!Ride) {
@@ -39,13 +39,13 @@ export class WalletPayment  implements IWalletPaymentUseCase {
           HTTP_STATUS_CODES.NOT_FOUND
         );
       }
- await this.stripeService.transferToDriverFromWallet(
+ await this._stripeService.transferToDriverFromWallet(
         Ride?.driverId.toString(),
         amount,
         driver?.stripeAccountId
       );
-      await this.bookingRepo.updateBooking(rideId, {...Payment,walletDeduction:amount,driver_fee:Math.floor(amount*0.9)});
-      await this.walletRepository.debitAmount(
+      await this._bookingRepo.updateBooking(rideId, {...Payment,walletDeduction:amount,driver_fee:Math.floor(amount*0.9)});
+      await this._walletRepository.debitAmount(
         userId,
         amount,
         `ride on ${Ride?.startDate}`

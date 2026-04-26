@@ -7,11 +7,11 @@ import { TOKENS } from "../../../constants/Tokens";
 export class GetUserBookings {
   constructor(
     @inject(TOKENS.IBOOKING_REPO)
-    private bookingRepo: IBookingRepository
+    private _bookingRepo: IBookingRepository
   ) {}
 
   async execute(userId: string, page: number = 1, limit: number = 3): Promise<PaginatedResult<BookingWithUsername>> {
-    return await this.bookingRepo.findBookingsByUser(userId, page, limit);
+    return await this._bookingRepo.findBookingsByUser(userId, page, limit);
   }
 
 }

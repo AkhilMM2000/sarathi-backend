@@ -12,10 +12,10 @@ import { ICreatePaymentIntent } from './interfaces/ICreatePaymentIntent';
 export class CreatePaymentIntent implements ICreatePaymentIntent {
   constructor(
     @inject(TOKENS.PAYMENT_SERVICE)
-    private stripeService: IStripeService,
+    private _stripeService: IStripeService,
 
     @inject(TOKENS.IDRIVER_REPO) 
-    private driverRepository: IDriverRepository,
+    private _driverRepository: IDriverRepository,
   ) {}
 
   async execute({
@@ -23,7 +23,7 @@ export class CreatePaymentIntent implements ICreatePaymentIntent {
     driverId,
   }: CreatePaymentIntentRequestDto): Promise<CreatePaymentIntentResponseDto>{
     const platformFee = Math.floor(amount * 0.1); // 10% platform fee
-    const driver = await this.driverRepository.findDriverById(driverId);
+    const driver = await this._driverRepository.findDriverById(driverId);
 
     if(driver){
       if(!driver.stripeAccountId){
@@ -31,7 +31,7 @@ export class CreatePaymentIntent implements ICreatePaymentIntent {
       }
     }
 
-    return await this.stripeService.createPaymentIntent({
+    return await this._stripeService.createPaymentIntent({
       amount,
       driverStripeAccountId: driver?.stripeAccountId || '',
       platformFee,

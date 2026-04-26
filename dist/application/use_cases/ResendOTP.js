@@ -20,12 +20,12 @@ const Info_Messages_1 = require("../../constants/Info_Messages");
 const Autherror_1 = require("../../domain/errors/Autherror");
 const ErrorMessages_1 = require("../../constants/ErrorMessages");
 let ResendOTP = class ResendOTP {
-    constructor(emailService, store) {
-        this.emailService = emailService;
-        this.store = store;
+    constructor(_emailService, _store) {
+        this._emailService = _emailService;
+        this._store = _store;
     }
     async execute(email, role) {
-        const existingUser = await this.store.getUser(email);
+        const existingUser = await this._store.getUser(email);
         if (!existingUser) {
             throw new Autherror_1.AuthError(ErrorMessages_1.ERROR_MESSAGES.PENDING_NOTFOUND);
         }
@@ -33,13 +33,13 @@ let ResendOTP = class ResendOTP {
         const newOTP = Math.floor(100000 + Math.random() * 900000).toString();
         const otpExpires = new Date(Date.now() + 5 * 60 * 1000); // Expires in 5 min
         // // Update the OTP in store
-        this.store.addUser(existingUser.email, {
+        this._store.addUser(existingUser.email, {
             ...existingUser,
             otp: newOTP,
             otpExpires,
         });
         // Send OTP via email
-        await this.emailService.sendOTP(email, newOTP);
+        await this._emailService.sendOTP(email, newOTP);
         return { message: Info_Messages_1.INFO_MESSAGES.USER.OTP_RESEND };
     }
 };

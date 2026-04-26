@@ -19,21 +19,21 @@ const Tokens_1 = require("../../../constants/Tokens");
 const ErrorMessages_1 = require("../../../constants/ErrorMessages");
 const HttpStatusCode_1 = require("../../../constants/HttpStatusCode");
 let CancelBookingInputUseCase = class CancelBookingInputUseCase {
-    constructor(notificationService, bookingRepo) {
-        this.notificationService = notificationService;
-        this.bookingRepo = bookingRepo;
+    constructor(_notificationService, _bookingRepo) {
+        this._notificationService = _notificationService;
+        this._bookingRepo = _bookingRepo;
     }
     async execute(input) {
         const { bookingId, status, reason } = input;
-        const booking = await this.bookingRepo.findBookingById(bookingId);
+        const booking = await this._bookingRepo.findBookingById(bookingId);
         if (!booking) {
             throw new Autherror_1.AuthError(ErrorMessages_1.ERROR_MESSAGES.BOOKING_NOT_FOUND, HttpStatusCode_1.HTTP_STATUS_CODES.NOT_FOUND);
         }
-        await this.bookingRepo.updateBooking(bookingId, {
+        await this._bookingRepo.updateBooking(bookingId, {
             status,
             reason
         });
-        await this.notificationService.cancelBookingNotification(booking.driverId.toString(), { status, reason, startDate: booking.startDate, bookingId });
+        await this._notificationService.cancelBookingNotification(booking.driverId.toString(), { status, reason, startDate: booking.startDate, bookingId });
     }
 };
 exports.CancelBookingInputUseCase = CancelBookingInputUseCase;

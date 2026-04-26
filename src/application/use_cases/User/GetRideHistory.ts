@@ -7,12 +7,12 @@ import { IGetRideHistoryUseCase, RideHistoryResponse } from "./interfaces/IGetRi
 export class GetRideHistory implements IGetRideHistoryUseCase {
   constructor(
      @inject(TOKENS.IBOOKING_REPO)
-    private bookingRepo: IBookingRepository
+    private _bookingRepo: IBookingRepository
 
   ) {}
 
   async execute(role: "user" | "driver", id: string, page: number = 1, limit: number = 2): Promise<RideHistoryResponse> {
-    const result = await this.bookingRepo.getRideHistoryByRole(id, role, page, limit);
+    const result = await this._bookingRepo.getRideHistoryByRole(id, role, page, limit);
     return result;
   }
 }

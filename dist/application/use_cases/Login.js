@@ -24,16 +24,16 @@ const Tokens_1 = require("../../constants/Tokens");
 const HttpStatusCode_1 = require("../../constants/HttpStatusCode");
 dotenv_1.default.config();
 let Login = class Login {
-    constructor(userRepository, driverRepository, hashService) {
-        this.userRepository = userRepository;
-        this.driverRepository = driverRepository;
-        this.hashService = hashService;
+    constructor(_userRepository, _driverRepository, _hashService) {
+        this._userRepository = _userRepository;
+        this._driverRepository = _driverRepository;
+        this._hashService = _hashService;
     }
     async execute(email, password, role) {
         let user;
         // --- User / Admin login ---
         if (role === "user" || role === "admin") {
-            const found = await this.userRepository.findByEmail(email);
+            const found = await this._userRepository.findByEmail(email);
             if (!found) {
                 throw new Autherror_1.AuthError(`${role} not found. Please register.`, HttpStatusCode_1.HTTP_STATUS_CODES.UNAUTHORIZED);
             }
@@ -41,7 +41,7 @@ let Login = class Login {
         }
         // --- Driver login ---
         else {
-            const found = await this.driverRepository.findByEmail(email);
+            const found = await this._driverRepository.findByEmail(email);
             if (!found) {
                 throw new Autherror_1.AuthError("Driver not found. Please register.", HttpStatusCode_1.HTTP_STATUS_CODES.UNAUTHORIZED);
             }
@@ -58,7 +58,7 @@ let Login = class Login {
             throw new Autherror_1.AuthError("Your account has been blocked. Please contact support.", HttpStatusCode_1.HTTP_STATUS_CODES.FORBIDDEN);
         }
         // --- Password check ---
-        const validPassword = await this.hashService.compare(password, user.password);
+        const validPassword = await this._hashService.compare(password, user.password);
         if (!validPassword) {
             throw new Autherror_1.AuthError("Invalid email or password.", HttpStatusCode_1.HTTP_STATUS_CODES.UNAUTHORIZED);
         }

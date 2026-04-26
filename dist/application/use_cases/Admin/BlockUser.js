@@ -19,11 +19,11 @@ const Tokens_1 = require("../../../constants/Tokens");
 const HttpStatusCode_1 = require("../../../constants/HttpStatusCode");
 const AdminResponseDto_1 = require("../../dto/admin/AdminResponseDto");
 let BlockUserUseCase = class BlockUserUseCase {
-    constructor(userRepository) {
-        this.userRepository = userRepository;
+    constructor(_userRepository) {
+        this._userRepository = _userRepository;
     }
     async execute(userId, status) {
-        const blockedUser = await this.userRepository.blockOrUnblockUser(userId, status);
+        const blockedUser = await this._userRepository.blockOrUnblockUser(userId, status);
         if (!blockedUser) {
             throw new Autherror_1.AuthError("User not found or already in the desired block status", HttpStatusCode_1.HTTP_STATUS_CODES.NOT_FOUND);
         }

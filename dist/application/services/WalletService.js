@@ -18,28 +18,28 @@ const tsyringe_1 = require("tsyringe");
 const HttpStatusCode_1 = require("../../constants/HttpStatusCode");
 const Tokens_1 = require("../../constants/Tokens");
 let WalletService = class WalletService {
-    constructor(walletRepository) {
-        this.walletRepository = walletRepository;
+    constructor(_walletRepository) {
+        this._walletRepository = _walletRepository;
     }
     async createWallet(userId) {
         try {
-            const existingWallet = await this.walletRepository.getWalletByUserId(userId);
+            const existingWallet = await this._walletRepository.getWalletByUserId(userId);
             if (existingWallet) {
                 throw new Autherror_1.AuthError("Wallet already exists for this user.", HttpStatusCode_1.HTTP_STATUS_CODES.CONFLICT);
             }
-            return await this.walletRepository.createWallet(userId);
+            return await this._walletRepository.createWallet(userId);
         }
         catch (error) {
-            throw new Autherror_1.AuthError("Failed to create wallet: " + error.message, 500);
+            throw new Autherror_1.AuthError("Failed to create wallet: " + error.message, HttpStatusCode_1.HTTP_STATUS_CODES.INTERNAL_SERVER_ERROR);
         }
     }
     async creditAmount(userId, amount, description) {
         try {
-            const wallet = await this.walletRepository.getWalletByUserId(userId);
+            const wallet = await this._walletRepository.getWalletByUserId(userId);
             if (!wallet) {
                 throw new Autherror_1.AuthError("Wallet not found.", HttpStatusCode_1.HTTP_STATUS_CODES.NOT_FOUND);
             }
-            const updatedWallet = await this.walletRepository.creditAmount(userId, amount, description);
+            const updatedWallet = await this._walletRepository.creditAmount(userId, amount, description);
             return updatedWallet;
         }
         catch (error) {
@@ -48,14 +48,14 @@ let WalletService = class WalletService {
     }
     async debitAmount(userId, amount, description) {
         try {
-            const wallet = await this.walletRepository.getWalletByUserId(userId);
+            const wallet = await this._walletRepository.getWalletByUserId(userId);
             if (!wallet) {
                 throw new Autherror_1.AuthError("Wallet not found.", HttpStatusCode_1.HTTP_STATUS_CODES.NOT_FOUND);
             }
             if (wallet.balance < amount) {
                 throw new Autherror_1.AuthError("Insufficient wallet balance.", HttpStatusCode_1.HTTP_STATUS_CODES.BAD_REQUEST);
             }
-            const updatedWallet = await this.walletRepository.debitAmount(userId, amount, description);
+            const updatedWallet = await this._walletRepository.debitAmount(userId, amount, description);
             return updatedWallet;
         }
         catch (error) {
@@ -64,7 +64,7 @@ let WalletService = class WalletService {
     }
     async getWalletByUserId(userId) {
         try {
-            const wallet = await this.walletRepository.getWalletByUserId(userId);
+            const wallet = await this._walletRepository.getWalletByUserId(userId);
             if (!wallet) {
                 throw new Autherror_1.AuthError("Wallet not found.", HttpStatusCode_1.HTTP_STATUS_CODES.NOT_FOUND);
             }

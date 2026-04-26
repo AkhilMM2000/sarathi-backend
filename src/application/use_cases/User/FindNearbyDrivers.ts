@@ -13,9 +13,9 @@ import { DriverResponseDto, toDriverListResponse } from "../../dto/driver/Driver
 @injectable()
 export class FindNearbyDrivers implements IFindNearbyDriversUseCase{
   constructor(
-    @inject(TOKENS.IDRIVER_REPO) private driverRepository: IDriverRepository,
-    @inject(TOKENS.IUSER_REPO) private userRepository: IUserRepository,
-    @inject(TOKENS.GOOGLE_DISTANCE_SERVICE) private distanceService: GoogleDistanceService
+    @inject(TOKENS.IDRIVER_REPO) private _driverRepository: IDriverRepository,
+    @inject(TOKENS.IUSER_REPO) private _userRepository: IUserRepository,
+    @inject(TOKENS.GOOGLE_DISTANCE_SERVICE) private _distanceService: GoogleDistanceService
   ) {}
 
    async execute(userId: string, page: number = 1, limit: number = 2, placeKey?: string, lat?: number, lng?: number): Promise<FindNearbyDriversResult> {
@@ -24,7 +24,7 @@ export class FindNearbyDrivers implements IFindNearbyDriversUseCase{
 
     // 1️⃣ Fetch the user's location from the database if not provided
     if (latitude === undefined || longitude === undefined) {
-      const user = await this.userRepository.getUserById(userId);
+      const user = await this._userRepository.getUserById(userId);
       if (!user) {
         throw new AuthError(ERROR_MESSAGES.USER_NOT_FOUND, HTTP_STATUS_CODES.NOT_FOUND);
       }
@@ -35,7 +35,7 @@ export class FindNearbyDrivers implements IFindNearbyDriversUseCase{
       longitude = user.location.longitude;
     }
     // 2️⃣ Use paginated driver fetching from repository
-    const paginatedResult= await this.driverRepository.findActiveDrivers(
+    const paginatedResult= await this._driverRepository.findActiveDrivers(
       page,
       limit,
       placeKey,
@@ -65,7 +65,7 @@ export class FindNearbyDrivers implements IFindNearbyDriversUseCase{
     });
 
     // 4️⃣ Get distances
-    const distances = await this.distanceService.getDistances(
+    const distances = await this._distanceService.getDistances(
       { latitude, longitude },
       driverLocations
       

@@ -16,11 +16,11 @@ exports.GetEstimatedFare = void 0;
 const tsyringe_1 = require("tsyringe");
 const Tokens_1 = require("../../../constants/Tokens");
 let GetEstimatedFare = class GetEstimatedFare {
-    constructor(fareCalculatorService) {
-        this.fareCalculatorService = fareCalculatorService;
+    constructor(_fareCalculatorService) {
+        this._fareCalculatorService = _fareCalculatorService;
     }
     async execute(params) {
-        return this.fareCalculatorService.calculate(params);
+        return this._fareCalculatorService.calculate(params);
     }
 };
 exports.GetEstimatedFare = GetEstimatedFare;

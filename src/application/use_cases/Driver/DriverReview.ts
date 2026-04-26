@@ -7,10 +7,10 @@ import { IGetDriverReviewsUseCase } from "./interfaces/IGetDriverReviewsUseCase"
 export class GetDriverReviews  implements IGetDriverReviewsUseCase  {
   constructor(
     @inject(TOKENS.DRIVER_REVIEW_REPO)
-    private reviewRepo: IDriverReviewRepository
+    private _reviewRepo: IDriverReviewRepository
   ) {}
 
   async execute(driverId: string,page: number = 1, limit: number = 3) {
-    return await this.reviewRepo.getReviewsByDriverId(driverId,page, limit);
+    return await this._reviewRepo.getReviewsByDriverId(driverId,page, limit);
   }
 }

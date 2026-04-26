@@ -18,16 +18,16 @@ interface UpdateBookingStatusInput {
 @injectable()
 export class UpdateBookingStatus implements IUpdateBookingStatusUseCase {
   constructor(  @inject(TOKENS.IBOOKING_REPO)
-  private bookingRepo: IBookingRepository,
+  private _bookingRepo: IBookingRepository,
  @inject(TOKENS.NOTIFICATION_SERVICE)
-    private notificationService: INotificationService
+    private _notificationService: INotificationService
 ) {}
 
   async execute(input: UpdateBookingStatusInput): Promise<void> {
     const { bookingId, status, reason, finalKm } = input;
     let finalFare: number | undefined = undefined;
 
-    const booking = await this.bookingRepo.findBookingById(bookingId);
+    const booking = await this._bookingRepo.findBookingById(bookingId);
     
     if (!booking) {
       throw new AuthError(ERROR_MESSAGES.BOOKING_NOT_FOUND, HTTP_STATUS_CODES.NOT_FOUND);
@@ -53,15 +53,15 @@ export class UpdateBookingStatus implements IUpdateBookingStatusUseCase {
       finalFare = estimated + finalKm * ratePerKm;
     }
     if (status === "REJECTED" && reason){
-      this.notificationService.rejectBookingNotification(booking.userId.toString(),{status,startDate:booking.startDate,bookingId,reason})
+      this._notificationService.rejectBookingNotification(booking.userId.toString(),{status,startDate:booking.startDate,bookingId,reason})
     }
     // Always update status, and optionally finalFare and reason
-    await this.bookingRepo.updateBooking(bookingId, {
+    await this._bookingRepo.updateBooking(bookingId, {
       status,
       ...(reason && { reason }),
       ...(finalFare !== undefined && { finalFare }),
     });
-    this.notificationService.sendBookingConfirmation(booking.userId.toString(),{status,startDate:booking.startDate,bookingId});
+    this._notificationService.sendBookingConfirmation(booking.userId.toString(),{status,startDate:booking.startDate,bookingId});
 
     
   }

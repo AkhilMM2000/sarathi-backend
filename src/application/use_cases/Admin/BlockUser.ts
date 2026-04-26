@@ -10,11 +10,11 @@ import { AdminUserResponseDto, toAdminUserResponse } from "../../dto/admin/Admin
 export class BlockUserUseCase implements IBlockUserUseCase {
   constructor(
     @inject(TOKENS.IUSER_REPO)
-    private readonly userRepository: IUserRepository
+    private readonly _userRepository: IUserRepository
   ) {}
 
   async execute(userId: string, status: boolean): Promise<AdminUserResponseDto | null> {
-    const blockedUser = await this.userRepository.blockOrUnblockUser(userId, status);
+    const blockedUser = await this._userRepository.blockOrUnblockUser(userId, status);
     
     if (!blockedUser) {
       throw new AuthError("User not found or already in the desired block status", HTTP_STATUS_CODES.NOT_FOUND);

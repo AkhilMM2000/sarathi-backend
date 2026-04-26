@@ -10,7 +10,7 @@ import { DriverResponseDto, toDriverResponse } from "../../dto/driver/DriverResp
 @injectable()
 export class GetDriverProfile implements IGetDriverProfile{
   constructor(
-    @inject(TOKENS.IDRIVER_REPO) private driverRepository: IDriverRepository
+    @inject(TOKENS.IDRIVER_REPO) private _driverRepository: IDriverRepository
   ) {}
 
   async execute(driverId: string): Promise<DriverResponseDto|null> {
@@ -18,7 +18,7 @@ export class GetDriverProfile implements IGetDriverProfile{
         throw new AuthError(ERROR_MESSAGES.DRIVER_ID_NOT_FOUND,HTTP_STATUS_CODES.BAD_REQUEST);
     }
 
-    const driver = await this.driverRepository.findDriverById(driverId);
+    const driver = await this._driverRepository.findDriverById(driverId);
     if (!driver) {
       throw new AuthError(ERROR_MESSAGES.DRIVER_NOT_FOUND,HTTP_STATUS_CODES.NOT_FOUND);
     }

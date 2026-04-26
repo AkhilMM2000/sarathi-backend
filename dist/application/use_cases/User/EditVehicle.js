@@ -20,14 +20,14 @@ const Tokens_1 = require("../../../constants/Tokens");
 const ErrorMessages_1 = require("../../../constants/ErrorMessages");
 const VehicleResponseDto_1 = require("../../dto/vehicle/VehicleResponseDto");
 let EditVehicle = class EditVehicle {
-    constructor(vehicleRepository) {
-        this.vehicleRepository = vehicleRepository;
+    constructor(_vehicleRepository) {
+        this._vehicleRepository = _vehicleRepository;
     }
     async execute(vehicleId, updateData) {
         if (!vehicleId) {
             throw new Autherror_1.AuthError(ErrorMessages_1.ERROR_MESSAGES.VIHICLE_ID_MISS, HttpStatusCode_1.HTTP_STATUS_CODES.BAD_REQUEST);
         }
-        const updatedVehicle = await this.vehicleRepository.editVehicle(vehicleId, updateData);
+        const updatedVehicle = await this._vehicleRepository.editVehicle(vehicleId, updateData);
         if (!updatedVehicle) {
             throw new Autherror_1.AuthError(ErrorMessages_1.ERROR_MESSAGES.VEHICLE_UPDATE_FAILE, HttpStatusCode_1.HTTP_STATUS_CODES.NOT_FOUND);
         }

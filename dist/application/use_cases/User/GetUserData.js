@@ -20,14 +20,14 @@ const HttpStatusCode_1 = require("../../../constants/HttpStatusCode");
 const ErrorMessages_1 = require("../../../constants/ErrorMessages");
 const UserResponseDto_1 = require("../../dto/user/UserResponseDto");
 let GetUserData = class GetUserData {
-    constructor(userRepository) {
-        this.userRepository = userRepository;
+    constructor(_userRepository) {
+        this._userRepository = _userRepository;
     }
     async execute(userId) {
         if (!userId) {
             throw new Autherror_1.AuthError(ErrorMessages_1.ERROR_MESSAGES.USER_ID_NOT_FOUND, HttpStatusCode_1.HTTP_STATUS_CODES.BAD_REQUEST);
         }
-        const user = await this.userRepository.getUserById(userId);
+        const user = await this._userRepository.getUserById(userId);
         if (!user) {
             throw new Autherror_1.AuthError(ErrorMessages_1.ERROR_MESSAGES.USER_NOT_FOUND, HttpStatusCode_1.HTTP_STATUS_CODES.NOT_FOUND);
         }

@@ -7,11 +7,11 @@ import { IGetAdminDashboardStatsUseCase } from "./Interfaces/IGetAdminDashboardS
 export class GetAdminDashboardStats implements IGetAdminDashboardStatsUseCase {
   constructor(
     @inject(TOKENS.IBOOKING_REPO)
-    private bookingRepo: IBookingRepository
+    private _bookingRepo: IBookingRepository
   ) {}
 
   async execute() {
-    const rawStats = await this.bookingRepo.getAdminDashboardStats();
+    const rawStats = await this._bookingRepo.getAdminDashboardStats();
 
     // Default response structure to prevent frontend crashes
     const defaultStats = {

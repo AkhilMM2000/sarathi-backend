@@ -17,11 +17,11 @@ const tsyringe_1 = require("tsyringe");
 const Tokens_1 = require("../../../constants/Tokens");
 const AdminResponseDto_1 = require("../../dto/admin/AdminResponseDto");
 let GetAllUsers = class GetAllUsers {
-    constructor(userRepository) {
-        this.userRepository = userRepository;
+    constructor(_userRepository) {
+        this._userRepository = _userRepository;
     }
     async execute() {
-        const users = await this.userRepository.getUsers();
+        const users = await this._userRepository.getUsers();
         return (0, AdminResponseDto_1.toAdminUserListResponse)(users || []);
     }
 };

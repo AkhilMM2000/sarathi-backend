@@ -16,11 +16,11 @@ exports.GetDriverReviews = void 0;
 const tsyringe_1 = require("tsyringe");
 const Tokens_1 = require("../../../constants/Tokens");
 let GetDriverReviews = class GetDriverReviews {
-    constructor(reviewRepo) {
-        this.reviewRepo = reviewRepo;
+    constructor(_reviewRepo) {
+        this._reviewRepo = _reviewRepo;
     }
     async execute(driverId, page = 1, limit = 3) {
-        return await this.reviewRepo.getReviewsByDriverId(driverId, page, limit);
+        return await this._reviewRepo.getReviewsByDriverId(driverId, page, limit);
     }
 };
 exports.GetDriverReviews = GetDriverReviews;

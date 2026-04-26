@@ -16,11 +16,11 @@ exports.GetAllVehicle = void 0;
 const tsyringe_1 = require("tsyringe");
 const Tokens_1 = require("../../constants/Tokens");
 let GetAllVehicle = class GetAllVehicle {
-    constructor(vehicleRepository) {
-        this.vehicleRepository = vehicleRepository;
+    constructor(_vehicleRepository) {
+        this._vehicleRepository = _vehicleRepository;
     }
     async execute() {
-        return await this.vehicleRepository.findAll();
+        return await this._vehicleRepository.findAll();
     }
 };
 exports.GetAllVehicle = GetAllVehicle;

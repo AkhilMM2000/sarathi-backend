@@ -16,11 +16,11 @@ exports.GetRideHistory = void 0;
 const tsyringe_1 = require("tsyringe");
 const Tokens_1 = require("../../../constants/Tokens");
 let GetRideHistory = class GetRideHistory {
-    constructor(bookingRepo) {
-        this.bookingRepo = bookingRepo;
+    constructor(_bookingRepo) {
+        this._bookingRepo = _bookingRepo;
     }
     async execute(role, id, page = 1, limit = 2) {
-        const result = await this.bookingRepo.getRideHistoryByRole(id, role, page, limit);
+        const result = await this._bookingRepo.getRideHistoryByRole(id, role, page, limit);
         return result;
     }
 };

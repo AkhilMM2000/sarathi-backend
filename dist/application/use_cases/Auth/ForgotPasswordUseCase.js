@@ -21,33 +21,33 @@ const Tokens_1 = require("../../../constants/Tokens");
 const ErrorMessages_1 = require("../../../constants/ErrorMessages");
 const HttpStatusCode_1 = require("../../../constants/HttpStatusCode");
 let ForgotPasswordUseCase = class ForgotPasswordUseCase {
-    constructor(store, userRepository, driverRepository, emailService) {
-        this.store = store;
-        this.userRepository = userRepository;
-        this.driverRepository = driverRepository;
-        this.emailService = emailService;
+    constructor(_store, _userRepository, _driverRepository, _emailService) {
+        this._store = _store;
+        this._userRepository = _userRepository;
+        this._driverRepository = _driverRepository;
+        this._emailService = _emailService;
     }
     async execute(email, role) {
         let user;
         console.log(email, role);
         if (role == 'user' || role == 'admin') {
-            user = await this.userRepository.findByEmail(email);
+            user = await this._userRepository.findByEmail(email);
             if (!user)
                 throw new Autherror_1.AuthError(ErrorMessages_1.ERROR_MESSAGES.USER_NOT_FOUND, HttpStatusCode_1.HTTP_STATUS_CODES.NOT_FOUND);
         }
         if (role == 'driver') {
-            user = await this.driverRepository.findByEmail(email);
+            user = await this._driverRepository.findByEmail(email);
             if (!user)
                 throw new Autherror_1.AuthError(ErrorMessages_1.ERROR_MESSAGES.DRIVER_NOT_FOUND, HttpStatusCode_1.HTTP_STATUS_CODES.NOT_FOUND);
         }
         // Generate token
         const token = (0, uuid_1.v4)();
         if (user?._id)
-            this.store.addTokenUser(role, token, user._id.toString());
+            this._store.addTokenUser(role, token, user._id.toString());
         // Create reset link
         const resetLink = `${process.env.FRONTEND_URL}/reset-password?token=${token}&role=${role}`;
         if (user?.email)
-            await this.emailService.sendForgotPasswordLink(user?.email, resetLink);
+            await this._emailService.sendForgotPasswordLink(user?.email, resetLink);
     }
 };
 exports.ForgotPasswordUseCase = ForgotPasswordUseCase;

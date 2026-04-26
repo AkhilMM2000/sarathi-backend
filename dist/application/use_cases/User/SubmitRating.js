@@ -18,17 +18,17 @@ const Autherror_1 = require("../../../domain/errors/Autherror");
 const HttpStatusCode_1 = require("../../../constants/HttpStatusCode");
 const Tokens_1 = require("../../../constants/Tokens");
 let SubmitDriverReview = class SubmitDriverReview {
-    constructor(reviewRepo, driverRepo) {
-        this.reviewRepo = reviewRepo;
-        this.driverRepo = driverRepo;
+    constructor(_reviewRepo, _driverRepo) {
+        this._reviewRepo = _reviewRepo;
+        this._driverRepo = _driverRepo;
     }
     async execute(input) {
         const { driverId, userId, rideId, rating, review } = input;
-        const alreadyReviewed = await this.reviewRepo.hasUserAlreadyReviewed(driverId, userId);
+        const alreadyReviewed = await this._reviewRepo.hasUserAlreadyReviewed(driverId, userId);
         if (alreadyReviewed) {
             throw new Autherror_1.AuthError("You have already reviewed this driver.", HttpStatusCode_1.HTTP_STATUS_CODES.BAD_REQUEST);
         }
-        await this.reviewRepo.createReview({
+        await this._reviewRepo.createReview({
             driverId,
             userId,
             rideId,
@@ -36,13 +36,13 @@ let SubmitDriverReview = class SubmitDriverReview {
             review,
         });
         // Fetch current rating stats
-        const driver = await this.driverRepo.findDriverById(driverId);
+        const driver = await this._driverRepo.findDriverById(driverId);
         if (!driver)
             throw new Autherror_1.AuthError("Driver not found", HttpStatusCode_1.HTTP_STATUS_CODES.NOT_FOUND);
         const updatedTotalPoints = (driver.totalRatingPoints || 0) + rating;
         const updatedTotalRatings = (driver.totalRatings || 0) + 1;
         const updatedAverage = updatedTotalPoints / updatedTotalRatings;
-        await this.driverRepo.updateRatingStats(driverId, {
+        await this._driverRepo.updateRatingStats(driverId, {
             totalRatingPoints: updatedTotalPoints,
             totalRatings: updatedTotalRatings,
             averageRating: parseFloat(updatedAverage.toFixed(2)),

@@ -10,11 +10,11 @@ import { IResendOTP } from "./Interfaces/IResendOTP";
 @injectable()
 export class ResendOTP implements IResendOTP {
   constructor(
-    @inject(TOKENS.EMAIL_SERVICE) private emailService: EmailService,
-    @inject(TOKENS.USER_REGISTERSTORE) private store: IRedisrepository
+    @inject(TOKENS.EMAIL_SERVICE) private _emailService: EmailService,
+    @inject(TOKENS.USER_REGISTERSTORE) private _store: IRedisrepository
   ) {}
   async execute(email: string, role: string):Promise<ResendOtpResponseDto> {
-    const existingUser = await this.store.getUser(email);
+    const existingUser = await this._store.getUser(email);
 
     if (!existingUser) {
       throw new AuthError(ERROR_MESSAGES.PENDING_NOTFOUND);
@@ -25,13 +25,13 @@ export class ResendOTP implements IResendOTP {
     const otpExpires = new Date(Date.now() + 5 * 60 * 1000); // Expires in 5 min
 
     // // Update the OTP in store
-    this.store.addUser(existingUser.email, {
+    this._store.addUser(existingUser.email, {
       ...existingUser,
       otp: newOTP,
       otpExpires,
     });
     // Send OTP via email
-    await this.emailService.sendOTP(email, newOTP);
+    await this._emailService.sendOTP(email, newOTP);
     return { message: INFO_MESSAGES.USER.OTP_RESEND };
   }
 }

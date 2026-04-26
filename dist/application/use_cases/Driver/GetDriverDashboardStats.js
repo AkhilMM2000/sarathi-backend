@@ -16,11 +16,11 @@ exports.GetDriverDashboardStats = void 0;
 const tsyringe_1 = require("tsyringe");
 const Tokens_1 = require("../../../constants/Tokens");
 let GetDriverDashboardStats = class GetDriverDashboardStats {
-    constructor(bookingRepo) {
-        this.bookingRepo = bookingRepo;
+    constructor(_bookingRepo) {
+        this._bookingRepo = _bookingRepo;
     }
     async execute(driverId) {
-        const rawData = await this.bookingRepo.getDriverDashboardStats(driverId);
+        const rawData = await this._bookingRepo.getDriverDashboardStats(driverId);
         // Default structure if no data exists
         const stats = {
             earnings: {

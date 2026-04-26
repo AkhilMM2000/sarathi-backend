@@ -8,11 +8,11 @@ import { AdminDriverResponseDto, toAdminDriverListResponse } from "../../dto/adm
 @injectable()
 export class GetDrivers implements IGetDriversUseCase {
   constructor(
-    @inject(TOKENS.IDRIVER_REPO) private driverRepository: IDriverRepository
+    @inject(TOKENS.IDRIVER_REPO) private _driverRepository: IDriverRepository
   ) {}
 
   async execute(page: number, limit: number): Promise<PaginatedResult<AdminDriverResponseDto>> {
-    const result = await this.driverRepository.getDrivers(page, limit);
+    const result = await this._driverRepository.getDrivers(page, limit);
     
     return {
       ...result,

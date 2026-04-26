@@ -22,31 +22,32 @@ const AuthService_1 = require("../../services/AuthService");
 const Autherror_1 = require("../../../domain/errors/Autherror");
 const dotenv_1 = __importDefault(require("dotenv"));
 const Tokens_1 = require("../../../constants/Tokens");
+const HttpStatusCode_1 = require("../../../constants/HttpStatusCode");
 dotenv_1.default.config();
 let GoogleAuthUseCase = class GoogleAuthUseCase {
-    constructor(userRepository, driverRepository) {
-        this.userRepository = userRepository;
-        this.driverRepository = driverRepository;
-        this.client = new google_auth_library_1.OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+    constructor(_userRepository, _driverRepository) {
+        this._userRepository = _userRepository;
+        this._driverRepository = _driverRepository;
+        this._client = new google_auth_library_1.OAuth2Client(process.env.GOOGLE_CLIENT_ID);
     }
     async execute(googleToken, role) {
         try {
-            const ticket = await this.client.verifyIdToken({
+            const ticket = await this._client.verifyIdToken({
                 idToken: googleToken,
                 audience: process.env.GOOGLE_CLIENT_ID,
             });
             const payload = ticket.getPayload();
             if (!payload)
-                throw new Autherror_1.AuthError("Invalid Google token", 400);
+                throw new Autherror_1.AuthError("Invalid Google token", HttpStatusCode_1.HTTP_STATUS_CODES.BAD_REQUEST);
             const { email, given_name, sub: googleId } = payload;
             if (!email)
-                throw new Autherror_1.AuthError("Google account email is required", 400);
+                throw new Autherror_1.AuthError("Google account email is required", HttpStatusCode_1.HTTP_STATUS_CODES.BAD_REQUEST);
             let user;
             if (role === "user") {
-                user = await this.userRepository.findByEmail(email);
+                user = await this._userRepository.findByEmail(email);
                 if (!user) {
                     // Register new user
-                    user = await this.userRepository.create({
+                    user = await this._userRepository.create({
                         email,
                         name: given_name || "Google User",
                         googleId,
@@ -61,13 +62,13 @@ let GoogleAuthUseCase = class GoogleAuthUseCase {
                 }
             }
             else if (role === "driver") {
-                user = await this.driverRepository.findByEmail(email);
+                user = await this._driverRepository.findByEmail(email);
                 if (!user) {
-                    throw new Autherror_1.AuthError("Driver not registered. Please register manually.", 401);
+                    throw new Autherror_1.AuthError("Driver not registered. Please register manually.", HttpStatusCode_1.HTTP_STATUS_CODES.UNAUTHORIZED);
                 }
             }
             if (!user) {
-                throw new Autherror_1.AuthError('Not found user ', 401);
+                throw new Autherror_1.AuthError('Not found user ', HttpStatusCode_1.HTTP_STATUS_CODES.UNAUTHORIZED);
             }
             const accessToken = AuthService_1.AuthService.generateAccessToken({
                 id: user._id,
@@ -86,7 +87,7 @@ let GoogleAuthUseCase = class GoogleAuthUseCase {
             if (error instanceof Autherror_1.AuthError) {
                 throw error;
             }
-            throw new Autherror_1.AuthError("Google authentication failed", 401);
+            throw new Autherror_1.AuthError("Google authentication failed", HttpStatusCode_1.HTTP_STATUS_CODES.UNAUTHORIZED);
         }
     }
 };

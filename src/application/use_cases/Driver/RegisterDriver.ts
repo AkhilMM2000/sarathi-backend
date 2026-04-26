@@ -12,8 +12,8 @@ import { RegisterDriverRequest } from "../../../presentation/schemas/driver/Driv
 @injectable()
 export class RegisterDriver  implements IRegisterDriverUseCase {
   constructor(
-    @inject(TOKENS.EMAIL_SERVICE) private emailService: EmailService,
-    @inject(TOKENS.USER_REGISTERSTORE) private store: IRedisrepository
+    @inject(TOKENS.EMAIL_SERVICE) private _emailService: EmailService,
+    @inject(TOKENS.USER_REGISTERSTORE) private _store: IRedisrepository
   ) {}
 
   async execute(driverData: RegisterDriverRequest) {
@@ -21,17 +21,17 @@ export class RegisterDriver  implements IRegisterDriverUseCase {
 
    console.log(driverData);
    
-    if (await this.store.getUser(email)) throw new AuthError("OTP already sent to this email",HTTP_STATUS_CODES.CONFLICT);
+    if (await this._store.getUser(email)) throw new AuthError("OTP already sent to this email",HTTP_STATUS_CODES.CONFLICT);
  
     const otp = randomInt(100000, 999999).toString();
     const otpExpires = new Date(Date.now() + 10 * 60 * 1000); 
     //store the data in the js map
-    await this.store.addUser(email,{...driverData,otp,otpExpires})
+    await this._store.addUser(email,{...driverData,otp,otpExpires})
     console.log(driverData);
     
     
     // Send OTP to driver's email
-    await this.emailService.sendOTP(email, otp);
+    await this._emailService.sendOTP(email, otp);
   
   
     return { message: "OTP sent successfully. Please verify your email." };
@@ -39,4 +39,3 @@ export class RegisterDriver  implements IRegisterDriverUseCase {
 
   
 }
-

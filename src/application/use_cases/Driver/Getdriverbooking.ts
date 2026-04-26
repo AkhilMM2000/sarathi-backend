@@ -9,11 +9,11 @@ import { RideHistoryResponseDto, toRideHistoryListResponse } from "../../dto/boo
 export class GetUserBookings implements IGetBooking {
   constructor(
     @inject(TOKENS.IBOOKING_REPO)
-    private bookingRepo: IBookingRepository
+    private _bookingRepo: IBookingRepository
   ) {}
 
   async execute(driverId: string, page: number = 1, limit: number = 2): Promise<PaginatedResult<RideHistoryResponseDto>> {
-    const result = await this.bookingRepo.findBookingsByDriver(driverId, page, limit);
+    const result = await this._bookingRepo.findBookingsByDriver(driverId, page, limit);
     
     return {
       ...result,

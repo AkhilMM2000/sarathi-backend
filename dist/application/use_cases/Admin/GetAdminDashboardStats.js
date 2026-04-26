@@ -16,11 +16,11 @@ exports.GetAdminDashboardStats = void 0;
 const tsyringe_1 = require("tsyringe");
 const Tokens_1 = require("../../../constants/Tokens");
 let GetAdminDashboardStats = class GetAdminDashboardStats {
-    constructor(bookingRepo) {
-        this.bookingRepo = bookingRepo;
+    constructor(_bookingRepo) {
+        this._bookingRepo = _bookingRepo;
     }
     async execute() {
-        const rawStats = await this.bookingRepo.getAdminDashboardStats();
+        const rawStats = await this._bookingRepo.getAdminDashboardStats();
         // Default response structure to prevent frontend crashes
         const defaultStats = {
             earnings: {

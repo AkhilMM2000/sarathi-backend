@@ -19,8 +19,8 @@ const Tokens_1 = require("../../../constants/Tokens");
 const HttpStatusCode_1 = require("../../../constants/HttpStatusCode");
 const VehicleResponseDto_1 = require("../../dto/vehicle/VehicleResponseDto");
 let AddVehicle = class AddVehicle {
-    constructor(vehicleRepository) {
-        this.vehicleRepository = vehicleRepository;
+    constructor(_vehicleRepository) {
+        this._vehicleRepository = _vehicleRepository;
     }
     async execute(vehicleData) {
         // List of required fields
@@ -41,7 +41,7 @@ let AddVehicle = class AddVehicle {
             }
         }
         // Save vehicle if all validations pass
-        const savedVehicle = await this.vehicleRepository.addVehicle(vehicleData);
+        const savedVehicle = await this._vehicleRepository.addVehicle(vehicleData);
         return (0, VehicleResponseDto_1.toVehicleResponse)(savedVehicle);
     }
 };

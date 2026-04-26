@@ -10,9 +10,9 @@ import { AdminDriverResponseDto, toAdminDriverResponse } from "../../dto/admin/A
 @injectable()
 export class AdminChangeDriverStatus implements IAdminChangeDriverStatusUseCase  {
   constructor(
-    @inject(TOKENS.IDRIVER_REPO) private driverRepository: IDriverRepository,
+    @inject(TOKENS.IDRIVER_REPO) private _driverRepository: IDriverRepository,
     @inject(TOKENS.NOTIFICATION_SERVICE)
-    private notificationService: INotificationService
+    private _notificationService: INotificationService
   ) {}
 
   async execute(
@@ -29,8 +29,8 @@ export class AdminChangeDriverStatus implements IAdminChangeDriverStatusUseCase 
         throw new AuthError("Rejection reason is required.", HTTP_STATUS_CODES.UNPROCESSABLE_ENTITY);
       }
       
-    await this.notificationService.adminChangeDriverStatusNotification(driverId, { status, reason });
-    const updatedDriver = await this.driverRepository.updateStatus(driverId, status, reason);
+    await this._notificationService.adminChangeDriverStatusNotification(driverId, { status, reason });
+    const updatedDriver = await this._driverRepository.updateStatus(driverId, status, reason);
     
     return updatedDriver ? toAdminDriverResponse(updatedDriver) : null;
   }

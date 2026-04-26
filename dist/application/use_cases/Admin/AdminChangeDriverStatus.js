@@ -19,9 +19,9 @@ const Tokens_1 = require("../../../constants/Tokens");
 const HttpStatusCode_1 = require("../../../constants/HttpStatusCode");
 const AdminResponseDto_1 = require("../../dto/admin/AdminResponseDto");
 let AdminChangeDriverStatus = class AdminChangeDriverStatus {
-    constructor(driverRepository, notificationService) {
-        this.driverRepository = driverRepository;
-        this.notificationService = notificationService;
+    constructor(_driverRepository, _notificationService) {
+        this._driverRepository = _driverRepository;
+        this._notificationService = _notificationService;
     }
     async execute(driverId, status, reason) {
         if (!["pending", "approved", "rejected"].includes(status)) {
@@ -30,8 +30,8 @@ let AdminChangeDriverStatus = class AdminChangeDriverStatus {
         if (status === "rejected" && !reason) {
             throw new Autherror_1.AuthError("Rejection reason is required.", HttpStatusCode_1.HTTP_STATUS_CODES.UNPROCESSABLE_ENTITY);
         }
-        await this.notificationService.adminChangeDriverStatusNotification(driverId, { status, reason });
-        const updatedDriver = await this.driverRepository.updateStatus(driverId, status, reason);
+        await this._notificationService.adminChangeDriverStatusNotification(driverId, { status, reason });
+        const updatedDriver = await this._driverRepository.updateStatus(driverId, status, reason);
         return updatedDriver ? (0, AdminResponseDto_1.toAdminDriverResponse)(updatedDriver) : null;
     }
 };

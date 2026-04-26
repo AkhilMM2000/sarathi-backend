@@ -11,8 +11,8 @@ import { IRefreshTokenUseCase } from "./Interfaces/IRefreshTokenUseCase";
 @injectable()
 export class RefreshToken implements IRefreshTokenUseCase {
   constructor(
-    @inject(TOKENS.IUSER_REPO) private userRepository: IUserRepository,
-    @inject(TOKENS.IDRIVER_REPO) private driverRepository: IDriverRepository
+    @inject(TOKENS.IUSER_REPO) private _userRepository: IUserRepository,
+    @inject(TOKENS.IDRIVER_REPO) private _driverRepository: IDriverRepository
   ) {}
 
   async execute(refreshToken: string): Promise<string> {
@@ -32,7 +32,7 @@ export class RefreshToken implements IRefreshTokenUseCase {
     // 2. Fetch User based on role found in the token
     let user: any = null;
     if (role === "user" || role === "admin") {
-      user = await this.userRepository.findByEmail(decoded.email);
+      user = await this._userRepository.findByEmail(decoded.email);
       
       if (!user) {
         throw new AuthError(ERROR_MESSAGES.USER_NOT_FOUND, HTTP_STATUS_CODES.NOT_FOUND);
@@ -43,7 +43,7 @@ export class RefreshToken implements IRefreshTokenUseCase {
         throw new AuthError(ERROR_MESSAGES.NOT_AUTHORIZED_ADMIN, HTTP_STATUS_CODES.FORBIDDEN);
       }
     } else if (role === "driver") {
-      user = await this.driverRepository.findByEmail(decoded.email);
+      user = await this._driverRepository.findByEmail(decoded.email);
       
       if (!user) {
         throw new AuthError(ERROR_MESSAGES.DRIVER_NOT_FOUND, HTTP_STATUS_CODES.NOT_FOUND);

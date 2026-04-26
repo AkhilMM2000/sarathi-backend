@@ -16,13 +16,13 @@ import { IAttachPaymentIntentIdToBookingUseCase } from "./interfaces/IAttachPaym
 export class AttachPaymentIntentIdToBooking implements IAttachPaymentIntentIdToBookingUseCase {
   constructor(
     @inject(TOKENS.IBOOKING_REPO)
-    private bookingRepo: IBookingRepository,
-    @inject(TOKENS.WALLET_REPO) private walletRepository: IWalletRepository,
-    @inject(TOKENS.IUSER_REPO) private userRepository: IUserRepository,
+    private _bookingRepo: IBookingRepository,
+    @inject(TOKENS.WALLET_REPO) private _walletRepository: IWalletRepository,
+    @inject(TOKENS.IUSER_REPO) private _userRepository: IUserRepository,
     @inject(TOKENS.PAYMENT_SERVICE)
-    private stripeService: IStripeService,
+    private _stripeService: IStripeService,
     @inject(TOKENS.NOTIFICATION_SERVICE)
-    private notificationService: INotificationService
+    private _notificationService: INotificationService
   ) {}
 
   async execute(params: {
@@ -33,13 +33,13 @@ export class AttachPaymentIntentIdToBooking implements IAttachPaymentIntentIdToB
     userId: string;
   }): Promise<void> {
     const { rideId, walletDeduction, paymentIntentId, paymentStatus: paymentstatus, userId } = params;
-    const booking = await this.bookingRepo.findBookingById(rideId);
+    const booking = await this._bookingRepo.findBookingById(rideId);
     console.log(walletDeduction,'walletDeduction')
     if (!booking) {
       throw new AuthError(ERROR_MESSAGES.BOOKING_NOT_FOUND, HTTP_STATUS_CODES.NOT_FOUND);
     }
 if(walletDeduction&&walletDeduction>0){
-await this.walletRepository.debitAmount(
+await this._walletRepository.debitAmount(
   booking.userId.toString(),
   walletDeduction,
   `ride booked for ${booking.startDate}`
@@ -55,24 +55,24 @@ booking.walletDeduction=walletDeduction;
   }
 
   if(paymentstatus&&paymentIntentId){
-    const payment=await this.stripeService.retrievePaymentIntent(paymentIntentId);
+    const payment=await this._stripeService.retrievePaymentIntent(paymentIntentId);
  
     booking.driver_fee=(payment.amount-payment.application_fee_amount!)*.01;
     booking.platform_fee=payment.application_fee_amount!*.01;
   }
 
   if(paymentstatus=='COMPLETED'&&userId){
-  const user = await this.userRepository.getUserById(userId);
+  const user = await this._userRepository.getUserById(userId);
 
   if (!user) {
     throw new AuthError(ERROR_MESSAGES.USER_NOT_FOUND, HTTP_STATUS_CODES.NOT_FOUND); 
     }
   }
 
-    await this.bookingRepo.updateBooking(rideId, booking);
+    await this._bookingRepo.updateBooking(rideId, booking);
    console.log(booking.driverId.toString())
    if(paymentstatus=='COMPLETED'){
-   await this.notificationService.paymentNotification(booking.driverId.toString(),{status:paymentstatus,startDate:booking.startDate,bookingId:rideId})
+   await this._notificationService.paymentNotification(booking.driverId.toString(),{status:paymentstatus,startDate:booking.startDate,bookingId:rideId})
    }
 
   }

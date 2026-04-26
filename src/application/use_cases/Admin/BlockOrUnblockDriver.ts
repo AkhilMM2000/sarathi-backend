@@ -8,17 +8,17 @@ import { IBlockOrUnblockDriverUseCase } from "./Interfaces/IBlockOrUnblockDriver
 @injectable()
 export class BlockOrUnblockDriver implements IBlockOrUnblockDriverUseCase {
   constructor(
-    @inject(TOKENS.IDRIVER_REPO) private driverRepository: IDriverRepository
+    @inject(TOKENS.IDRIVER_REPO) private _driverRepository: IDriverRepository
   ) {}
 
   async execute(driverId: string, isBlock: boolean): Promise<void> {
     
-    const driver = await this.driverRepository.findDriverById(driverId);
+    const driver = await this._driverRepository.findDriverById(driverId);
     if (!driver) {
         throw new AuthError("Driver not found",HTTP_STATUS_CODES.NOT_FOUND);
       }
       
 
-    await this.driverRepository.blockOrUnblockDriver(driverId, isBlock);
+    await this._driverRepository.blockOrUnblockDriver(driverId, isBlock);
   }
 }

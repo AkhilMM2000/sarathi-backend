@@ -18,23 +18,23 @@ interface CancelBookingInput {
 export class CancelBookingInputUseCase  implements ICancelBookingUseCase{
   constructor(
      @inject(TOKENS.NOTIFICATION_SERVICE)
-        private notificationService: INotificationService,
+        private _notificationService: INotificationService,
     @inject(TOKENS.IBOOKING_REPO)
-    private bookingRepo: IBookingRepository
+    private _bookingRepo: IBookingRepository
   ) {}
 
   async execute(input: CancelBookingInput): Promise<void> {
     const { bookingId, status, reason } = input;
 
-    const booking = await this.bookingRepo.findBookingById(bookingId);
+    const booking = await this._bookingRepo.findBookingById(bookingId);
     if (!booking) {
       throw new AuthError(ERROR_MESSAGES.BOOKING_NOT_FOUND, HTTP_STATUS_CODES.NOT_FOUND);
     }
 
-    await this.bookingRepo.updateBooking(bookingId, {
+    await this._bookingRepo.updateBooking(bookingId, {
       status,
       reason
     });
-   await this.notificationService.cancelBookingNotification(booking.driverId.toString(),{status,reason,startDate:booking.startDate,bookingId})
+   await this._notificationService.cancelBookingNotification(booking.driverId.toString(),{status,reason,startDate:booking.startDate,bookingId})
   }
 }

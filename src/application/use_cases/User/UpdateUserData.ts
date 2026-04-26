@@ -11,7 +11,7 @@ import { UserResponseDto, toUserResponse } from "../../dto/user/UserResponseDto"
 @injectable()
 export class UpdateUserData implements IUpdateUserData  {
   constructor(
-    @inject(TOKENS.IUSER_REPO) private userRepository: IUserRepository
+    @inject(TOKENS.IUSER_REPO) private _userRepository: IUserRepository
   ) {}
 
   async execute(userId: string, updateData: UpdateUserRequestDto): Promise<UserResponseDto>{
@@ -19,12 +19,12 @@ export class UpdateUserData implements IUpdateUserData  {
       throw new AuthError(ERROR_MESSAGES.USER_ID_NOT_FOUND, HTTP_STATUS_CODES.BAD_REQUEST);
     }
 
-    const user = await this.userRepository.getUserById(userId);
+    const user = await this._userRepository.getUserById(userId);
     if (!user) {
       throw new AuthError(ERROR_MESSAGES.USER_NOT_FOUND, HTTP_STATUS_CODES.NOT_FOUND);
     }
 
-    const updatedUser = await this.userRepository.updateUser(userId, updateData);
+    const updatedUser = await this._userRepository.updateUser(userId, updateData);
     if (!updatedUser) {
       throw new AuthError(ERROR_MESSAGES.USER_NOT_FOUND, HTTP_STATUS_CODES.NOT_FOUND);
     }

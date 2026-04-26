@@ -17,7 +17,7 @@ const nodemailer_1 = __importDefault(require("nodemailer"));
 const tsyringe_1 = require("tsyringe");
 let EmailService = class EmailService {
     constructor() {
-        this.transporter = nodemailer_1.default.createTransport({
+        this._transporter = nodemailer_1.default.createTransport({
             service: "gmail",
             auth: {
                 user: process.env.EMAIL_USER,
@@ -58,7 +58,7 @@ let EmailService = class EmailService {
       `,
         };
         try {
-            await this.transporter.sendMail(mailOptions);
+            await this._transporter.sendMail(mailOptions);
         }
         catch (error) {
             console.error("Nodemailer OTP Error: ", error);
@@ -99,7 +99,7 @@ let EmailService = class EmailService {
         </div>
       `,
         };
-        await this.transporter.sendMail(mailOptions);
+        await this._transporter.sendMail(mailOptions);
     }
 };
 exports.EmailService = EmailService;

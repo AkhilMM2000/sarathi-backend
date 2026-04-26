@@ -16,14 +16,14 @@ exports.OnboardDriverUseCase = void 0;
 const tsyringe_1 = require("tsyringe");
 const Tokens_1 = require("../../../constants/Tokens");
 let OnboardDriverUseCase = class OnboardDriverUseCase {
-    constructor(stripeService, driverRepository) {
-        this.stripeService = stripeService;
-        this.driverRepository = driverRepository;
+    constructor(_stripeService, _driverRepository) {
+        this._stripeService = _stripeService;
+        this._driverRepository = _driverRepository;
     }
     async execute(email, driverId) {
-        const account = await this.stripeService.createExpressAccount(email, driverId);
-        await this.driverRepository.updateStripeAccount(driverId, account.id);
-        const accountLink = await this.stripeService.createAccountLink(account.id);
+        const account = await this._stripeService.createExpressAccount(email, driverId);
+        await this._driverRepository.updateStripeAccount(driverId, account.id);
+        const accountLink = await this._stripeService.createAccountLink(account.id);
         return accountLink.url;
     }
 };
