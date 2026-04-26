@@ -31,7 +31,7 @@ let GetDriverProfile = class GetDriverProfile {
         if (!driver) {
             throw new Autherror_1.AuthError(ErrorMessages_1.ERROR_MESSAGES.DRIVER_NOT_FOUND, HttpStatusCode_1.HTTP_STATUS_CODES.NOT_FOUND);
         }
-        return (0, DriverResponseDto_1.toDriverResponse)(driver);
+        return (0, DriverResponseDto_1.toDriverFullResponse)(driver);
     }
 };
 exports.GetDriverProfile = GetDriverProfile;

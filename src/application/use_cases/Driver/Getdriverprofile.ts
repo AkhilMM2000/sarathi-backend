@@ -5,7 +5,7 @@ import { TOKENS } from "../../../constants/Tokens";
 import { ERROR_MESSAGES } from "../../../constants/ErrorMessages";
 import { HTTP_STATUS_CODES } from "../../../constants/HttpStatusCode";
 import { IGetDriverProfile } from "./interfaces/IGetDriverProfile";
-import { DriverResponseDto, toDriverResponse } from "../../dto/driver/DriverResponseDto";
+import { DriverFullResponseDto, toDriverFullResponse } from "../../dto/driver/DriverResponseDto";
 
 @injectable()
 export class GetDriverProfile implements IGetDriverProfile{
@@ -13,7 +13,7 @@ export class GetDriverProfile implements IGetDriverProfile{
     @inject(TOKENS.IDRIVER_REPO) private _driverRepository: IDriverRepository
   ) {}
 
-  async execute(driverId: string): Promise<DriverResponseDto|null> {
+  async execute(driverId: string): Promise<DriverFullResponseDto|null> {
     if (!driverId) {
         throw new AuthError(ERROR_MESSAGES.DRIVER_ID_NOT_FOUND,HTTP_STATUS_CODES.BAD_REQUEST);
     }
@@ -23,6 +23,6 @@ export class GetDriverProfile implements IGetDriverProfile{
       throw new AuthError(ERROR_MESSAGES.DRIVER_NOT_FOUND,HTTP_STATUS_CODES.NOT_FOUND);
     }
 
-    return toDriverResponse(driver);
+    return toDriverFullResponse(driver);
   }
 }

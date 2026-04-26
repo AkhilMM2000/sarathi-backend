@@ -106,7 +106,6 @@ export class DriverController {
     if (!driver) {
       throw new AuthError(ERROR_MESSAGES.DRIVER_NOT_FOUND, HTTP_STATUS_CODES.NOT_FOUND);
     }
-
     // Return sanitized full profile for the driver's dashboard
     res.status(HTTP_STATUS_CODES.OK).json({ success: true, driver });
   });

@@ -1,5 +1,5 @@
-import { DriverResponseDto } from "../../../dto/driver/DriverResponseDto";
+import { DriverFullResponseDto } from "../../../dto/driver/DriverResponseDto";
 
 export interface IGetDriverProfile {
-  execute(driverId: string): Promise<DriverResponseDto | null>;
+  execute(driverId: string): Promise<DriverFullResponseDto | null>;
 }
