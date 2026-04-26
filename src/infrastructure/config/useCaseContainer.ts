@@ -80,7 +80,7 @@ import { AdminChangeDriverStatus } from "../../application/use_cases/Admin/Admin
 import { IBlockOrUnblockDriverUseCase } from "../../application/use_cases/Admin/Interfaces/IBlockOrUnblockDriverUseCase";
 import { BlockOrUnblockDriver } from "../../application/use_cases/Admin/BlockOrUnblockDriver";
 import { IRefreshTokenUseCase } from "../../application/use_cases/Interfaces/IRefreshTokenUseCase";
-import { RefreshTokenUseCase } from "../../application/use_cases/Refreshtoken";
+import { RefreshToken  } from "../../application/use_cases/Refreshtoken";
 import { IForgotPasswordUseCase } from "../../application/use_cases/Auth/interface/IForgotPasswordUseCase";
 import { ForgotPasswordUseCase } from "../../application/use_cases/Auth/ForgotPasswordUseCase";
 import { IResetPasswordUseCase } from "../../application/use_cases/Auth/interface/IResetPasswordUseCase";
@@ -252,7 +252,7 @@ container.registerSingleton<IBlockOrUnblockDriverUseCase>(
 //Authcontroller related usecase abstraction
 container.registerSingleton<IRefreshTokenUseCase>(
  USECASE_TOKENS.REFRESH_TOKEN_USECASE,
-  RefreshTokenUseCase
+  RefreshToken 
 );
 container.registerSingleton<IForgotPasswordUseCase>(
   USECASE_TOKENS.FORGOT_PASSWORD_USECASE,
