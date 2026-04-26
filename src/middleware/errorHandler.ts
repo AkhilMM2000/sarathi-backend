@@ -3,6 +3,7 @@ import { JsonWebTokenError, TokenExpiredError } from "jsonwebtoken";
 import { z } from "zod";
 import { BaseError } from "../domain/errors/BaseError";
 import { ERROR_MESSAGES } from "../constants/ErrorMessages";
+import { HTTP_STATUS_CODES } from "../constants/HttpStatusCode";
 
 /**
  * Global Error Handler Middleware
@@ -20,7 +21,7 @@ export const errorHandler: ErrorRequestHandler = (err, req, res, _next) => {
 
   // 2. Handle JWT Library Errors specifically (True Type Narrowing)
   if (err instanceof TokenExpiredError) {
-    res.status(401).json({
+    res.status(HTTP_STATUS_CODES.UNAUTHORIZED).json({
       success: false,
       message: "Session expired. Please login again.",
     });
@@ -28,7 +29,7 @@ export const errorHandler: ErrorRequestHandler = (err, req, res, _next) => {
   }
 
   if (err instanceof JsonWebTokenError) {
-    res.status(401).json({
+    res.status(HTTP_STATUS_CODES.UNAUTHORIZED).json({
       success: false,
       message: "Invalid session token.",
     });
@@ -37,7 +38,7 @@ export const errorHandler: ErrorRequestHandler = (err, req, res, _next) => {
 
   // 3. Handle Validation Errors (Zod)
   if (err instanceof z.ZodError) {
-    res.status(400).json({
+    res.status(HTTP_STATUS_CODES.BAD_REQUEST).json({
       success: false,
       message: "Validation failed",
       errors: err.issues,
@@ -48,8 +49,9 @@ export const errorHandler: ErrorRequestHandler = (err, req, res, _next) => {
   // 4. Fallback for unexpected or programming errors
   console.error("Unexpected error:", err);
 
-  res.status(500).json({
+  res.status(HTTP_STATUS_CODES.INTERNAL_SERVER_ERROR).json({
     success: false,
     message: ERROR_MESSAGES.INTERNAL_SERVER_ERROR,
   });
 };
+

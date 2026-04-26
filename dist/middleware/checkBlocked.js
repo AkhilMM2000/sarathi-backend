@@ -16,6 +16,7 @@ exports.CheckBlockedUserOrDriver = void 0;
 const tsyringe_1 = require("tsyringe");
 const mongoose_1 = require("mongoose");
 const Tokens_1 = require("../constants/Tokens");
+const HttpStatusCode_1 = require("../constants/HttpStatusCode");
 let CheckBlockedUserOrDriver = class CheckBlockedUserOrDriver {
     constructor(userRepository, driverRepository) {
         this.userRepository = userRepository;
@@ -26,13 +27,13 @@ let CheckBlockedUserOrDriver = class CheckBlockedUserOrDriver {
             const userId = req.user?.id;
             const role = req.user?.role;
             if (!userId || !role) {
-                res.status(401).json({ message: "Unauthorized" });
+                res.status(HttpStatusCode_1.HTTP_STATUS_CODES.UNAUTHORIZED).json({ message: "Unauthorized" });
                 return;
             }
             let userOrDriver;
             if (role === "user") {
                 if (!(0, mongoose_1.isValidObjectId)(userId)) {
-                    res.status(400).json({ message: "Invalid user ID format" });
+                    res.status(HttpStatusCode_1.HTTP_STATUS_CODES.BAD_REQUEST).json({ message: "Invalid user ID format" });
                     return;
                 }
                 userOrDriver = await this.userRepository.getUserById(userId);
@@ -41,22 +42,22 @@ let CheckBlockedUserOrDriver = class CheckBlockedUserOrDriver {
                 userOrDriver = await this.driverRepository.findDriverById(userId);
             }
             else {
-                res.status(403).json({ message: "Invalid role" });
+                res.status(HttpStatusCode_1.HTTP_STATUS_CODES.FORBIDDEN).json({ message: "Invalid role" });
                 return;
             }
             if (!userOrDriver) {
-                res.status(401).json({ message: "Account not found" });
+                res.status(HttpStatusCode_1.HTTP_STATUS_CODES.UNAUTHORIZED).json({ message: "Account not found" });
                 return;
             }
             if (userOrDriver.isBlock) {
-                res.status(403).json({ blocked: true, message: "Your account is blocked. Contact support." });
+                res.status(HttpStatusCode_1.HTTP_STATUS_CODES.FORBIDDEN).json({ blocked: true, message: "Your account is blocked. Contact support." });
                 return;
             }
             next();
         }
         catch (error) {
             console.error("Error checking blocked user/driver:", error);
-            res.status(500).json({ message: "Internal Server Error" });
+            res.status(HttpStatusCode_1.HTTP_STATUS_CODES.INTERNAL_SERVER_ERROR).json({ message: "Internal Server Error" });
         }
     }
 };

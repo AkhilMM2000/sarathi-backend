@@ -1,8 +1,9 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.BaseError = void 0;
+const HttpStatusCode_1 = require("../../constants/HttpStatusCode");
 class BaseError extends Error {
-    constructor(message, statusCode = 500, isOperational = true) {
+    constructor(message, statusCode = HttpStatusCode_1.HTTP_STATUS_CODES.INTERNAL_SERVER_ERROR, isOperational = true) {
         super(message);
         this.statusCode = statusCode;
         this.isOperational = isOperational;

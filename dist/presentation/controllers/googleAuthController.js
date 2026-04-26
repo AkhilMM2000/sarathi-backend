@@ -11,12 +11,13 @@ const tsyringe_1 = require("tsyringe");
 const googleAuth_1 = require("../../application/use_cases/Auth/googleAuth");
 const catchAsync_1 = require("../../infrastructure/utils/catchAsync");
 const tsyringe_2 = require("tsyringe");
+const HttpStatusCode_1 = require("../../constants/HttpStatusCode");
 let GoogleauthController = class GoogleauthController {
     constructor() {
         this.googleAuth = (0, catchAsync_1.catchAsync)(async (req, res) => {
             const { googleToken, role } = req.body;
             if (!googleToken) {
-                res.status(400).json({ message: "Google token is required!" });
+                res.status(HttpStatusCode_1.HTTP_STATUS_CODES.BAD_REQUEST).json({ message: "Google token is required!" });
                 return;
             }
             const googleUseCase = tsyringe_2.container.resolve(googleAuth_1.GoogleAuthUseCase);
@@ -27,7 +28,7 @@ let GoogleauthController = class GoogleauthController {
                 sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
                 maxAge: Number(process.env.COOKIE_MAX_AGE) || 7 * 24 * 60 * 60 * 1000,
             });
-            res.status(200).json({
+            res.status(HttpStatusCode_1.HTTP_STATUS_CODES.OK).json({
                 accessToken,
                 role,
                 success

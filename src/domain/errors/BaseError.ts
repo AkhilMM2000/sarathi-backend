@@ -1,8 +1,10 @@
+import { HTTP_STATUS_CODES } from "../../constants/HttpStatusCode";
+
 export class BaseError extends Error {
   public readonly statusCode: number;
   public readonly isOperational: boolean;
 
-  constructor(message: string, statusCode: number = 500, isOperational: boolean = true) {
+  constructor(message: string, statusCode: number = HTTP_STATUS_CODES.INTERNAL_SERVER_ERROR, isOperational: boolean = true) {
     super(message);
     
     this.statusCode = statusCode;

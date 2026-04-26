@@ -5,6 +5,7 @@ const jsonwebtoken_1 = require("jsonwebtoken");
 const zod_1 = require("zod");
 const BaseError_1 = require("../domain/errors/BaseError");
 const ErrorMessages_1 = require("../constants/ErrorMessages");
+const HttpStatusCode_1 = require("../constants/HttpStatusCode");
 /**
  * Global Error Handler Middleware
  * Uses type narrowing (instanceof) to return appropriate status codes and messages.
@@ -20,14 +21,14 @@ const errorHandler = (err, req, res, _next) => {
     }
     // 2. Handle JWT Library Errors specifically (True Type Narrowing)
     if (err instanceof jsonwebtoken_1.TokenExpiredError) {
-        res.status(401).json({
+        res.status(HttpStatusCode_1.HTTP_STATUS_CODES.UNAUTHORIZED).json({
             success: false,
             message: "Session expired. Please login again.",
         });
         return;
     }
     if (err instanceof jsonwebtoken_1.JsonWebTokenError) {
-        res.status(401).json({
+        res.status(HttpStatusCode_1.HTTP_STATUS_CODES.UNAUTHORIZED).json({
             success: false,
             message: "Invalid session token.",
         });
@@ -35,7 +36,7 @@ const errorHandler = (err, req, res, _next) => {
     }
     // 3. Handle Validation Errors (Zod)
     if (err instanceof zod_1.z.ZodError) {
-        res.status(400).json({
+        res.status(HttpStatusCode_1.HTTP_STATUS_CODES.BAD_REQUEST).json({
             success: false,
             message: "Validation failed",
             errors: err.issues,
@@ -44,7 +45,7 @@ const errorHandler = (err, req, res, _next) => {
     }
     // 4. Fallback for unexpected or programming errors
     console.error("Unexpected error:", err);
-    res.status(500).json({
+    res.status(HttpStatusCode_1.HTTP_STATUS_CODES.INTERNAL_SERVER_ERROR).json({
         success: false,
         message: ErrorMessages_1.ERROR_MESSAGES.INTERNAL_SERVER_ERROR,
     });

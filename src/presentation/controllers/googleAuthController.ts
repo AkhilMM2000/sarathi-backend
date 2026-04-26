@@ -3,6 +3,7 @@ import { injectable } from "tsyringe";
 import { GoogleAuthUseCase } from "../../application/use_cases/Auth/googleAuth";
 import { catchAsync } from "../../infrastructure/utils/catchAsync";
 import { container } from "tsyringe";
+import { HTTP_STATUS_CODES } from "../../constants/HttpStatusCode";
 
 @injectable()
 export class GoogleauthController {
@@ -10,7 +11,7 @@ export class GoogleauthController {
     const { googleToken, role } = req.body;
     
     if (!googleToken) {
-      res.status(400).json({ message: "Google token is required!" });
+      res.status(HTTP_STATUS_CODES.BAD_REQUEST).json({ message: "Google token is required!" });
       return;
     }
 
@@ -27,7 +28,7 @@ export class GoogleauthController {
       maxAge: Number(process.env.COOKIE_MAX_AGE) || 7 * 24 * 60 * 60 * 1000,
     });
 
-    res.status(200).json({
+    res.status(HTTP_STATUS_CODES.OK).json({
       accessToken,
       role,
       success

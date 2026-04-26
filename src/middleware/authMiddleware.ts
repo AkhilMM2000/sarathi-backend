@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
+import { HTTP_STATUS_CODES } from '../constants/HttpStatusCode';
 
 // Extend Express Request to include the decoded user payload.
 export interface AuthenticatedRequest extends Request {
@@ -20,7 +21,7 @@ export const protectRoute = (
    
    
     if (!authHeader || !authHeader.startsWith('Bearer')) {
-      res.status(401).json({ message: 'No token provided' });
+      res.status(HTTP_STATUS_CODES.UNAUTHORIZED).json({ message: 'No token provided' });
       return  
     }
    
@@ -42,7 +43,7 @@ export const protectRoute = (
       req.user = decoded;
 
       if (allowedRoles.length > 0 && !allowedRoles.includes(decoded.role)) {
-        res.status(403).json({ message: 'Not authorized to access this route' });
+        res.status(HTTP_STATUS_CODES.FORBIDDEN).json({ message: 'Not authorized to access this route' });
         return;
       }
 
@@ -51,7 +52,7 @@ export const protectRoute = (
      
       
   
-      res.status(401).json({ message: 'Invalid or expired token' });
+      res.status(HTTP_STATUS_CODES.UNAUTHORIZED).json({ message: 'Invalid or expired token' });
       return;
  
     } 
