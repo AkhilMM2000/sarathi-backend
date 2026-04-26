@@ -19,12 +19,11 @@ console.log(req.body);
         googleToken,
         role
       );
-      const refreshTokenKey = `${role}RefreshToken`;
-      res.cookie(refreshTokenKey, refreshToken, {
+      res.cookie('refresh_token', refreshToken, {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
         sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
-        maxAge: 7 * 24 * 60 * 60 * 1000,
+        maxAge: Number(process.env.COOKIE_MAX_AGE) || 7 * 24 * 60 * 60 * 1000,
       });
       res.status(200).json({
         accessToken,

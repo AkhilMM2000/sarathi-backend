@@ -29,15 +29,12 @@ let AuthController = class AuthController {
     }
     async refreshToken(req, res, next) {
         try {
-            // 1. DTO Validation
-            const { role } = ZodHelper_1.ZodHelper.validate(AuthRequestDTO_1.RefreshTokenSchema, req.body);
-            const refreshTokenKey = `${role}RefreshToken`;
-            const refreshToken = req.cookies[refreshTokenKey];
+            const refreshToken = req.cookies['refresh_token'];
             if (!refreshToken) {
                 throw new Autherror_1.AuthError(ErrorMessages_1.ERROR_MESSAGES.REFRESHTOKEN_NOTFOUND, HttpStatusCode_1.HTTP_STATUS_CODES.FORBIDDEN);
             }
-            // 2. Execute
-            const result = await this._refreshTokenUseCase.execute(refreshToken, role);
+            // 1. Execute
+            const result = await this._refreshTokenUseCase.execute(refreshToken);
             res.status(HttpStatusCode_1.HTTP_STATUS_CODES.OK).json({ success: true, accessToken: result });
         }
         catch (error) {
@@ -76,17 +73,15 @@ let AuthController = class AuthController {
     }
     logout(req, res, next) {
         try {
-            // 1. DTO Validation (Query params)
-            const { role } = ZodHelper_1.ZodHelper.validate(AuthRequestDTO_1.LogoutSchema, req.query);
-            // 2. Clear Cookie
-            res.clearCookie(`${role}RefreshToken`, {
+            // 1. Clear Cookie
+            res.clearCookie('refresh_token', {
                 httpOnly: true,
                 secure: process.env.NODE_ENV === "production",
                 sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
             });
             res.status(HttpStatusCode_1.HTTP_STATUS_CODES.OK).json({
                 success: true,
-                message: `${role} logout successful`
+                message: `Logout successful`
             });
         }
         catch (error) {

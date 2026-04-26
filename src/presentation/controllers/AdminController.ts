@@ -45,9 +45,7 @@ export class AdminController {
       // 2. Execute
       const { accessToken, refreshToken } = await this._loginUsecase.execute(email, password, role);
 
-      const refreshTokenKey = `${role}RefreshToken`;
-
-      res.cookie(refreshTokenKey, refreshToken, {
+      res.cookie('refresh_token', refreshToken, {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
         sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",

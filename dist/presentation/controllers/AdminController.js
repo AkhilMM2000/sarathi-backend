@@ -38,8 +38,7 @@ let AdminController = class AdminController {
             const { email, password, role } = ZodHelper_1.ZodHelper.validate(AdminRequestDTO_1.AdminLoginSchema, req.body);
             // 2. Execute
             const { accessToken, refreshToken } = await this._loginUsecase.execute(email, password, role);
-            const refreshTokenKey = `${role}RefreshToken`;
-            res.cookie(refreshTokenKey, refreshToken, {
+            res.cookie('refresh_token', refreshToken, {
                 httpOnly: true,
                 secure: process.env.NODE_ENV === "production",
                 sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",

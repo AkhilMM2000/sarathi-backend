@@ -1,67 +1,67 @@
-import jwt from "jsonwebtoken";
 import { inject, injectable } from "tsyringe";
-import { IUserRepository } from "../../domain/repositories/IUserepository"; 
-import { IDriverRepository } from "../../domain/repositories/IDriverepository";
-import { AuthService } from "../services/AuthService";
-import { User } from "../../domain/models/User";
-import { Driver } from "../../domain/models/Driver";
-import { AuthError } from "../../domain/errors/Autherror";
 import { TOKENS } from "../../constants/Tokens";
+import { IUserRepository } from "../../domain/repositories/IUserepository";
+import { IDriverRepository } from "../../domain/repositories/IDriverepository";
+import { IAdminRepository } from "../../domain/repositories/IAdminrepository";
+import { AuthService } from "../services/AuthService";
+import { AuthError } from "../../domain/errors/Autherror";
 import { ERROR_MESSAGES } from "../../constants/ErrorMessages";
 import { HTTP_STATUS_CODES } from "../../constants/HttpStatusCode";
 import { IRefreshTokenUseCase } from "./Interfaces/IRefreshTokenUseCase";
+import jwt from "jsonwebtoken";
+
 @injectable()
-
-export class RefreshTokenUseCase implements IRefreshTokenUseCase {
+export class RefreshToken implements IRefreshTokenUseCase {
   constructor(
-     @inject(TOKENS.IUSER_REPO) private userRepository: IUserRepository,
-      @inject(TOKENS.IDRIVER_REPO) private driverRepository: IDriverRepository
-    
-    ) {}
+    @inject(TOKENS.IUSER_REPO) private userRepository: IUserRepository,
+    @inject(TOKENS.IDRIVER_REPO) private driverRepository: IDriverRepository,
+    @inject(TOKENS.IADMIN_REPO) private adminRepository: IAdminRepository
+  ) {}
 
-  async execute(refreshToken: string,role:"user"|"driver"|"admin"):Promise<string> {
+  async execute(refreshToken: string): Promise<string> {
     if (!refreshToken) {
-      throw new AuthError(ERROR_MESSAGES.REFRESHTOKEN_NOTFOUND, HTTP_STATUS_CODES.FORBIDDEN);
+      throw new AuthError(ERROR_MESSAGES.INVALID_REFRESH_TOKEN, HTTP_STATUS_CODES.UNAUTHORIZED);
     }
 
-   
-    let decoded: any;
+    // 1. Decode token to find role
+    const decoded = jwt.decode(refreshToken) as any;
+    if (!decoded || !decoded.role) {
+       throw new AuthError(ERROR_MESSAGES.INVALID_REFRESH_TOKEN, HTTP_STATUS_CODES.UNAUTHORIZED);
+    }
+
+    const { role } = decoded;
+
+    // 2. Verify token
+    let secret = "";
+    if (role === "user") secret = process.env.USER_REFRESH_TOKEN_SECRET!;
+    else if (role === "driver") secret = process.env.DRIVER_REFRESH_TOKEN_SECRET!;
+    else if (role === "admin") secret = process.env.ADMIN_REFRESH_TOKEN_SECRET!;
+
     try {
-      decoded = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET as string);
-    } catch (error: any) {
-      if (error.name === "TokenExpiredError") {
-        throw new AuthError("Refresh token expired. Please login again.", HTTP_STATUS_CODES.UNAUTHORIZED);
-      }
-      throw new AuthError("Invalid refresh token.", HTTP_STATUS_CODES.UNAUTHORIZED);
+      jwt.verify(refreshToken, secret);
+    } catch (err) {
+      throw new AuthError(ERROR_MESSAGES.INVALID_REFRESH_TOKEN, HTTP_STATUS_CODES.UNAUTHORIZED);
     }
 
-      let user: User | Driver | null = null;
+    // 3. Fetch User based on role
+    let user: any = null;
+    if (role === "user") {
+      user = await this.userRepository.findByEmail(decoded.email);
+    } else if (role === "driver") {
+      user = await this.driverRepository.findByEmail(decoded.email);
+    } else if (role === "admin") {
+      user = await this.adminRepository.findByEmail(decoded.email);
+    }
 
-      if (role === "user" || role === "admin") {
-        user = await this.userRepository.findByEmail(decoded.email);
+    if (!user) {
+      throw new AuthError(ERROR_MESSAGES.USER_NOT_FOUND, HTTP_STATUS_CODES.NOT_FOUND);
+    }
 
-        if (!user) {
-          throw new AuthError(ERROR_MESSAGES.USER_NOT_FOUND, HTTP_STATUS_CODES.NOT_FOUND);
-        }
-
-        if (role === "admin" && user.role !== "admin") {
-          throw new AuthError(ERROR_MESSAGES.NOT_AUTHORIZED_ADMIN, HTTP_STATUS_CODES.FORBIDDEN);
-        }
-      } else if (role === "driver") {
-        user = await this.driverRepository.findByEmail(decoded.email);
-
-        if (!user) {
-          throw new AuthError(ERROR_MESSAGES.DRIVER_NOT_FOUND,HTTP_STATUS_CODES.NOT_FOUND);
-        }
-      }
-
-      if (!user) {
-        throw new AuthError(ERROR_MESSAGES.USER_NOT_FOUND, HTTP_STATUS_CODES.NOT_FOUND);
-      }
-
-      const accessToken = AuthService.generateAccessToken({ id: user._id, email: user.email, role });
-
-      return accessToken
-   
+    // 4. Generate new Access Token
+    return AuthService.generateAccessToken({ 
+      id: user._id || user.id, 
+      email: user.email, 
+      role 
+    });
   }
 }

@@ -14,62 +14,75 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
+var _a;
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.RefreshTokenUseCase = void 0;
-const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
+exports.RefreshToken = void 0;
 const tsyringe_1 = require("tsyringe");
+const Tokens_1 = require("../../constants/Tokens");
+const IAdminrepository_1 = require("../../domain/repositories/IAdminrepository");
 const AuthService_1 = require("../services/AuthService");
 const Autherror_1 = require("../../domain/errors/Autherror");
-const Tokens_1 = require("../../constants/Tokens");
 const ErrorMessages_1 = require("../../constants/ErrorMessages");
 const HttpStatusCode_1 = require("../../constants/HttpStatusCode");
-let RefreshTokenUseCase = class RefreshTokenUseCase {
-    constructor(userRepository, driverRepository) {
+const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
+let RefreshToken = class RefreshToken {
+    constructor(userRepository, driverRepository, adminRepository) {
         this.userRepository = userRepository;
         this.driverRepository = driverRepository;
+        this.adminRepository = adminRepository;
     }
-    async execute(refreshToken, role) {
+    async execute(refreshToken) {
         if (!refreshToken) {
-            throw new Autherror_1.AuthError(ErrorMessages_1.ERROR_MESSAGES.REFRESHTOKEN_NOTFOUND, HttpStatusCode_1.HTTP_STATUS_CODES.FORBIDDEN);
+            throw new Autherror_1.AuthError(ErrorMessages_1.ERROR_MESSAGES.INVALID_REFRESH_TOKEN, HttpStatusCode_1.HTTP_STATUS_CODES.UNAUTHORIZED);
         }
-        let decoded;
+        // 1. Decode token to find role
+        const decoded = jsonwebtoken_1.default.decode(refreshToken);
+        if (!decoded || !decoded.role) {
+            throw new Autherror_1.AuthError(ErrorMessages_1.ERROR_MESSAGES.INVALID_REFRESH_TOKEN, HttpStatusCode_1.HTTP_STATUS_CODES.UNAUTHORIZED);
+        }
+        const { role } = decoded;
+        // 2. Verify token
+        let secret = "";
+        if (role === "user")
+            secret = process.env.USER_REFRESH_TOKEN_SECRET;
+        else if (role === "driver")
+            secret = process.env.DRIVER_REFRESH_TOKEN_SECRET;
+        else if (role === "admin")
+            secret = process.env.ADMIN_REFRESH_TOKEN_SECRET;
         try {
-            decoded = jsonwebtoken_1.default.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET);
+            jsonwebtoken_1.default.verify(refreshToken, secret);
         }
-        catch (error) {
-            if (error.name === "TokenExpiredError") {
-                throw new Autherror_1.AuthError("Refresh token expired. Please login again.", HttpStatusCode_1.HTTP_STATUS_CODES.UNAUTHORIZED);
-            }
-            throw new Autherror_1.AuthError("Invalid refresh token.", HttpStatusCode_1.HTTP_STATUS_CODES.UNAUTHORIZED);
+        catch (err) {
+            throw new Autherror_1.AuthError(ErrorMessages_1.ERROR_MESSAGES.INVALID_REFRESH_TOKEN, HttpStatusCode_1.HTTP_STATUS_CODES.UNAUTHORIZED);
         }
+        // 3. Fetch User based on role
         let user = null;
-        if (role === "user" || role === "admin") {
+        if (role === "user") {
             user = await this.userRepository.findByEmail(decoded.email);
-            if (!user) {
-                throw new Autherror_1.AuthError(ErrorMessages_1.ERROR_MESSAGES.USER_NOT_FOUND, HttpStatusCode_1.HTTP_STATUS_CODES.NOT_FOUND);
-            }
-            if (role === "admin" && user.role !== "admin") {
-                throw new Autherror_1.AuthError(ErrorMessages_1.ERROR_MESSAGES.NOT_AUTHORIZED_ADMIN, HttpStatusCode_1.HTTP_STATUS_CODES.FORBIDDEN);
-            }
         }
         else if (role === "driver") {
             user = await this.driverRepository.findByEmail(decoded.email);
-            if (!user) {
-                throw new Autherror_1.AuthError(ErrorMessages_1.ERROR_MESSAGES.DRIVER_NOT_FOUND, HttpStatusCode_1.HTTP_STATUS_CODES.NOT_FOUND);
-            }
+        }
+        else if (role === "admin") {
+            user = await this.adminRepository.findByEmail(decoded.email);
         }
         if (!user) {
             throw new Autherror_1.AuthError(ErrorMessages_1.ERROR_MESSAGES.USER_NOT_FOUND, HttpStatusCode_1.HTTP_STATUS_CODES.NOT_FOUND);
         }
-        const accessToken = AuthService_1.AuthService.generateAccessToken({ id: user._id, email: user.email, role });
-        return accessToken;
+        // 4. Generate new Access Token
+        return AuthService_1.AuthService.generateAccessToken({
+            id: user._id || user.id,
+            email: user.email,
+            role
+        });
     }
 };
-exports.RefreshTokenUseCase = RefreshTokenUseCase;
-exports.RefreshTokenUseCase = RefreshTokenUseCase = __decorate([
+exports.RefreshToken = RefreshToken;
+exports.RefreshToken = RefreshToken = __decorate([
     (0, tsyringe_1.injectable)(),
     __param(0, (0, tsyringe_1.inject)(Tokens_1.TOKENS.IUSER_REPO)),
     __param(1, (0, tsyringe_1.inject)(Tokens_1.TOKENS.IDRIVER_REPO)),
-    __metadata("design:paramtypes", [Object, Object])
-], RefreshTokenUseCase);
+    __param(2, (0, tsyringe_1.inject)(Tokens_1.TOKENS.IADMIN_REPO)),
+    __metadata("design:paramtypes", [Object, Object, typeof (_a = typeof IAdminrepository_1.IAdminRepository !== "undefined" && IAdminrepository_1.IAdminRepository) === "function" ? _a : Object])
+], RefreshToken);
 //# sourceMappingURL=Refreshtoken.js.map

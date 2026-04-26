@@ -80,7 +80,7 @@ export class DriverController {
       const { accessToken, refreshToken, user } = await this._verifyOtpUsecase.execute(email, otp, "driver");
       
       // 3. Set Cookie and Response
-      res.cookie(`driverRefreshToken`, refreshToken, {
+      res.cookie('refresh_token', refreshToken, {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
         sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
@@ -108,9 +108,7 @@ export class DriverController {
       const result = await this._loginUsecase.execute(email, password, role);
 
       // 3. Set Cookie and Response
-      const refreshTokenKey = `${role}RefreshToken`;
-
-      res.cookie(refreshTokenKey, result.refreshToken, {
+      res.cookie('refresh_token', result.refreshToken, {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
         sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
