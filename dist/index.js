@@ -22,6 +22,7 @@ const adminRoutes_1 = __importDefault(require("./presentation/routes/adminRoutes
 const fileRoutes_1 = __importDefault(require("./presentation/routes/fileRoutes"));
 const googleAuthRoute_1 = __importDefault(require("./presentation/routes/googleAuthRoute"));
 const BookingRoute_1 = __importDefault(require("./presentation/routes/BookingRoute"));
+const Routes_1 = require("./constants/Routes");
 const errorHandler_1 = require("./middleware/errorHandler");
 const socket_1 = require("./infrastructure/socket/socket");
 const referralSocket_1 = require("./infrastructure/socket/referralSocket");
@@ -35,13 +36,13 @@ app.use((0, cors_1.default)({
 }));
 app.use(express_1.default.json());
 // 3️⃣ ROUTES (they can safely resolve controllers now)
-app.use("/api/users", userRoutes_1.default);
-app.use('/api/drivers', driverRoutes_1.default);
-app.use('/api/admin', adminRoutes_1.default);
-app.use("/api/files", fileRoutes_1.default);
-app.use('/api', BookingRoute_1.default);
-app.use('/api/auth', AuthRoute_1.default);
-app.use('/api/auth/google', googleAuthRoute_1.default);
+app.use(Routes_1.ROUTES.USER.BASE, userRoutes_1.default);
+app.use(Routes_1.ROUTES.DRIVER.BASE, driverRoutes_1.default);
+app.use(Routes_1.ROUTES.ADMIN.BASE, adminRoutes_1.default);
+app.use(Routes_1.ROUTES.FILES.BASE, fileRoutes_1.default);
+app.use(Routes_1.ROUTES.BOOKING.BASE, BookingRoute_1.default);
+app.use(Routes_1.ROUTES.AUTH.BASE, AuthRoute_1.default);
+app.use(Routes_1.ROUTES.AUTH.GOOGLE.BASE, googleAuthRoute_1.default);
 app.use(errorHandler_1.errorHandler);
 const PORT = process.env.PORT || 5000;
 const server = http_1.default.createServer(app);

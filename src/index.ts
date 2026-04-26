@@ -21,6 +21,7 @@ import fileroute from './presentation/routes/fileRoutes';
 import googleRoute from './presentation/routes/googleAuthRoute';
 import Bookroute from './presentation/routes/BookingRoute';
 
+import { ROUTES } from "./constants/Routes";
 import { errorHandler } from "./middleware/errorHandler";
 import { initializeSocket } from "./infrastructure/socket/socket";
 import { initializeReferralSocket } from "./infrastructure/socket/referralSocket";
@@ -39,13 +40,13 @@ app.use(cors({
 app.use(express.json());
 
 // 3️⃣ ROUTES (they can safely resolve controllers now)
-app.use("/api/users", userRoutes);
-app.use('/api/drivers', driverRoute);
-app.use('/api/admin', adminRoutes);
-app.use("/api/files", fileroute);
-app.use('/api', Bookroute);
-app.use('/api/auth', AuthRoute);
-app.use('/api/auth/google', googleRoute);
+app.use(ROUTES.USER.BASE, userRoutes);
+app.use(ROUTES.DRIVER.BASE, driverRoute);
+app.use(ROUTES.ADMIN.BASE, adminRoutes);
+app.use(ROUTES.FILES.BASE, fileroute);
+app.use(ROUTES.BOOKING.BASE, Bookroute);
+app.use(ROUTES.AUTH.BASE, AuthRoute);
+app.use(ROUTES.AUTH.GOOGLE.BASE, googleRoute);
 
 app.use(errorHandler);
 

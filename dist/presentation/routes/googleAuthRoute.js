@@ -6,8 +6,9 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
 const tsyringe_1 = require("tsyringe");
 const googleAuthController_1 = require("../controllers/googleAuthController");
+const Routes_1 = require("../../constants/Routes");
 const router = express_1.default.Router();
 const controller = tsyringe_1.container.resolve(googleAuthController_1.GoogleauthController);
-router.post("/google-signin", controller.googleAuth);
+router.post(Routes_1.ROUTES.AUTH.GOOGLE.SIGNIN, controller.googleAuth);
 exports.default = router;
 //# sourceMappingURL=googleAuthRoute.js.map
