@@ -11,9 +11,6 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 var __param = (this && this.__param) || function (paramIndex, decorator) {
     return function (target, key) { decorator(target, key, paramIndex); }
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.RefreshToken = void 0;
 const tsyringe_1 = require("tsyringe");
@@ -22,7 +19,6 @@ const AuthService_1 = require("../services/AuthService");
 const Autherror_1 = require("../../domain/errors/Autherror");
 const ErrorMessages_1 = require("../../constants/ErrorMessages");
 const HttpStatusCode_1 = require("../../constants/HttpStatusCode");
-const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 let RefreshToken = class RefreshToken {
     constructor(userRepository, driverRepository) {
         this.userRepository = userRepository;
@@ -32,20 +28,13 @@ let RefreshToken = class RefreshToken {
         if (!refreshToken) {
             throw new Autherror_1.AuthError(ErrorMessages_1.ERROR_MESSAGES.REFRESHTOKEN_NOTFOUND, HttpStatusCode_1.HTTP_STATUS_CODES.UNAUTHORIZED);
         }
-        // 1. Decode token to find role
-        const decoded = jsonwebtoken_1.default.decode(refreshToken);
+        // 1. Verify and Decode token using the AuthService
+        const decoded = AuthService_1.AuthService.verifyToken(refreshToken, "refresh");
         if (!decoded || !decoded.role) {
-            throw new Autherror_1.AuthError(ErrorMessages_1.ERROR_MESSAGES.REFRESHTOKEN_NOTFOUND, HttpStatusCode_1.HTTP_STATUS_CODES.UNAUTHORIZED);
-        }
-        const { role } = decoded;
-        // 2. Verify token using unified secret
-        try {
-            jsonwebtoken_1.default.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET);
-        }
-        catch (err) {
             throw new Autherror_1.AuthError(ErrorMessages_1.ERROR_MESSAGES.INVALID_TOKEN, HttpStatusCode_1.HTTP_STATUS_CODES.UNAUTHORIZED);
         }
-        // 3. Fetch User based on role
+        const { role } = decoded;
+        // 2. Fetch User based on role found in the token
         let user = null;
         if (role === "user" || role === "admin") {
             user = await this.userRepository.findByEmail(decoded.email);
@@ -63,7 +52,7 @@ let RefreshToken = class RefreshToken {
                 throw new Autherror_1.AuthError(ErrorMessages_1.ERROR_MESSAGES.DRIVER_NOT_FOUND, HttpStatusCode_1.HTTP_STATUS_CODES.NOT_FOUND);
             }
         }
-        // 4. Generate new Access Token
+        // 3. Generate new Access Token
         return AuthService_1.AuthService.generateAccessToken({
             id: user._id || user.id,
             email: user.email,

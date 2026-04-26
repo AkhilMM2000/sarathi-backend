@@ -7,7 +7,6 @@ import { AuthError } from "../../domain/errors/Autherror";
 import { ERROR_MESSAGES } from "../../constants/ErrorMessages";
 import { HTTP_STATUS_CODES } from "../../constants/HttpStatusCode";
 import { IRefreshTokenUseCase } from "./Interfaces/IRefreshTokenUseCase";
-import jwt from "jsonwebtoken";
 
 @injectable()
 export class RefreshToken implements IRefreshTokenUseCase {
@@ -21,22 +20,16 @@ export class RefreshToken implements IRefreshTokenUseCase {
       throw new AuthError(ERROR_MESSAGES.REFRESHTOKEN_NOTFOUND, HTTP_STATUS_CODES.UNAUTHORIZED);
     }
 
-    // 1. Decode token to find role
-    const decoded = jwt.decode(refreshToken) as any;
+    // 1. Verify and Decode token using the AuthService
+    const decoded = AuthService.verifyToken(refreshToken, "refresh");
+    
     if (!decoded || !decoded.role) {
-       throw new AuthError(ERROR_MESSAGES.REFRESHTOKEN_NOTFOUND, HTTP_STATUS_CODES.UNAUTHORIZED);
+       throw new AuthError(ERROR_MESSAGES.INVALID_TOKEN, HTTP_STATUS_CODES.UNAUTHORIZED);
     }
 
     const { role } = decoded;
 
-    // 2. Verify token using unified secret
-    try {
-      jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET!);
-    } catch (err) {
-      throw new AuthError(ERROR_MESSAGES.INVALID_TOKEN, HTTP_STATUS_CODES.UNAUTHORIZED);
-    }
-
-    // 3. Fetch User based on role
+    // 2. Fetch User based on role found in the token
     let user: any = null;
     if (role === "user" || role === "admin") {
       user = await this.userRepository.findByEmail(decoded.email);
@@ -57,7 +50,7 @@ export class RefreshToken implements IRefreshTokenUseCase {
       }
     }
 
-    // 4. Generate new Access Token
+    // 3. Generate new Access Token
     return AuthService.generateAccessToken({ 
       id: user._id || user.id, 
       email: user.email, 
