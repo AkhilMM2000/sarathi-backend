@@ -1,12 +1,7 @@
-export class AuthError extends Error {
-      public readonly statusCode: number;
+import { BaseError } from "./BaseError";
 
-  constructor(message: string, statusCode = 400) {
-    super(message);
-    this.statusCode = statusCode;
-
-    Object.setPrototypeOf(this, new.target.prototype);
-    Error.captureStackTrace(this);
+export class AuthError extends BaseError {
+  constructor(message: string, statusCode: number = 400) {
+    super(message, statusCode);
   }
-  }
-  
+}
