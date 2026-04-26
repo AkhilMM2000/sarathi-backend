@@ -1,14 +1,23 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.BaseRepository = void 0;
+const ConflictError_1 = require("../../domain/errors/ConflictError");
 class BaseRepository {
     constructor(model) {
         this.model = model;
     }
     async create(data) {
-        const createdItem = new this.model(data);
-        const result = await createdItem.save();
-        return result.toObject();
+        try {
+            const createdItem = new this.model(data);
+            const result = await createdItem.save();
+            return result.toObject();
+        }
+        catch (error) {
+            if (error.code === 11000) {
+                throw new ConflictError_1.ConflictError("Resource with this data already exists");
+            }
+            throw error;
+        }
     }
     async findById(id) {
         return this.model.findById(id).lean();

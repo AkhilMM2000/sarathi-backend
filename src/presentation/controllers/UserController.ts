@@ -27,6 +27,8 @@ import { ZodHelper } from "../schemas/common/ZodHelper";
 import { AddVehicleSchema, CreatePaymentIntentSchema, DriverIdParamSchema, EditVehicleSchema, FetchDriversSchema, GetNearbyDriverQuerySchema, LoginSchema, RegisterSchema, ResendOtpSchema, SubmitReviewSchema, UpdateUserSchema, VehicleIdParamSchema, VerifyOtpSchema, WalletPaginationSchema } from "../schemas/user/UserDTO";
 import { z } from "zod";
 
+import { catchAsync } from "../../infrastructure/utils/catchAsync";
+
 @injectable()
 export class UserController {
   constructor(
@@ -62,472 +64,286 @@ export class UserController {
     private _getNearbyDriverDetailsUseCase: IGetNearbyDriverDetailsUseCase
   ) { }
 
-  async register(req: Request, res: Response, next: NextFunction): Promise<void> {
-    try {
+  register = catchAsync(async (req: Request, res: Response): Promise<void> => {
+    // 1. DTO Validation
+    const validatedData = ZodHelper.validate(RegisterSchema, req.body);
 
+    // 2. Execute Use Case
+    const result = await this._registerUsecase.execute(validatedData as any);
 
-      // 1. DTO Validation
-      const validatedData = ZodHelper.validate(RegisterSchema, req.body);
+    // 3. Response
+    res.status(HTTP_STATUS_CODES.CREATED).json({
+      success: true,
+      message: INFO_MESSAGES.USER.REGISTERED,
+      user: result
+    });
+  });
+  verifyOTPUser = catchAsync(async (req: Request, res: Response): Promise<void> => {
+    // 1. DTO Validation
+    const { email, otp } = ZodHelper.validate(VerifyOtpSchema, req.body);
 
-      // 2. Execute Use Case
-      const result = await this._registerUsecase.execute(validatedData as any);
-      // 3. Response
-      res.status(HTTP_STATUS_CODES.CREATED).json({
-        success: true,
-        message: INFO_MESSAGES.USER.REGISTERED,
-        user: result
-      });
-    } catch (error: any) {
-      if (error instanceof z.ZodError) {
-        res.status(HTTP_STATUS_CODES.BAD_REQUEST).json({
-          success: false,
-          errors: error.issues
-        });
-        return;
-      }
-      next(error);
-    }
-  }
-  async verifyOTPUser(req: Request, res: Response, next: NextFunction): Promise<void> {
-    try {
-      // 1. DTO Validation
-      const { email, otp } = ZodHelper.validate(VerifyOtpSchema, req.body);
+    // 2. Execute Use Case
+    const { accessToken, refreshToken, user } = await this._verifyOtpUsecase.execute(email, otp, "user");
 
-      // 2. Execute Use Case
-      const { accessToken, refreshToken, user } = await this._verifyOtpUsecase.execute(email, otp, "user");
+    // 3. Set Cookie and Response
+    res.cookie('refresh_token', refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+      maxAge: Number(process.env.COOKIE_MAX_AGE) || 7 * 24 * 60 * 60 * 1000,
+    });
+    res.status(HTTP_STATUS_CODES.OK).json({ success: true, accessToken, user });
+  });
 
-      // 3. Set Cookie and Response
-      res.cookie('refresh_token', refreshToken, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
-        maxAge: Number(process.env.COOKIE_MAX_AGE) || 7 * 24 * 60 * 60 * 1000,
-      });
-      res.status(HTTP_STATUS_CODES.OK).json({ success: true, accessToken, user });
-    } catch (error: any) {
-      if (error instanceof z.ZodError) {
-        res.status(HTTP_STATUS_CODES.BAD_REQUEST).json({
-          success: false,
-          errors: error.issues
-        });
-        return;
-      }
-      next(error);
-    }
-  }
-  async resendOTP(req: Request, res: Response, next: NextFunction): Promise<void> {
-    try {
-      // 1. DTO Validation
-      const { email, role } = ZodHelper.validate(ResendOtpSchema, req.body);
+  resendOTP = catchAsync(async (req: Request, res: Response): Promise<void> => {
+    // 1. DTO Validation
+    const { email, role } = ZodHelper.validate(ResendOtpSchema, req.body);
 
-      // 2. Execute Use Case
-      const result = await this._resendOtpUsecase.execute(email, role);
+    // 2. Execute Use Case
+    const result = await this._resendOtpUsecase.execute(email, role);
 
-      // 3. Response
-      res.status(HTTP_STATUS_CODES.OK).json({ success: true, ...result });
-    } catch (error: any) {
-      if (error instanceof z.ZodError) {
-        res.status(HTTP_STATUS_CODES.BAD_REQUEST).json({
-          success: false,
-          errors: error.issues
-        });
-        return;
-      }
-      next(error);
-    }
-  }
+    // 3. Response
+    res.status(HTTP_STATUS_CODES.OK).json({ success: true, ...result });
+  });
 
+  login = catchAsync(async (req: Request, res: Response): Promise<void> => {
+    // 1. DTO Validation
+    const { email, password, role } = ZodHelper.validate(LoginSchema, req.body);
 
-  async login(req: Request, res: Response, next: NextFunction): Promise<void> {
-    try {
-      // 1. DTO Validation
-      const { email, password, role } = ZodHelper.validate(LoginSchema, req.body);
+    // 2. Execute Use Case
+    const result = await this._loginUsecase.execute(email, password, role);
 
-      // 2. Execute Use Case
-      const result = await this._loginUsecase.execute(email, password, role);
+    // 3. Set Cookie and Response
+    res.cookie('refresh_token', result.refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+      maxAge: Number(process.env.COOKIE_MAX_AGE) || 7 * 24 * 60 * 60 * 1000,
+    });
+    res.status(HTTP_STATUS_CODES.OK).json({
+      accessToken: result.accessToken,
+      role: result.role,
+    });
+  });
 
-      // 3. Set Cookie and Response
-      res.cookie('refresh_token', result.refreshToken, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
-        maxAge: Number(process.env.COOKIE_MAX_AGE) || 7 * 24 * 60 * 60 * 1000,
-      });
-      res.status(HTTP_STATUS_CODES.OK).json({
-        accessToken: result.accessToken,
-        role: result.role,
-      });
-    } catch (error: any) {
-      if (error instanceof z.ZodError) {
-        res.status(HTTP_STATUS_CODES.BAD_REQUEST).json({
-          success: false,
-          errors: error.issues
-        });
-        return;
-      }
-      next(error);
-    }
-  }
+  addVehicle = catchAsync(async (req: AuthenticatedRequest, res: Response): Promise<void> => {
+    // 1. DTO Validation
+    const validatedData = ZodHelper.validate(AddVehicleSchema, req.body);
+    const userId = req.user?.id;
 
-  async addVehicle(
-    req: AuthenticatedRequest,
-    res: Response,
-    next: NextFunction
-  ): Promise<void> {
-    try {
-      // 1. DTO Validation
-      const validatedData = ZodHelper.validate(AddVehicleSchema, req.body);
-      const userId = req.user?.id;
-
-      if (!userId) {
-        throw new AuthError(
-          ERROR_MESSAGES.USER_ID_NOT_FOUND,
-          HTTP_STATUS_CODES.BAD_REQUEST
-        );
-      }
-
-      // 2. Execute Use Case
-      const vehicle = await this._addVehicleUsecase.execute({
-        ...validatedData,
-        userId: userId,
-      });
-
-      res.status(HTTP_STATUS_CODES.OK).json({ success: true, data: vehicle });
-    } catch (error: any) {
-      if (error instanceof z.ZodError) {
-        res.status(HTTP_STATUS_CODES.BAD_REQUEST).json({
-          success: false,
-          errors: error.issues
-        });
-        return;
-      }
-      next(error);
-    }
-  }
-
-  async editVehicle(req: Request, res: Response, next: NextFunction): Promise<void> {
-    try {
-      // 1. DTO Validation
-      const { vehicleId } = ZodHelper.validate(VehicleIdParamSchema, req.params);
-      const validatedData = ZodHelper.validate(EditVehicleSchema, req.body);
-
-      // 2. Execute Use Case
-      const updatedVehicle = await this._editVehicleUsecase.execute(
-        vehicleId,
-        validatedData
+    if (!userId) {
+      throw new AuthError(
+        ERROR_MESSAGES.USER_ID_NOT_FOUND,
+        HTTP_STATUS_CODES.BAD_REQUEST
       );
-
-      res.status(HTTP_STATUS_CODES.OK).json({ success: true, data: updatedVehicle });
-    } catch (error: any) {
-      if (error instanceof z.ZodError) {
-        res.status(HTTP_STATUS_CODES.BAD_REQUEST).json({
-          success: false,
-          errors: error.issues
-        });
-        return;
-      }
-      next(error);
     }
-  }
 
-  async getAllVehicle(
-    req: AuthenticatedRequest,
-    res: Response,
-    next: NextFunction
-  ): Promise<void> {
-    try {
-      const userId = req.user?.id;
-      if (!userId) {
-        throw new AuthError(
-          ERROR_MESSAGES.USER_ID_NOT_FOUND,
-          HTTP_STATUS_CODES.BAD_REQUEST
-        );
-      }
+    // 2. Execute Use Case
+    const vehicle = await this._addVehicleUsecase.execute({
+      ...validatedData,
+      userId: userId,
+    });
 
-      const vehicles = await this._getVehiclebyUserUsecase.execute(userId!);
+    res.status(HTTP_STATUS_CODES.OK).json({ success: true, data: vehicle });
+  });
 
-      res.status(HTTP_STATUS_CODES.OK).json({ success: true, data: vehicles });
-    } catch (error) {
-      next(error);
+  editVehicle = catchAsync(async (req: Request, res: Response): Promise<void> => {
+    // 1. DTO Validation
+    const { vehicleId } = ZodHelper.validate(VehicleIdParamSchema, req.params);
+    const validatedData = ZodHelper.validate(EditVehicleSchema, req.body);
+
+    // 2. Execute Use Case
+    const updatedVehicle = await this._editVehicleUsecase.execute(
+      vehicleId,
+      validatedData
+    );
+
+    res.status(HTTP_STATUS_CODES.OK).json({ success: true, data: updatedVehicle });
+  });
+
+  getAllVehicle = catchAsync(async (req: AuthenticatedRequest, res: Response): Promise<void> => {
+    const userId = req.user?.id;
+    if (!userId) {
+      throw new AuthError(
+        ERROR_MESSAGES.USER_ID_NOT_FOUND,
+        HTTP_STATUS_CODES.BAD_REQUEST
+      );
     }
-  }
 
+    const vehicles = await this._getVehiclebyUserUsecase.execute(userId!);
 
-  async getUserData(
-    req: AuthenticatedRequest,
-    res: Response,
-    next: NextFunction
-  ): Promise<void> {
-    try {
-      const userId = req.user?.id;
-      if (!userId) {
-        throw new AuthError(
-          ERROR_MESSAGES.USER_ID_NOT_FOUND,
-          HTTP_STATUS_CODES.BAD_REQUEST
-        );
-      }
+    res.status(HTTP_STATUS_CODES.OK).json({ success: true, data: vehicles });
+  });
 
-      const user = await this._getUserDataUsecase.execute(userId);
-
-      res.status(HTTP_STATUS_CODES.OK).json({ success: true, user });
-    } catch (error) {
-      next(error);
+  getUserData = catchAsync(async (req: AuthenticatedRequest, res: Response): Promise<void> => {
+    const userId = req.user?.id;
+    if (!userId) {
+      throw new AuthError(
+        ERROR_MESSAGES.USER_ID_NOT_FOUND,
+        HTTP_STATUS_CODES.BAD_REQUEST
+      );
     }
-  }
 
-  async updateUser(req: Request, res: Response, next: NextFunction): Promise<void> {
-    try {
-      const userId = req.params.id;
+    const user = await this._getUserDataUsecase.execute(userId);
 
-      // 1. DTO Validation
-      const validatedData = ZodHelper.validate(UpdateUserSchema, req.body);
+    res.status(HTTP_STATUS_CODES.OK).json({ success: true, user });
+  });
 
-      if (!userId) {
-        throw new AuthError(
-          ERROR_MESSAGES.USER_ID_NOT_FOUND,
-          HTTP_STATUS_CODES.BAD_REQUEST
-        );
-      }
+  updateUser = catchAsync(async (req: Request, res: Response): Promise<void> => {
+    const userId = req.params.id;
 
-      // 2. Execute Use Case with sanitized data
-      const user = await this._updateuserUsecase.execute(userId, validatedData);
+    // 1. DTO Validation
+    const validatedData = ZodHelper.validate(UpdateUserSchema, req.body);
 
-      res.status(HTTP_STATUS_CODES.OK).json({
-        success: true,
-        message: "User Profile Updated Sucessfully",
-        user,
-      });
-    } catch (error: any) {
-      if (error instanceof z.ZodError) {
-        res.status(HTTP_STATUS_CODES.BAD_REQUEST).json({
-          success: false,
-          errors: error.issues
-        });
-        return;
-      }
-      next(error);
+    if (!userId) {
+      throw new AuthError(
+        ERROR_MESSAGES.USER_ID_NOT_FOUND,
+        HTTP_STATUS_CODES.BAD_REQUEST
+      );
     }
-  }
 
-  async fetchDrivers(
-    req: AuthenticatedRequest,
-    res: Response,
-    next: NextFunction
-  ): Promise<void> {
-    try {
-      // 1. Authenticated User Check
-      const userId = req.user?.id;
-      if (!userId) {
-        throw new AuthError(
-          ERROR_MESSAGES.USER_ID_NOT_FOUND,
-          HTTP_STATUS_CODES.BAD_REQUEST
-        );
-      }
+    // 2. Execute Use Case with sanitized data
+    const user = await this._updateuserUsecase.execute(userId, validatedData);
 
-      // 2. Query Validation (Automatic page/limit numeric coercion)
-      const { page, limit, search, lat, lng } = ZodHelper.validate(FetchDriversSchema, req.query);
-     
-      // 3. Execute the use case
-      const paginatedDrivers = await this._findNearbyDrivers.execute(
+    res.status(HTTP_STATUS_CODES.OK).json({
+      success: true,
+      message: "User Profile Updated Sucessfully",
+      user,
+    });
+  });
+
+  fetchDrivers = catchAsync(async (req: AuthenticatedRequest, res: Response): Promise<void> => {
+    // 1. Authenticated User Check
+    const userId = req.user?.id;
+    if (!userId) {
+      throw new AuthError(
+        ERROR_MESSAGES.USER_ID_NOT_FOUND,
+        HTTP_STATUS_CODES.BAD_REQUEST
+      );
+    }
+
+    // 2. Query Validation (Automatic page/limit numeric coercion)
+    const { page, limit, search, lat, lng } = ZodHelper.validate(FetchDriversSchema, req.query);
+   
+    // 3. Execute the use case
+    const paginatedDrivers = await this._findNearbyDrivers.execute(
+      userId,
+      page,
+      limit,
+      search,
+      lat,
+      lng
+    );
+    
+    // 4. Send paginated Response
+    res.status(HTTP_STATUS_CODES.OK).json({
+      success: true,
+      drivers: paginatedDrivers
+    });
+  });
+
+  getDriverDetails = catchAsync(async (req: AuthenticatedRequest, res: Response): Promise<void> => {
+    // 1. Param Validation
+    const { driverId } = ZodHelper.validate(DriverIdParamSchema, req.params);
+    
+    // 2. Query Validation (Optional coordinates)
+    const { lat, lng } = ZodHelper.validate(GetNearbyDriverQuerySchema, req.query);
+
+    const userId = req.user?.id
+
+    // 3. Execute and return safe Response DTO
+    const driver = await this._getNearbyDriverDetailsUseCase.execute(userId!, driverId, lat, lng);
+    res.status(HTTP_STATUS_CODES.OK).json(driver);
+  });
+
+  createPaymentIntent = catchAsync(async (req: Request, res: Response): Promise<void> => {
+    // 1. DTO Validation
+    const { amount, driverId } = ZodHelper.validate(
+      CreatePaymentIntentSchema,
+      req.body
+    );
+
+    // 2. Execute Use Case
+    const result = await this._createPaymentUsecase.execute({
+      amount,
+      driverId,
+    });
+
+    // 3. Response 
+    res.status(HTTP_STATUS_CODES.OK).json(result);
+  });
+
+  getDriverById = catchAsync(async (req: Request, res: Response): Promise<void> => {
+    // 1. Param Validation
+    const { driverId } = ZodHelper.validate(DriverIdParamSchema, {
+      driverId: req.params.id,
+    });
+
+    // 2. Execute
+    const driver = await this._getDriverProfileUsecase.execute(driverId);
+    
+    if (!driver) {
+      throw new AuthError(ERROR_MESSAGES.DRIVER_NOT_FOUND, HTTP_STATUS_CODES.NOT_FOUND);
+    }
+
+    // 3. Return safe Response DTO
+    res
+      .status(HTTP_STATUS_CODES.OK)
+      .json({ success: true, driver });
+  });
+
+  WalletTransaction = catchAsync(async (req: AuthenticatedRequest, res: Response): Promise<void> => {
+    // 1. DTO Validation (Automatic numeric coercion)
+    const { page, limit } = ZodHelper.validate(WalletPaginationSchema, req.query);
+
+    const userId = req.user?.id;
+    if (!userId) {
+      throw new AuthError(
+        ERROR_MESSAGES.USER_ID_NOT_FOUND,
+        HTTP_STATUS_CODES.BAD_REQUEST
+      );
+    }
+
+    // 2. Execute
+    const transactionHistory =
+      await this._walletTransactionUsecase.getTransactionHistory(
         userId,
         page,
-        limit,
-        search,
-        lat,
-        lng
+        limit
       );
-      console.log(paginatedDrivers,'paginated drivers')
-      // 4. Send paginated Response DTOs
-      res.status(HTTP_STATUS_CODES.OK).json({
-        success: true,
-        drivers: paginatedDrivers
-      });
-    } catch (error: any) {
-      if (error instanceof z.ZodError) {
-        res.status(HTTP_STATUS_CODES.BAD_REQUEST).json({
-          success: false,
-          errors: error.issues
-        });
-        return;
-      }
-      next(error);
-    }
-  }
-  async getDriverDetails(req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> {
-    try {
+    const ballence = await this._walletTransactionUsecase.getWalletBalance(
+      userId
+    );
 
-      // 1. Param Validation
-      const { driverId } = ZodHelper.validate(DriverIdParamSchema, req.params);
-      console.log(req.query, 'query')
-      // 2. Query Validation (Optional coordinates)
-      const { lat, lng } = ZodHelper.validate(GetNearbyDriverQuerySchema, req.query);
+    // 3. Response
+    res.status(HTTP_STATUS_CODES.OK).json({ success: true, ...transactionHistory, ballence });
+  });
 
-      const userId = req.user?.id
+  submitReview = catchAsync(async (req: AuthenticatedRequest, res: Response): Promise<void> => {
+    // 1. DTO Validation
+    const { driverId, rideId, rating, review } = ZodHelper.validate(
+      SubmitReviewSchema,
+      req.body
+    );
 
-      // 3. Execute and return safe Response DTO
-      const driver = await this._getNearbyDriverDetailsUseCase.execute(userId!, driverId, lat, lng);
-      console.log(driver,'reach here ');
-      res.status(HTTP_STATUS_CODES.OK).json(driver);
-    } catch (error: any) {
-      console.log(error, 'error')
-      if (error instanceof z.ZodError) {
-        res.status(HTTP_STATUS_CODES.BAD_REQUEST).json({
-          success: false,
-          errors: error.issues
-        });
-        return;
-      }
-      next(error);
-    }
-  }
-
-  async createPaymentIntent(
-    req: Request,
-    res: Response,
-    next: NextFunction
-  ): Promise<void> {
-    try {
-      // 1. DTO Validation
-      const { amount, driverId } = ZodHelper.validate(
-        CreatePaymentIntentSchema,
-        req.body
+    const userId = req.user?.id;
+    if (!userId) {
+      throw new AuthError(
+        ERROR_MESSAGES.USER_ID_NOT_FOUND,
+        HTTP_STATUS_CODES.UNAUTHORIZED
       );
-
-      // 2. Execute Use Case
-      const result = await this._createPaymentUsecase.execute({
-        amount,
-        driverId,
-      });
-
-      // 3. Response 
-      res.status(HTTP_STATUS_CODES.OK).json(result);
-    } catch (error: any) {
-      if (error instanceof z.ZodError) {
-        res.status(HTTP_STATUS_CODES.BAD_REQUEST).json({
-          success: false,
-          errors: error.issues
-        });
-        return;
-      }
-      next(error);
     }
-  }
-  async getDriverById(
-    req: Request,
-    res: Response,
-    next: NextFunction
-  ): Promise<void> {
-    try {
-      // 1. Param Validation
-      const { driverId } = ZodHelper.validate(DriverIdParamSchema, {
-        driverId: req.params.id,
-      });
 
-      // 2. Execute
-      const driver = await this._getDriverProfileUsecase.execute(driverId);
-      console.log(driver, 'driver')
-      if (!driver) {
-        throw new AuthError(ERROR_MESSAGES.DRIVER_NOT_FOUND, HTTP_STATUS_CODES.NOT_FOUND);
-      }
+    // 2. Execute
+    const createdReview = await this._submitReviewUsecase.execute({
+      driverId,
+      userId,
+      rideId,
+      rating,
+      review,
+    });
 
-      // 3. Return safe Response DTO
-      res
-        .status(HTTP_STATUS_CODES.OK)
-        .json({ success: true, driver });
-    } catch (error: any) {
-      if (error instanceof z.ZodError) {
-        res.status(HTTP_STATUS_CODES.BAD_REQUEST).json({
-          success: false,
-          errors: error.issues
-        });
-        return;
-      }
-      next(error);
-    }
-  }
-
-  async WalletTransaction(
-    req: AuthenticatedRequest,
-    res: Response,
-    next: NextFunction
-  ): Promise<void> {
-    try {
-      // 1. DTO Validation (Automatic numeric coercion)
-      const { page, limit } = ZodHelper.validate(WalletPaginationSchema, req.query);
-
-      const userId = req.user?.id;
-      if (!userId) {
-        throw new AuthError(
-          ERROR_MESSAGES.USER_ID_NOT_FOUND,
-          HTTP_STATUS_CODES.BAD_REQUEST
-        );
-      }
-
-      // 2. Execute
-      const transactionHistory =
-        await this._walletTransactionUsecase.getTransactionHistory(
-          userId,
-          page,
-          limit
-        );
-      const ballence = await this._walletTransactionUsecase.getWalletBalance(
-        userId
-      );
-
-      // 3. Response
-      res.status(HTTP_STATUS_CODES.OK).json({ success: true, ...transactionHistory, ballence });
-    } catch (error: any) {
-      if (error instanceof z.ZodError) {
-        res.status(HTTP_STATUS_CODES.BAD_REQUEST).json({
-          success: false,
-          errors: error.issues
-        });
-        return;
-      }
-      next(error);
-    }
-  }
-
-  async submitReview(
-    req: AuthenticatedRequest,
-    res: Response,
-    next: NextFunction
-  ): Promise<void> {
-    try {
-      // 1. DTO Validation
-      const { driverId, rideId, rating, review } = ZodHelper.validate(
-        SubmitReviewSchema,
-        req.body
-      );
-
-      const userId = req.user?.id;
-      if (!userId) {
-        throw new AuthError(
-          ERROR_MESSAGES.USER_ID_NOT_FOUND,
-          HTTP_STATUS_CODES.UNAUTHORIZED
-        );
-      }
-
-      // 2. Execute
-      const createdReview = await this._submitReviewUsecase.execute({
-        driverId,
-        userId,
-        rideId,
-        rating,
-        review,
-      });
-
-      // 3. Response
-      res.status(HTTP_STATUS_CODES.CREATED).json(createdReview);
-    } catch (error: any) {
-      if (error instanceof z.ZodError) {
-        res.status(HTTP_STATUS_CODES.BAD_REQUEST).json({
-          success: false,
-          errors: error.issues
-        });
-        return;
-      }
-      next(error);
-    }
-  }
+    // 3. Response
+    res.status(HTTP_STATUS_CODES.CREATED).json(createdReview);
+  });
 }

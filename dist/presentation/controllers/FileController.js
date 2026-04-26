@@ -18,21 +18,17 @@ const UseCaseTokens_1 = require("../../constants/UseCaseTokens");
 const ZodHelper_1 = require("../schemas/common/ZodHelper");
 const FileRequestDTO_1 = require("../schemas/common/FileRequestDTO");
 const HttpStatusCode_1 = require("../../constants/HttpStatusCode");
+const catchAsync_1 = require("../../infrastructure/utils/catchAsync");
 let FileController = class FileController {
     constructor(_generateSignedUrlUseCase) {
         this._generateSignedUrlUseCase = _generateSignedUrlUseCase;
-    }
-    async getSignedUrl(req, res, next) {
-        try {
+        this.getSignedUrl = (0, catchAsync_1.catchAsync)(async (req, res) => {
             // 1. DTO Validation
             const { fileType, fileName } = ZodHelper_1.ZodHelper.validate(FileRequestDTO_1.GetSignedUrlSchema, req.query);
             // 2. Execute
             const signedUrlResponse = await this._generateSignedUrlUseCase.execute(fileType, fileName);
             return res.status(HttpStatusCode_1.HTTP_STATUS_CODES.CREATED).json({ signedUrl: signedUrlResponse });
-        }
-        catch (error) {
-            next(error);
-        }
+        });
     }
 };
 exports.FileController = FileController;

@@ -21,7 +21,7 @@ const HttpStatusCode_1 = require("../../constants/HttpStatusCode");
 const Tokens_1 = require("../../constants/Tokens");
 const ZodHelper_1 = require("../schemas/common/ZodHelper");
 const DriverRequestDTO_1 = require("../schemas/driver/DriverRequestDTO");
-const zod_1 = require("zod");
+const catchAsync_1 = require("../../infrastructure/utils/catchAsync");
 let DriverController = class DriverController {
     constructor(_registerDriverUseCase, _verifyOtpUsecase, _loginUsecase, _getDriverProfileUsecase, _getUserDataUsecase, _resendOtpUsecase, _editDriverProfileUseCase, _onboardDriverUseCase, _getUserBookingsUsecase, _verifyDriverPaymentAccount) {
         this._registerDriverUseCase = _registerDriverUseCase;
@@ -34,29 +34,15 @@ let DriverController = class DriverController {
         this._onboardDriverUseCase = _onboardDriverUseCase;
         this._getUserBookingsUsecase = _getUserBookingsUsecase;
         this._verifyDriverPaymentAccount = _verifyDriverPaymentAccount;
-    }
-    async registerDriver(req, res, next) {
-        try {
+        this.registerDriver = (0, catchAsync_1.catchAsync)(async (req, res) => {
             // 1. DTO Validation
             const validatedData = ZodHelper_1.ZodHelper.validate(DriverRequestDTO_1.RegisterDriverSchema, req.body);
             // 2. Execute
             const response = await this._registerDriverUseCase.execute(validatedData);
             // 3. Response
             res.status(HttpStatusCode_1.HTTP_STATUS_CODES.OK).json({ success: true, ...response });
-        }
-        catch (error) {
-            if (error instanceof zod_1.z.ZodError) {
-                res.status(HttpStatusCode_1.HTTP_STATUS_CODES.BAD_REQUEST).json({
-                    success: false,
-                    errors: error.issues
-                });
-                return;
-            }
-            next(error);
-        }
-    }
-    async verifyOTPDriver(req, res, next) {
-        try {
+        });
+        this.verifyOTPDriver = (0, catchAsync_1.catchAsync)(async (req, res) => {
             // 1. DTO Validation
             const { email, otp } = ZodHelper_1.ZodHelper.validate(DriverRequestDTO_1.VerifyDriverOtpSchema, req.body);
             // 2. Execute
@@ -69,20 +55,8 @@ let DriverController = class DriverController {
                 maxAge: Number(process.env.COOKIE_MAX_AGE) || 7 * 24 * 60 * 60 * 1000,
             });
             res.status(HttpStatusCode_1.HTTP_STATUS_CODES.OK).json({ success: true, accessToken, user });
-        }
-        catch (error) {
-            if (error instanceof zod_1.z.ZodError) {
-                res.status(HttpStatusCode_1.HTTP_STATUS_CODES.BAD_REQUEST).json({
-                    success: false,
-                    errors: error.issues
-                });
-                return;
-            }
-            next(error);
-        }
-    }
-    async login(req, res, next) {
-        try {
+        });
+        this.login = (0, catchAsync_1.catchAsync)(async (req, res) => {
             // 1. DTO Validation
             const { email, password, role } = ZodHelper_1.ZodHelper.validate(DriverRequestDTO_1.DriverLoginSchema, req.body);
             // 2. Execute
@@ -98,20 +72,8 @@ let DriverController = class DriverController {
                 accessToken: result.accessToken,
                 role: result.role,
             });
-        }
-        catch (error) {
-            if (error instanceof zod_1.z.ZodError) {
-                res.status(HttpStatusCode_1.HTTP_STATUS_CODES.BAD_REQUEST).json({
-                    success: false,
-                    errors: error.issues
-                });
-                return;
-            }
-            next(error);
-        }
-    }
-    async getDriverProfile(req, res, next) {
-        try {
+        });
+        this.getDriverProfile = (0, catchAsync_1.catchAsync)(async (req, res) => {
             const driverId = req.user?.id;
             if (!driverId) {
                 throw new Autherror_1.AuthError(ErrorMessages_1.ERROR_MESSAGES.DRIVER_ID_NOT_FOUND, HttpStatusCode_1.HTTP_STATUS_CODES.BAD_REQUEST);
@@ -122,13 +84,8 @@ let DriverController = class DriverController {
             }
             // Return sanitized full profile for the driver's dashboard
             res.status(HttpStatusCode_1.HTTP_STATUS_CODES.OK).json({ success: true, driver });
-        }
-        catch (error) {
-            next(error);
-        }
-    }
-    async getUserById(req, res, next) {
-        try {
+        });
+        this.getUserById = (0, catchAsync_1.catchAsync)(async (req, res) => {
             // 1. Param Validation
             const { id } = ZodHelper_1.ZodHelper.validate(DriverRequestDTO_1.UserIdParamSchema, req.params);
             // 2. Execute
@@ -138,20 +95,8 @@ let DriverController = class DriverController {
             }
             // 3. Response 
             res.status(HttpStatusCode_1.HTTP_STATUS_CODES.OK).json({ success: true, user });
-        }
-        catch (error) {
-            if (error instanceof zod_1.z.ZodError) {
-                res.status(HttpStatusCode_1.HTTP_STATUS_CODES.BAD_REQUEST).json({
-                    success: false,
-                    errors: error.issues
-                });
-                return;
-            }
-            next(error);
-        }
-    }
-    async editDriverProfile(req, res, next) {
-        try {
+        });
+        this.editDriverProfile = (0, catchAsync_1.catchAsync)(async (req, res) => {
             // 1. DTO Validation
             const { id: driverId } = ZodHelper_1.ZodHelper.validate(DriverRequestDTO_1.UserIdParamSchema, req.params);
             const validatedData = ZodHelper_1.ZodHelper.validate(DriverRequestDTO_1.EditDriverProfileSchema, req.body);
@@ -164,20 +109,8 @@ let DriverController = class DriverController {
                 throw new Autherror_1.AuthError(ErrorMessages_1.ERROR_MESSAGES.DRIVER_NOT_FOUND, HttpStatusCode_1.HTTP_STATUS_CODES.NOT_FOUND);
             }
             res.status(HttpStatusCode_1.HTTP_STATUS_CODES.OK).json({ success: true, driver: updatedDriver });
-        }
-        catch (error) {
-            if (error instanceof zod_1.z.ZodError) {
-                res.status(HttpStatusCode_1.HTTP_STATUS_CODES.BAD_REQUEST).json({
-                    success: false,
-                    errors: error.issues
-                });
-                return;
-            }
-            next(error);
-        }
-    }
-    async onboardDriver(req, res, next) {
-        try {
+        });
+        this.onboardDriver = (0, catchAsync_1.catchAsync)(async (req, res) => {
             // 1. DTO Validation
             const { email, driverId: bodyDriverId } = ZodHelper_1.ZodHelper.validate(DriverRequestDTO_1.OnboardDriverSchema, req.body);
             const driverId = bodyDriverId || req.user?.id;
@@ -187,20 +120,8 @@ let DriverController = class DriverController {
             // 2. Execute
             const onboardingUrl = await this._onboardDriverUseCase.execute(email, driverId);
             res.status(HttpStatusCode_1.HTTP_STATUS_CODES.OK).json({ url: onboardingUrl });
-        }
-        catch (error) {
-            if (error instanceof zod_1.z.ZodError) {
-                res.status(HttpStatusCode_1.HTTP_STATUS_CODES.BAD_REQUEST).json({
-                    success: false,
-                    errors: error.issues
-                });
-                return;
-            }
-            next(error);
-        }
-    }
-    async getBookingsForDriver(req, res, next) {
-        try {
+        });
+        this.getBookingsForDriver = (0, catchAsync_1.catchAsync)(async (req, res) => {
             const driverId = req.user?.id;
             if (!driverId) {
                 throw new Autherror_1.AuthError(ErrorMessages_1.ERROR_MESSAGES.DRIVER_ID_NOT_FOUND, HttpStatusCode_1.HTTP_STATUS_CODES.BAD_REQUEST);
@@ -216,57 +137,23 @@ let DriverController = class DriverController {
                 totalPages: paginatedBookings.totalPages,
                 currentPage: paginatedBookings.page,
             });
-        }
-        catch (error) {
-            if (error instanceof zod_1.z.ZodError) {
-                res.status(HttpStatusCode_1.HTTP_STATUS_CODES.BAD_REQUEST).json({
-                    success: false,
-                    errors: error.issues
-                });
-                return;
-            }
-            next(error);
-        }
-    }
-    async verifyAccount(req, res, next) {
-        try {
+        });
+        this.verifyAccount = (0, catchAsync_1.catchAsync)(async (req, res) => {
             // 1. DTO Validation
             const { driverId } = ZodHelper_1.ZodHelper.validate(DriverRequestDTO_1.VerifyAccountSchema, req.body);
             // 2. Execute
             await this._verifyDriverPaymentAccount.execute(driverId);
             // 3. Response
             res.status(HttpStatusCode_1.HTTP_STATUS_CODES.OK).json({ success: true, message: 'Payment activated for driver' });
-        }
-        catch (error) {
-            if (error instanceof zod_1.z.ZodError) {
-                res.status(HttpStatusCode_1.HTTP_STATUS_CODES.BAD_REQUEST).json({
-                    success: false,
-                    errors: error.issues
-                });
-                return;
-            }
-            next(error);
-        }
-    }
-    async resendOTP(req, res, next) {
-        try {
+        });
+        this.resendOTP = (0, catchAsync_1.catchAsync)(async (req, res) => {
             // 1. DTO Validation
             const { email, role } = ZodHelper_1.ZodHelper.validate(DriverRequestDTO_1.ResendDriverOtpSchema, req.body);
             // 2. Execute
             const result = await this._resendOtpUsecase.execute(email, role);
             // 3. Response
             res.status(HttpStatusCode_1.HTTP_STATUS_CODES.OK).json({ success: true, ...result });
-        }
-        catch (error) {
-            if (error instanceof zod_1.z.ZodError) {
-                res.status(HttpStatusCode_1.HTTP_STATUS_CODES.BAD_REQUEST).json({
-                    success: false,
-                    errors: error.issues
-                });
-                return;
-            }
-            next(error);
-        }
+        });
     }
 };
 exports.DriverController = DriverController;

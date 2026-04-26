@@ -17,6 +17,7 @@ const tsyringe_1 = require("tsyringe");
 const Driverschema_1 = __importDefault(require("./modals/Driverschema")); // MongoDB Schema
 const mongoose_1 = require("mongoose");
 const Autherror_1 = require("../../domain/errors/Autherror");
+const ConflictError_1 = require("../../domain/errors/ConflictError");
 const HttpStatusCode_1 = require("../../constants/HttpStatusCode");
 const BaseRepository_1 = require("./BaseRepository");
 let MongoDriverRepository = class MongoDriverRepository extends BaseRepository_1.BaseRepository {
@@ -24,35 +25,51 @@ let MongoDriverRepository = class MongoDriverRepository extends BaseRepository_1
         super(Driverschema_1.default);
     }
     async create(driver) {
-        let geoDriver = { ...driver };
-        if ("latitude" in driver.location && "longitude" in driver.location) {
-            geoDriver.location = {
-                type: "Point",
-                coordinates: [driver.location.longitude, driver.location.latitude],
-            };
+        try {
+            let geoDriver = { ...driver };
+            if ("latitude" in driver.location && "longitude" in driver.location) {
+                geoDriver.location = {
+                    type: "Point",
+                    coordinates: [driver.location.longitude, driver.location.latitude],
+                };
+            }
+            const newDriver = new Driverschema_1.default(geoDriver);
+            const savedDriver = await newDriver.save();
+            return savedDriver.toObject();
         }
-        const newDriver = new Driverschema_1.default(geoDriver);
-        const savedDriver = await newDriver.save();
-        return savedDriver.toObject();
+        catch (error) {
+            if (error.code === 11000) {
+                throw new ConflictError_1.ConflictError("Driver with this email already exists");
+            }
+            throw error;
+        }
     }
     async update(driverId, data) {
-        if (!(0, mongoose_1.isValidObjectId)(driverId)) {
-            throw new Autherror_1.AuthError("Invalid driver ID", HttpStatusCode_1.HTTP_STATUS_CODES.BAD_REQUEST);
+        try {
+            if (!(0, mongoose_1.isValidObjectId)(driverId)) {
+                throw new Autherror_1.AuthError("Invalid driver ID", HttpStatusCode_1.HTTP_STATUS_CODES.BAD_REQUEST);
+            }
+            const driver = await Driverschema_1.default.findById(driverId);
+            if (!driver)
+                return null;
+            if (data.location &&
+                "latitude" in data.location &&
+                "longitude" in data.location) {
+                data.location = {
+                    type: "Point",
+                    coordinates: [data.location.longitude, data.location.latitude],
+                };
+            }
+            Object.assign(driver, data);
+            await driver.save();
+            return driver.toObject();
         }
-        const driver = await Driverschema_1.default.findById(driverId);
-        if (!driver)
-            return null;
-        if (data.location &&
-            "latitude" in data.location &&
-            "longitude" in data.location) {
-            data.location = {
-                type: "Point",
-                coordinates: [data.location.longitude, data.location.latitude],
-            };
+        catch (error) {
+            if (error.code === 11000) {
+                throw new ConflictError_1.ConflictError("Driver with this email already exists");
+            }
+            throw error;
         }
-        Object.assign(driver, data);
-        await driver.save();
-        return driver.toObject();
     }
     async findDriverById(driverId) {
         try {

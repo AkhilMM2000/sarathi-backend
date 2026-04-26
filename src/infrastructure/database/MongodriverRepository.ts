@@ -4,6 +4,8 @@ import { Driver } from "../../domain/models/Driver";
 import DriverModel, { IDriver } from "./modals/Driverschema"; // MongoDB Schema
 import { isValidObjectId, Types } from "mongoose";
 import { AuthError } from "../../domain/errors/Autherror";
+import { ConflictError } from "../../domain/errors/ConflictError";
+import { NotFoundError } from "../../domain/errors/NotFoundError";
 import { PaginatedResult } from "../../domain/repositories/IBookingrepository";
 import { HTTP_STATUS_CODES } from "../../constants/HttpStatusCode";
 import { BaseRepository } from "./BaseRepository";
@@ -14,43 +16,59 @@ export class MongoDriverRepository extends BaseRepository<Driver, IDriver> imple
     super(DriverModel);
   }
 
- async create(driver: Driver): Promise<Driver> {
-  let geoDriver = { ...driver };
+  async create(driver: Driver): Promise<Driver> {
+    try {
+      let geoDriver = { ...driver };
 
-  if ("latitude" in driver.location && "longitude" in driver.location) {
-    geoDriver.location = {
-      type: "Point",
-      coordinates: [driver.location.longitude, driver.location.latitude],
-    };
+      if ("latitude" in driver.location && "longitude" in driver.location) {
+        geoDriver.location = {
+          type: "Point",
+          coordinates: [driver.location.longitude, driver.location.latitude],
+        };
+      }
+
+      const newDriver = new DriverModel(geoDriver);
+      const savedDriver = await newDriver.save();
+      return savedDriver.toObject() as Driver;
+    } catch (error: any) {
+      if (error.code === 11000) {
+        throw new ConflictError("Driver with this email already exists");
+      }
+      throw error;
+    }
   }
 
-  const newDriver = new DriverModel(geoDriver);
-  const savedDriver = await newDriver.save();
-  return savedDriver.toObject() as Driver;
-}async update(driverId: string, data: Partial<Driver>): Promise<Driver | null> {
-  if (!isValidObjectId(driverId)) {
-    throw new AuthError("Invalid driver ID", HTTP_STATUS_CODES.BAD_REQUEST);
+  async update(driverId: string, data: Partial<Driver>): Promise<Driver | null> {
+    try {
+      if (!isValidObjectId(driverId)) {
+        throw new AuthError("Invalid driver ID", HTTP_STATUS_CODES.BAD_REQUEST);
+      }
+
+      const driver = await DriverModel.findById(driverId);
+      if (!driver) return null;
+
+      if (
+        data.location &&
+        "latitude" in data.location &&
+        "longitude" in data.location
+      ) {
+        data.location = {
+          type: "Point",
+          coordinates: [data.location.longitude, data.location.latitude],
+        } as any;
+      }
+
+      Object.assign(driver, data);
+      await driver.save();
+
+      return driver.toObject() as Driver;
+    } catch (error: any) {
+      if (error.code === 11000) {
+        throw new ConflictError("Driver with this email already exists");
+      }
+      throw error;
+    }
   }
-
-  const driver = await DriverModel.findById(driverId);
-  if (!driver) return null;
-
-  if (
-    data.location &&
-    "latitude" in data.location &&
-    "longitude" in data.location
-  ) {
-    data.location = {
-      type: "Point",
-      coordinates: [data.location.longitude, data.location.latitude],
-    } as any;
-  }
-
-  Object.assign(driver, data);
-  await driver.save();
-
-  return driver.toObject() as Driver;
-}
     
   async findDriverById(driverId: string): Promise<Driver | null> {
     try {

@@ -1,12 +1,10 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.AuthError = void 0;
-class AuthError extends Error {
+const BaseError_1 = require("./BaseError");
+class AuthError extends BaseError_1.BaseError {
     constructor(message, statusCode = 400) {
-        super(message);
-        this.statusCode = statusCode;
-        Object.setPrototypeOf(this, new.target.prototype);
-        Error.captureStackTrace(this);
+        super(message, statusCode);
     }
 }
 exports.AuthError = AuthError;

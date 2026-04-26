@@ -4,6 +4,8 @@ import { User } from "../../domain/models/User";
 import UserModel, { UserDocument } from "./modals/userschema";  // MongoDB Schema
 import { isValidObjectId, Types } from "mongoose";
 import { AuthError } from "../../domain/errors/Autherror";
+import { ConflictError } from "../../domain/errors/ConflictError";
+import { NotFoundError } from "../../domain/errors/NotFoundError";
 import { HTTP_STATUS_CODES } from "../../constants/HttpStatusCode";
 import { ERROR_MESSAGES } from "../../constants/ErrorMessages";
 import { BaseRepository } from "./BaseRepository";
@@ -18,16 +20,23 @@ export class MongoUserRepository extends BaseRepository<User, UserDocument> impl
     return super.create(user);
   }
   async updateUser(userId: string, data: Partial<User>): Promise<User | null> {
-    if (!isValidObjectId(userId)) throw new Error("Invalid user ID");
-     
-    const user = await UserModel.findById(userId);
-    if (!user) return null;
-  
-    Object.assign(user, data);
-  
-    await user.save();
-  
-    return user.toObject() as User;
+    try {
+      if (!isValidObjectId(userId)) throw new Error("Invalid user ID");
+       
+      const user = await UserModel.findById(userId);
+      if (!user) return null;
+    
+      Object.assign(user, data);
+    
+      await user.save();
+    
+      return user.toObject() as User;
+    } catch (error: any) {
+      if (error.code === 11000) {
+        throw new ConflictError("User with this email or mobile already exists");
+      }
+      throw error;
+    }
   }
     
 

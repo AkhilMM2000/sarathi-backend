@@ -1,18 +1,25 @@
 "use strict";
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.GoogleauthController = void 0;
 const tsyringe_1 = require("tsyringe");
 const googleAuth_1 = require("../../application/use_cases/Auth/googleAuth");
-const Autherror_1 = require("../../domain/errors/Autherror");
-class GoogleauthController {
-    static async googleAuth(req, res) {
-        try {
-            console.log(req.body);
+const catchAsync_1 = require("../../infrastructure/utils/catchAsync");
+const tsyringe_2 = require("tsyringe");
+let GoogleauthController = class GoogleauthController {
+    constructor() {
+        this.googleAuth = (0, catchAsync_1.catchAsync)(async (req, res) => {
             const { googleToken, role } = req.body;
             if (!googleToken) {
                 res.status(400).json({ message: "Google token is required!" });
+                return;
             }
-            const googleUseCase = tsyringe_1.container.resolve(googleAuth_1.GoogleAuthUseCase);
+            const googleUseCase = tsyringe_2.container.resolve(googleAuth_1.GoogleAuthUseCase);
             const { accessToken, refreshToken, success } = await googleUseCase.execute(googleToken, role);
             res.cookie('refresh_token', refreshToken, {
                 httpOnly: true,
@@ -25,19 +32,11 @@ class GoogleauthController {
                 role,
                 success
             });
-        }
-        catch (error) {
-            if (error instanceof Autherror_1.AuthError) {
-                res.status(error.statusCode).json({
-                    success: false,
-                    error: error.message,
-                });
-                return;
-            }
-            res.status(500).json({ success: false, error: "Something went wrong" });
-            return;
-        }
+        });
     }
-}
+};
 exports.GoogleauthController = GoogleauthController;
+exports.GoogleauthController = GoogleauthController = __decorate([
+    (0, tsyringe_1.injectable)()
+], GoogleauthController);
 //# sourceMappingURL=googleAuthController.js.map

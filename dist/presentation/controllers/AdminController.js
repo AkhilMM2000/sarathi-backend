@@ -21,6 +21,7 @@ const Tokens_1 = require("../../constants/Tokens");
 const UseCaseTokens_1 = require("../../constants/UseCaseTokens");
 const ErrorMessages_1 = require("../../constants/ErrorMessages");
 const AdminRequestDTO_1 = require("../schemas/admin/AdminRequestDTO");
+const catchAsync_1 = require("../../infrastructure/utils/catchAsync");
 let AdminController = class AdminController {
     constructor(_loginUsecase, _getAllUsersUseCase, _blockUserUseCase, _getDriversUseCase, _changeDriverStatusUseCase, _blockOrUnblockDriverUseCase, _getVehicleByUserUseCase, _getAdminDashboardStatsUseCase) {
         this._loginUsecase = _loginUsecase;
@@ -31,9 +32,7 @@ let AdminController = class AdminController {
         this._blockOrUnblockDriverUseCase = _blockOrUnblockDriverUseCase;
         this._getVehicleByUserUseCase = _getVehicleByUserUseCase;
         this._getAdminDashboardStatsUseCase = _getAdminDashboardStatsUseCase;
-    }
-    async login(req, res, next) {
-        try {
+        this.login = (0, catchAsync_1.catchAsync)(async (req, res) => {
             // 1. DTO Validation
             const { email, password, role } = ZodHelper_1.ZodHelper.validate(AdminRequestDTO_1.AdminLoginSchema, req.body);
             // 2. Execute
@@ -50,13 +49,8 @@ let AdminController = class AdminController {
                 role,
                 message: "your admin login successfull",
             });
-        }
-        catch (error) {
-            next(error);
-        }
-    }
-    async getAllUsers(req, res, next) {
-        try {
+        });
+        this.getAllUsers = (0, catchAsync_1.catchAsync)(async (req, res) => {
             // 1. Request Validation (Optional pagination params)
             const { page, limit } = ZodHelper_1.ZodHelper.validate(AdminRequestDTO_1.AdminPaginationSchema, req.query);
             // 2. Execute
@@ -66,13 +60,8 @@ let AdminController = class AdminController {
                 data: usersWithVehicleCount,
                 pagination: { page, limit }
             });
-        }
-        catch (error) {
-            next(error);
-        }
-    }
-    async updateUserStatus(req, res, next) {
-        try {
+        });
+        this.updateUserStatus = (0, catchAsync_1.catchAsync)(async (req, res) => {
             // 1. Param & Body Validation
             const { userId } = ZodHelper_1.ZodHelper.validate(AdminRequestDTO_1.UserIdParamSchema, req.params);
             const { isBlock } = ZodHelper_1.ZodHelper.validate(AdminRequestDTO_1.UpdateUserStatusSchema, req.body);
@@ -85,13 +74,8 @@ let AdminController = class AdminController {
                     : "User unblocked successfully",
                 user: blockedUser,
             });
-        }
-        catch (error) {
-            next(error);
-        }
-    }
-    async getAllDrivers(req, res, next) {
-        try {
+        });
+        this.getAllDrivers = (0, catchAsync_1.catchAsync)(async (req, res) => {
             // 1. Request Validation (pagination params)
             const { page, limit } = ZodHelper_1.ZodHelper.validate(AdminRequestDTO_1.AdminPaginationSchema, req.query);
             // 2. Execute
@@ -100,13 +84,8 @@ let AdminController = class AdminController {
                 success: true,
                 ...paginatedDrivers
             });
-        }
-        catch (error) {
-            next(error);
-        }
-    }
-    async changeDriverStatus(req, res, next) {
-        try {
+        });
+        this.changeDriverStatus = (0, catchAsync_1.catchAsync)(async (req, res) => {
             // 1. Param & Body Validation
             const { driverId } = ZodHelper_1.ZodHelper.validate(AdminRequestDTO_1.DriverIdParamSchema, req.params);
             const { status, reason } = ZodHelper_1.ZodHelper.validate(AdminRequestDTO_1.ChangeDriverStatusSchema, req.body);
@@ -119,47 +98,29 @@ let AdminController = class AdminController {
                 message: "Driver status updated successfully",
                 driver: updatedDriver
             });
-        }
-        catch (error) {
-            next(error);
-        }
-    }
-    async handleBlockStatus(req, res, next) {
-        try {
+        });
+        this.handleBlockStatus = (0, catchAsync_1.catchAsync)(async (req, res) => {
             // 1. Param & Body Validation
             const { driverId } = ZodHelper_1.ZodHelper.validate(AdminRequestDTO_1.DriverIdParamSchema, req.params);
             const { isBlock } = ZodHelper_1.ZodHelper.validate(AdminRequestDTO_1.HandleBlockStatusSchema, req.body);
             // 2. Execute the use case
             await this._blockOrUnblockDriverUseCase.execute(driverId, isBlock);
             res.status(HttpStatusCode_1.HTTP_STATUS_CODES.OK).json({ success: true, message: `Driver ${isBlock ? "blocked" : "unblocked"} successfully` });
-        }
-        catch (error) {
-            next(error);
-        }
-    }
-    async getVehiclesByUser(req, res, next) {
-        try {
+        });
+        this.getVehiclesByUser = (0, catchAsync_1.catchAsync)(async (req, res) => {
             // 1. Param Validation
             const { userId } = ZodHelper_1.ZodHelper.validate(AdminRequestDTO_1.UserIdParamSchema, req.params);
             // 2. Execute
             const vehicles = await this._getVehicleByUserUseCase.execute(userId);
             res.status(HttpStatusCode_1.HTTP_STATUS_CODES.OK).json({ success: true, data: vehicles });
-        }
-        catch (error) {
-            next(error);
-        }
-    }
-    async getDashboardStats(req, res, next) {
-        try {
+        });
+        this.getDashboardStats = (0, catchAsync_1.catchAsync)(async (req, res) => {
             const stats = await this._getAdminDashboardStatsUseCase.execute();
             res.status(HttpStatusCode_1.HTTP_STATUS_CODES.OK).json({
                 success: true,
                 data: stats,
             });
-        }
-        catch (error) {
-            next(error);
-        }
+        });
     }
 };
 exports.AdminController = AdminController;

@@ -23,6 +23,7 @@ import { toUserResponse } from "../../application/dto/user/UserResponseDto";
 import { toDriverFullResponse } from "../../application/dto/driver/DriverResponseDto";
 import { DriverIdParamSchema } from "../schemas/user/UserDTO";
 import { z } from "zod";
+import { catchAsync } from "../../infrastructure/utils/catchAsync";
 @injectable()
 export class DriverController {
 
@@ -49,264 +50,160 @@ export class DriverController {
     private _verifyDriverPaymentAccount: IVerifyDriverPaymentAccount
   ) {}
 
-   async registerDriver(req: Request, res: Response, next: NextFunction): Promise<void> {
-    try {
-     
-      // 1. DTO Validation
-      const validatedData = ZodHelper.validate(RegisterDriverSchema, req.body);
+  registerDriver = catchAsync(async (req: Request, res: Response): Promise<void> => {
+    // 1. DTO Validation
+    const validatedData = ZodHelper.validate(RegisterDriverSchema, req.body);
 
-      // 2. Execute
-      const response = await this._registerDriverUseCase.execute(validatedData);
-      
-      // 3. Response
-      res.status(HTTP_STATUS_CODES.OK).json({ success: true, ...response });
-    } catch (error: any) {
-      if (error instanceof z.ZodError) {
-        res.status(HTTP_STATUS_CODES.BAD_REQUEST).json({
-          success: false,
-          errors: error.issues
-        });
-        return;
-      }
-      next(error);
-    }
-  }
-   async verifyOTPDriver(req: Request, res: Response, next: NextFunction): Promise<void> {
-    try {
-      // 1. DTO Validation
-      const { email, otp } = ZodHelper.validate(VerifyDriverOtpSchema, req.body);
-
-      // 2. Execute
-      const { accessToken, refreshToken, user } = await this._verifyOtpUsecase.execute(email, otp, "driver");
-      
-      // 3. Set Cookie and Response
-      res.cookie('refresh_token', refreshToken, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
-        maxAge: Number(process.env.COOKIE_MAX_AGE) || 7 * 24 * 60 * 60 * 1000,
-      });
-      res.status(HTTP_STATUS_CODES.OK).json({ success: true, accessToken, user });
-    } catch (error: any) {
-      if (error instanceof z.ZodError) {
-        res.status(HTTP_STATUS_CODES.BAD_REQUEST).json({
-          success: false,
-          errors: error.issues
-        });
-        return;
-      }
-      next(error);
-    }
-  }
-
-  async login(req: Request, res: Response, next: NextFunction): Promise<void> {
-    try {
-      // 1. DTO Validation
-      const { email, password, role } = ZodHelper.validate(DriverLoginSchema, req.body);
-
-      // 2. Execute
-      const result = await this._loginUsecase.execute(email, password, role);
-
-      // 3. Set Cookie and Response
-      res.cookie('refresh_token', result.refreshToken, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
-        maxAge: Number(process.env.COOKIE_MAX_AGE) || 7 * 24 * 60 * 60 * 1000,
-      });
-      res.status(HTTP_STATUS_CODES.OK).json({
-        accessToken: result.accessToken,
-        role: result.role,
-      });
-    } catch (error: any) {
-      if (error instanceof z.ZodError) {
-        res.status(HTTP_STATUS_CODES.BAD_REQUEST).json({
-          success: false,
-          errors: error.issues
-        });
-        return;
-      }
-      next(error);
-    }
-  }
-   async getDriverProfile(req:AuthenticatedRequest, res: Response,next:NextFunction): Promise<void> {
-    try {
-      const driverId = req.user?.id
-      if (!driverId) {
-       throw new AuthError(ERROR_MESSAGES.DRIVER_ID_NOT_FOUND,HTTP_STATUS_CODES.BAD_REQUEST)
-    }
-      const driver = await this._getDriverProfileUsecase.execute(driverId);
-      if (!driver) {
-        throw new AuthError(ERROR_MESSAGES.DRIVER_NOT_FOUND, HTTP_STATUS_CODES.NOT_FOUND);
-      }
-
-      // Return sanitized full profile for the driver's dashboard
-      res.status(HTTP_STATUS_CODES.OK).json({ success: true, driver });
-    } catch (error) {
-      next(error)
-    }
-  }
-
- async getUserById(req: AuthenticatedRequest, res: Response,next:NextFunction): Promise<void> {
-    try {
-      // 1. Param Validation
-      const { id } = ZodHelper.validate(UserIdParamSchema, req.params); 
-
-      // 2. Execute
-      const user = await this._getUserDataUsecase.execute(id);
-      if (!user) {
-        throw new AuthError(ERROR_MESSAGES.USER_NOT_FOUND, HTTP_STATUS_CODES.NOT_FOUND);
-      }
-      
-      // 3. Response 
-      res.status(HTTP_STATUS_CODES.OK).json({ success: true, user });
-    } catch (error: any) {
-       if (error instanceof z.ZodError) {
-        res.status(HTTP_STATUS_CODES.BAD_REQUEST).json({
-          success: false,
-          errors: error.issues
-        });
-        return;
-      }
-       next(error)
-    }
-  }
-
-  async editDriverProfile(req:AuthenticatedRequest, res: Response,next:NextFunction): Promise<void> {
-    try {
-      // 1. DTO Validation
-      const { id: driverId } = ZodHelper.validate(UserIdParamSchema, req.params);
-      const validatedData = ZodHelper.validate(EditDriverProfileSchema, req.body);
- 
-      // 2. Execute
-      // We remove _id from body if present to avoid type conflicts with params driverId
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const { _id, ...updateData } = validatedData;
-      
-      const updatedDriver = await this._editDriverProfileUseCase.execute(
-        driverId,
-        updateData
-      );
-
-      if (!updatedDriver) {
-        throw new AuthError(ERROR_MESSAGES.DRIVER_NOT_FOUND, HTTP_STATUS_CODES.NOT_FOUND);
-      }
-        
-      res.status(HTTP_STATUS_CODES.OK).json({success: true, driver: updatedDriver });
-    } catch (error: any) {
-      if (error instanceof z.ZodError) {
-        res.status(HTTP_STATUS_CODES.BAD_REQUEST).json({
-          success: false,
-          errors: error.issues
-        });
-        return;
-      }
-      next(error)
-    }
-  }
-  
-  async onboardDriver(req: AuthenticatedRequest, res: Response,next:NextFunction): Promise<void> {
-    try {
-      // 1. DTO Validation
-      const { email, driverId: bodyDriverId } = ZodHelper.validate(OnboardDriverSchema, req.body);
-      
-      const driverId = bodyDriverId || req.user?.id;
-      
-      if (!driverId) {
-        throw new AuthError( 'driverId is required',HTTP_STATUS_CODES.BAD_REQUEST
-        )
-      }
-
-      // 2. Execute
-      const onboardingUrl = await this._onboardDriverUseCase.execute(email, driverId);
-
-      res.status(HTTP_STATUS_CODES.OK).json({ url: onboardingUrl });
-    } catch (error: any) {
-      if (error instanceof z.ZodError) {
-        res.status(HTTP_STATUS_CODES.BAD_REQUEST).json({
-          success: false,
-          errors: error.issues
-        });
-        return;
-      }
-      next(error)
-    }
-  }
-  async getBookingsForDriver(req: AuthenticatedRequest, res: Response,next:NextFunction): Promise<void>{
-    try {
-      const driverId=req.user?.id;
-      if(!driverId){
-        throw new AuthError(ERROR_MESSAGES.DRIVER_ID_NOT_FOUND,HTTP_STATUS_CODES.BAD_REQUEST)
-      }
-
-      // 1. Query Validation
-      const { page, limit } = ZodHelper.validate(DriverBookingPaginationSchema, req.query);
-
-      // 2. Execute
-      const paginatedBookings = await this._getUserBookingsUsecase.execute(driverId, page, limit);
-
-      // 3. Response 
-      res.status(HTTP_STATUS_CODES.OK).json({
-        data: paginatedBookings.data,
-        total: paginatedBookings.total,
-        totalPages: paginatedBookings.totalPages,
-        currentPage: paginatedBookings.page,
-      });
-    } catch (error: any) {
-      if (error instanceof z.ZodError) {
-        res.status(HTTP_STATUS_CODES.BAD_REQUEST).json({
-          success: false,
-          errors: error.issues
-        });
-        return;
-      }
-      next(error)
-    }
-  }
-
-async verifyAccount(req: Request, res: Response,next:NextFunction): Promise<void> {
-    try {
-      // 1. DTO Validation
-      const { driverId } = ZodHelper.validate(VerifyAccountSchema, req.body);
+    // 2. Execute
+    const response = await this._registerDriverUseCase.execute(validatedData);
     
-      // 2. Execute
-      await this._verifyDriverPaymentAccount.execute(driverId);
+    // 3. Response
+    res.status(HTTP_STATUS_CODES.OK).json({ success: true, ...response });
+  });
 
-      // 3. Response
-      res.status(HTTP_STATUS_CODES.OK).json({ success: true, message: 'Payment activated for driver' });
-    } catch (error: any) {
-      if (error instanceof z.ZodError) {
-        res.status(HTTP_STATUS_CODES.BAD_REQUEST).json({
-          success: false,
-          errors: error.issues
-        });
-        return;
-      }
-     next(error)
-     
+  verifyOTPDriver = catchAsync(async (req: Request, res: Response): Promise<void> => {
+    // 1. DTO Validation
+    const { email, otp } = ZodHelper.validate(VerifyDriverOtpSchema, req.body);
+
+    // 2. Execute
+    const { accessToken, refreshToken, user } = await this._verifyOtpUsecase.execute(email, otp, "driver");
+    
+    // 3. Set Cookie and Response
+    res.cookie('refresh_token', refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+      maxAge: Number(process.env.COOKIE_MAX_AGE) || 7 * 24 * 60 * 60 * 1000,
+    });
+    res.status(HTTP_STATUS_CODES.OK).json({ success: true, accessToken, user });
+  });
+
+  login = catchAsync(async (req: Request, res: Response): Promise<void> => {
+    // 1. DTO Validation
+    const { email, password, role } = ZodHelper.validate(DriverLoginSchema, req.body);
+
+    // 2. Execute
+    const result = await this._loginUsecase.execute(email, password, role);
+
+    // 3. Set Cookie and Response
+    res.cookie('refresh_token', result.refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+      maxAge: Number(process.env.COOKIE_MAX_AGE) || 7 * 24 * 60 * 60 * 1000,
+    });
+    res.status(HTTP_STATUS_CODES.OK).json({
+      accessToken: result.accessToken,
+      role: result.role,
+    });
+  });
+  getDriverProfile = catchAsync(async (req: AuthenticatedRequest, res: Response): Promise<void> => {
+    const driverId = req.user?.id
+    if (!driverId) {
+      throw new AuthError(ERROR_MESSAGES.DRIVER_ID_NOT_FOUND, HTTP_STATUS_CODES.BAD_REQUEST)
     }
-  }
-
-  async resendOTP(req: Request, res: Response, next: NextFunction): Promise<void> {
-    try {
-      // 1. DTO Validation
-      const { email, role } = ZodHelper.validate(ResendDriverOtpSchema, req.body);
-
-      // 2. Execute
-      const result = await this._resendOtpUsecase.execute(email, role);
-
-      // 3. Response
-      res.status(HTTP_STATUS_CODES.OK).json({ success: true, ...result });
-    } catch (error: any) {
-      if (error instanceof z.ZodError) {
-        res.status(HTTP_STATUS_CODES.BAD_REQUEST).json({
-          success: false,
-          errors: error.issues
-        });
-        return;
-      }
-      next(error);
+    const driver = await this._getDriverProfileUsecase.execute(driverId);
+    if (!driver) {
+      throw new AuthError(ERROR_MESSAGES.DRIVER_NOT_FOUND, HTTP_STATUS_CODES.NOT_FOUND);
     }
-  }
+
+    // Return sanitized full profile for the driver's dashboard
+    res.status(HTTP_STATUS_CODES.OK).json({ success: true, driver });
+  });
+
+  getUserById = catchAsync(async (req: AuthenticatedRequest, res: Response): Promise<void> => {
+    // 1. Param Validation
+    const { id } = ZodHelper.validate(UserIdParamSchema, req.params); 
+
+    // 2. Execute
+    const user = await this._getUserDataUsecase.execute(id);
+    if (!user) {
+      throw new AuthError(ERROR_MESSAGES.USER_NOT_FOUND, HTTP_STATUS_CODES.NOT_FOUND);
+    }
+    
+    // 3. Response 
+    res.status(HTTP_STATUS_CODES.OK).json({ success: true, user });
+  });
+
+  editDriverProfile = catchAsync(async (req: AuthenticatedRequest, res: Response): Promise<void> => {
+    // 1. DTO Validation
+    const { id: driverId } = ZodHelper.validate(UserIdParamSchema, req.params);
+    const validatedData = ZodHelper.validate(EditDriverProfileSchema, req.body);
+
+    // 2. Execute
+    // We remove _id from body if present to avoid type conflicts with params driverId
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { _id, ...updateData } = validatedData;
+    
+    const updatedDriver = await this._editDriverProfileUseCase.execute(
+      driverId,
+      updateData
+    );
+
+    if (!updatedDriver) {
+      throw new AuthError(ERROR_MESSAGES.DRIVER_NOT_FOUND, HTTP_STATUS_CODES.NOT_FOUND);
+    }
+      
+    res.status(HTTP_STATUS_CODES.OK).json({success: true, driver: updatedDriver });
+  });
+  
+  onboardDriver = catchAsync(async (req: AuthenticatedRequest, res: Response): Promise<void> => {
+    // 1. DTO Validation
+    const { email, driverId: bodyDriverId } = ZodHelper.validate(OnboardDriverSchema, req.body);
+    
+    const driverId = bodyDriverId || req.user?.id;
+    
+    if (!driverId) {
+      throw new AuthError('driverId is required', HTTP_STATUS_CODES.BAD_REQUEST);
+    }
+
+    // 2. Execute
+    const onboardingUrl = await this._onboardDriverUseCase.execute(email, driverId);
+
+    res.status(HTTP_STATUS_CODES.OK).json({ url: onboardingUrl });
+  });
+
+  getBookingsForDriver = catchAsync(async (req: AuthenticatedRequest, res: Response): Promise<void> => {
+    const driverId=req.user?.id;
+    if(!driverId){
+      throw new AuthError(ERROR_MESSAGES.DRIVER_ID_NOT_FOUND,HTTP_STATUS_CODES.BAD_REQUEST)
+    }
+
+    // 1. Query Validation
+    const { page, limit } = ZodHelper.validate(DriverBookingPaginationSchema, req.query);
+
+    // 2. Execute
+    const paginatedBookings = await this._getUserBookingsUsecase.execute(driverId, page, limit);
+
+    // 3. Response 
+    res.status(HTTP_STATUS_CODES.OK).json({
+      data: paginatedBookings.data,
+      total: paginatedBookings.total,
+      totalPages: paginatedBookings.totalPages,
+      currentPage: paginatedBookings.page,
+    });
+  });
+
+  verifyAccount = catchAsync(async (req: Request, res: Response): Promise<void> => {
+    // 1. DTO Validation
+    const { driverId } = ZodHelper.validate(VerifyAccountSchema, req.body);
+  
+    // 2. Execute
+    await this._verifyDriverPaymentAccount.execute(driverId);
+
+    // 3. Response
+    res.status(HTTP_STATUS_CODES.OK).json({ success: true, message: 'Payment activated for driver' });
+  });
+
+  resendOTP = catchAsync(async (req: Request, res: Response): Promise<void> => {
+    // 1. DTO Validation
+    const { email, role } = ZodHelper.validate(ResendDriverOtpSchema, req.body);
+
+    // 2. Execute
+    const result = await this._resendOtpUsecase.execute(email, role);
+
+    // 3. Response
+    res.status(HTTP_STATUS_CODES.OK).json({ success: true, ...result });
+  });
   
 }

@@ -14,6 +14,7 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.BookingController = void 0;
 const ZodHelper_1 = require("../schemas/common/ZodHelper");
+const catchAsync_1 = require("../../infrastructure/utils/catchAsync");
 const tsyringe_1 = require("tsyringe");
 const Autherror_1 = require("../../domain/errors/Autherror");
 const Booking_1 = require("../../domain/models/Booking");
@@ -42,14 +43,11 @@ let BookingController = class BookingController {
         this._getDriverDashboardStatsUseCase = _getDriverDashboardStatsUseCase;
         this._getRideHistoryUseCase = _getRideHistoryUseCase;
         this._generateChatSignedUrlUseCase = _generateChatSignedUrlUseCase;
-    }
-    async bookDriver(req, res, next) {
-        try {
+        this.bookDriver = (0, catchAsync_1.catchAsync)(async (req, res) => {
             const userId = req.user?.id;
             if (!userId) {
                 throw new Autherror_1.AuthError(ErrorMessages_1.ERROR_MESSAGES.USER_ID_NOT_FOUND, HttpStatusCode_1.HTTP_STATUS_CODES.UNAUTHORIZED);
             }
-            console.log(req.body, 'booking data ');
             // 1. DTO Validation
             const validatedData = ZodHelper_1.ZodHelper.validate(BookingRequestDTO_1.BookDriverSchema, req.body);
             // 2. Execute
@@ -58,25 +56,15 @@ let BookingController = class BookingController {
                 ...validatedData
             });
             res.status(HttpStatusCode_1.HTTP_STATUS_CODES.CREATED).json({ success: true, data: booking });
-        }
-        catch (error) {
-            next(error);
-        }
-    }
-    async getEstimatedFare(req, res, next) {
-        try {
+        });
+        this.getEstimatedFare = (0, catchAsync_1.catchAsync)(async (req, res) => {
             // 1. DTO Validation
             const validatedData = ZodHelper_1.ZodHelper.validate(BookingRequestDTO_1.GetEstimatedFareSchema, req.body);
             // 2. Execute
             const fare = await this._getEstimatedFareUseCase.execute(validatedData);
             res.status(HttpStatusCode_1.HTTP_STATUS_CODES.OK).json({ estimatedFare: fare });
-        }
-        catch (error) {
-            next(error);
-        }
-    }
-    async getUserBookings(req, res, next) {
-        try {
+        });
+        this.getUserBookings = (0, catchAsync_1.catchAsync)(async (req, res) => {
             const userId = req.user?.id;
             if (!userId) {
                 throw new Autherror_1.AuthError(ErrorMessages_1.ERROR_MESSAGES.USER_ID_NOT_FOUND, HttpStatusCode_1.HTTP_STATUS_CODES.BAD_REQUEST);
@@ -86,13 +74,8 @@ let BookingController = class BookingController {
             // 2. Execute
             const { data, total, totalPages } = await this._getUserBookingsUseCase.execute(userId, page, limit);
             res.status(HttpStatusCode_1.HTTP_STATUS_CODES.OK).json({ data, total, totalPages });
-        }
-        catch (error) {
-            next(error);
-        }
-    }
-    async attachPaymentIntent(req, res, next) {
-        try {
+        });
+        this.attachPaymentIntent = (0, catchAsync_1.catchAsync)(async (req, res) => {
             const userId = req.user?.id;
             if (!userId) {
                 throw new Autherror_1.AuthError(ErrorMessages_1.ERROR_MESSAGES.USER_ID_NOT_FOUND, HttpStatusCode_1.HTTP_STATUS_CODES.BAD_REQUEST);
@@ -105,19 +88,14 @@ let BookingController = class BookingController {
                 rideId,
                 userId,
                 ...validatedData,
-                paymentStatus: validatedData.paymentStatus // Cast safely to enum if needed, or let use case handle it
+                paymentStatus: validatedData.paymentStatus
             });
             res.status(HttpStatusCode_1.HTTP_STATUS_CODES.OK).json({
                 success: true,
                 message: "PaymentIntent attached successfully",
             });
-        }
-        catch (error) {
-            next(error);
-        }
-    }
-    async updateStatus(req, res, next) {
-        try {
+        });
+        this.updateStatus = (0, catchAsync_1.catchAsync)(async (req, res) => {
             // 1. Param & Body Validation
             const { bookingId } = ZodHelper_1.ZodHelper.validate(BookingRequestDTO_1.BookingIdParamSchema, req.params);
             const validatedData = ZodHelper_1.ZodHelper.validate(BookingRequestDTO_1.UpdateBookingStatusSchema, req.body);
@@ -130,25 +108,15 @@ let BookingController = class BookingController {
                 ...validatedData
             });
             res.status(HttpStatusCode_1.HTTP_STATUS_CODES.OK).json({ message: "Booking status updated successfully" });
-        }
-        catch (error) {
-            next(error);
-        }
-    }
-    async getAllBookings(req, res, next) {
-        try {
+        });
+        this.getAllBookings = (0, catchAsync_1.catchAsync)(async (req, res) => {
             // 1. Query Validation
             const { page, limit } = ZodHelper_1.ZodHelper.validate(BookingRequestDTO_1.UserBookingPaginationSchema, req.query);
             // 2. Execute
             const bookings = await this._getAllBookingsUseCase.execute(page, limit);
             res.status(HttpStatusCode_1.HTTP_STATUS_CODES.OK).json({ bookings });
-        }
-        catch (error) {
-            next(error);
-        }
-    }
-    async cancelBooking(req, res, next) {
-        try {
+        });
+        this.cancelBooking = (0, catchAsync_1.catchAsync)(async (req, res) => {
             // 1. DTO Validation
             const validatedData = ZodHelper_1.ZodHelper.validate(BookingRequestDTO_1.CancelBookingSchema, req.body);
             // 2. Execute
@@ -157,13 +125,8 @@ let BookingController = class BookingController {
                 status: Booking_1.BookingStatus.CANCELLED
             });
             res.status(HttpStatusCode_1.HTTP_STATUS_CODES.OK).json({ message: "Booking cancelled successfully" });
-        }
-        catch (error) {
-            next(error);
-        }
-    }
-    async getChatByBookingId(req, res, next) {
-        try {
+        });
+        this.getChatByBookingId = (0, catchAsync_1.catchAsync)(async (req, res) => {
             // 1. Param Validation
             const { roomId } = ZodHelper_1.ZodHelper.validate(BookingRequestDTO_1.ChatParamsSchema, req.params);
             if (!roomId) {
@@ -172,25 +135,15 @@ let BookingController = class BookingController {
             // 2. Execute
             const chat = await this._getMessagesByBookingIdUseCase.execute({ bookingId: roomId });
             res.status(HttpStatusCode_1.HTTP_STATUS_CODES.OK).json({ chat });
-        }
-        catch (error) {
-            next(error);
-        }
-    }
-    async deleteMessage(req, res, next) {
-        try {
+        });
+        this.deleteMessage = (0, catchAsync_1.catchAsync)(async (req, res) => {
             // 1. Param Validation
             const { roomId, messageId } = ZodHelper_1.ZodHelper.validate(BookingRequestDTO_1.MessageParamsSchema, req.params);
             // 2. Execute
             await this._deleteMessageUseCase.execute(roomId, messageId);
             res.status(HttpStatusCode_1.HTTP_STATUS_CODES.OK).json({ success: true, message: "Message deleted" });
-        }
-        catch (error) {
-            next(error);
-        }
-    }
-    async getRideHistory(req, res, next) {
-        try {
+        });
+        this.getRideHistory = (0, catchAsync_1.catchAsync)(async (req, res) => {
             const id = req.user?.id;
             const role = req.user?.role;
             // 1. Query Validation
@@ -198,99 +151,59 @@ let BookingController = class BookingController {
             // 2. Execute
             const ridehistory = await this._getRideHistoryUseCase.execute(role, id, page, limit);
             res.status(HttpStatusCode_1.HTTP_STATUS_CODES.OK).json(ridehistory);
-        }
-        catch (error) {
-            next(error);
-        }
-    }
-    async getChatSignature(req, res, next) {
-        try {
+        });
+        this.getChatSignature = (0, catchAsync_1.catchAsync)(async (req, res) => {
             const id = req.user?.id;
             // 1. DTO Validation
             const { fileType } = ZodHelper_1.ZodHelper.validate(BookingRequestDTO_1.GetChatSignatureSchema, req.body);
-            console.log(fileType, "fileType");
             // 2. Execute
             const chatUploadMedia = await this._generateChatSignedUrlUseCase.execute(fileType, id);
-            console.log(chatUploadMedia, "chatUploadMedia");
             res.status(HttpStatusCode_1.HTTP_STATUS_CODES.OK).json(chatUploadMedia);
-        }
-        catch (error) {
-            next(error);
-        }
-    }
-    async WalletBalance(req, res, next) {
-        try {
+        });
+        this.WalletBalance = (0, catchAsync_1.catchAsync)(async (req, res) => {
             const userId = req.user?.id;
             const balance = await this._walletBalanceUseCase.execute(userId);
             res.status(HttpStatusCode_1.HTTP_STATUS_CODES.OK).json({ balance });
-        }
-        catch (error) {
-            next(error);
-        }
-    }
-    async WalletPayment(req, res, next) {
-        try {
+        });
+        this.WalletPayment = (0, catchAsync_1.catchAsync)(async (req, res) => {
             const userId = req.user?.id;
             // 1. DTO Validation
             const { rideId, amount } = ZodHelper_1.ZodHelper.validate(BookingRequestDTO_1.WalletPaymentSchema, req.body);
             // 2. Execute
             await this._walletPaymentUseCase.WalletRidePayment(rideId, userId, amount);
             res.status(HttpStatusCode_1.HTTP_STATUS_CODES.OK).json({ message: "Payment successful" });
-        }
-        catch (error) {
-            next(error);
-        }
-    }
-    async ReviewDriver(req, res, next) {
-        try {
+        });
+        this.ReviewDriver = (0, catchAsync_1.catchAsync)(async (req, res) => {
             // 1. Validation
             const { id: driverId } = ZodHelper_1.ZodHelper.validate(BookingRequestDTO_1.DriverReviewParamsSchema, req.params);
             const { page, limit } = ZodHelper_1.ZodHelper.validate(BookingRequestDTO_1.UserBookingPaginationSchema, req.query);
             // 2. Execute
             const reviews = await this._getDriverReviewsUseCase.execute(driverId, page, limit);
             res.status(HttpStatusCode_1.HTTP_STATUS_CODES.OK).json(reviews);
-        }
-        catch (error) {
-            next(error);
-        }
-    }
-    async getDriverBookingStatusSummary(req, res, next) {
-        try {
+        });
+        this.getDriverBookingStatusSummary = (0, catchAsync_1.catchAsync)(async (req, res) => {
             const driverId = req.user?.id;
             // 1. Query Validation
             const { year, month } = ZodHelper_1.ZodHelper.validate(BookingRequestDTO_1.DriverStatsQuerySchema, req.query);
             // 2. Execute
             const result = await this._getBookingStatusSummary.execute(driverId, year, month);
             res.status(HttpStatusCode_1.HTTP_STATUS_CODES.OK).json(result);
-        }
-        catch (error) {
-            next(error);
-        }
-    }
-    async getDriverEarningsByMonth(req, res, next) {
-        try {
+        });
+        this.getDriverEarningsByMonth = (0, catchAsync_1.catchAsync)(async (req, res) => {
             const driverId = req.user?.id;
             // 1. Query Validation
             const { year, month } = ZodHelper_1.ZodHelper.validate(BookingRequestDTO_1.DriverStatsQuerySchema, req.query);
             // 2. Execute
             const result = await this._earningsSummaryUseCase.execute(driverId, year || new Date().getFullYear(), month);
             res.status(HttpStatusCode_1.HTTP_STATUS_CODES.OK).json(result);
-        }
-        catch (error) {
-            next(error);
-        }
-    }
-    async getDriverDashboard(req, res, next) {
-        try {
+        });
+        this.getDriverDashboard = (0, catchAsync_1.catchAsync)(async (req, res) => {
             const driverId = req.user?.id;
             if (!driverId)
                 throw new Autherror_1.AuthError(ErrorMessages_1.ERROR_MESSAGES.USER_ID_NOT_FOUND, HttpStatusCode_1.HTTP_STATUS_CODES.UNAUTHORIZED);
             const result = await this._getDriverDashboardStatsUseCase.execute(driverId);
             res.status(HttpStatusCode_1.HTTP_STATUS_CODES.OK).json(result);
-        }
-        catch (error) {
-            next(error);
-        }
+        });
     }
 };
 exports.BookingController = BookingController;

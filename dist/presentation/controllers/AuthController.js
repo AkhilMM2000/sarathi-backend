@@ -20,15 +20,14 @@ const UseCaseTokens_1 = require("../../constants/UseCaseTokens");
 const ZodHelper_1 = require("../schemas/common/ZodHelper");
 const AuthRequestDTO_1 = require("../schemas/auth/AuthRequestDTO");
 const Autherror_1 = require("../../domain/errors/Autherror");
+const catchAsync_1 = require("../../infrastructure/utils/catchAsync");
 let AuthController = class AuthController {
     constructor(_refreshTokenUseCase, _forgotPasswordUseCase, _resetPasswordUseCase, _changePasswordUseCase) {
         this._refreshTokenUseCase = _refreshTokenUseCase;
         this._forgotPasswordUseCase = _forgotPasswordUseCase;
         this._resetPasswordUseCase = _resetPasswordUseCase;
         this._changePasswordUseCase = _changePasswordUseCase;
-    }
-    async refreshToken(req, res, next) {
-        try {
+        this.refreshToken = (0, catchAsync_1.catchAsync)(async (req, res) => {
             const refreshToken = req.cookies['refresh_token'];
             if (!refreshToken) {
                 throw new Autherror_1.AuthError(ErrorMessages_1.ERROR_MESSAGES.REFRESHTOKEN_NOTFOUND, HttpStatusCode_1.HTTP_STATUS_CODES.FORBIDDEN);
@@ -36,13 +35,8 @@ let AuthController = class AuthController {
             // 1. Execute
             const result = await this._refreshTokenUseCase.execute(refreshToken);
             res.status(HttpStatusCode_1.HTTP_STATUS_CODES.OK).json({ success: true, accessToken: result });
-        }
-        catch (error) {
-            next(error);
-        }
-    }
-    async forgotPassword(req, res, next) {
-        try {
+        });
+        this.forgotPassword = (0, catchAsync_1.catchAsync)(async (req, res) => {
             // 1. DTO Validation
             const { email, role } = ZodHelper_1.ZodHelper.validate(AuthRequestDTO_1.ForgotPasswordSchema, req.body);
             // 2. Execute
@@ -51,13 +45,8 @@ let AuthController = class AuthController {
                 success: true,
                 message: `check ${role} mail for reset password`
             });
-        }
-        catch (error) {
-            next(error);
-        }
-    }
-    async resetPassword(req, res, next) {
-        try {
+        });
+        this.resetPassword = (0, catchAsync_1.catchAsync)(async (req, res) => {
             // 1. DTO Validation
             const { token, newPassword, role } = ZodHelper_1.ZodHelper.validate(AuthRequestDTO_1.ResetPasswordSchema, req.body);
             // 2. Execute
@@ -66,13 +55,8 @@ let AuthController = class AuthController {
                 success: true,
                 message: `${role} Password reset successful`,
             });
-        }
-        catch (error) {
-            next(error);
-        }
-    }
-    logout(req, res, next) {
-        try {
+        });
+        this.logout = (req, res) => {
             // 1. Clear Cookie
             res.clearCookie('refresh_token', {
                 httpOnly: true,
@@ -83,13 +67,8 @@ let AuthController = class AuthController {
                 success: true,
                 message: `Logout successful`
             });
-        }
-        catch (error) {
-            next(error);
-        }
-    }
-    async ChangePassword(req, res, next) {
-        try {
+        };
+        this.ChangePassword = (0, catchAsync_1.catchAsync)(async (req, res) => {
             const userId = req.user?.id;
             if (!userId) {
                 throw new Autherror_1.AuthError(ErrorMessages_1.ERROR_MESSAGES.USER_ID_NOT_FOUND, HttpStatusCode_1.HTTP_STATUS_CODES.UNAUTHORIZED);
@@ -102,10 +81,7 @@ let AuthController = class AuthController {
                 success: true,
                 message: "Password changed successfully."
             });
-        }
-        catch (error) {
-            next(error);
-        }
+        });
     }
 };
 exports.AuthController = AuthController;

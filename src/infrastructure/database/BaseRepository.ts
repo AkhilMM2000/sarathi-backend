@@ -1,13 +1,21 @@
 import { Model, Document, FilterQuery, UpdateQuery } from "mongoose";
 import { IBaseRepository } from "../../domain/repositories/IBaseRepository";
+import { ConflictError } from "../../domain/errors/ConflictError";
 
 export abstract class BaseRepository<T, U extends Document> implements IBaseRepository<T> {
   constructor(protected readonly model: Model<U>) {}
 
   async create(data: Partial<T>): Promise<T> {
-    const createdItem = new this.model(data);
-    const result = await createdItem.save();
-    return result.toObject() as unknown as T;
+    try {
+      const createdItem = new this.model(data);
+      const result = await createdItem.save();
+      return result.toObject() as unknown as T;
+    } catch (error: any) {
+      if (error.code === 11000) {
+        throw new ConflictError("Resource with this data already exists");
+      }
+      throw error;
+    }
   }
 
   async findById(id: string): Promise<T | null> {

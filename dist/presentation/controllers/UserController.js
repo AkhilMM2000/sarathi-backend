@@ -22,7 +22,7 @@ const Info_Messages_1 = require("../../constants/Info_Messages");
 const UseCaseTokens_1 = require("../../constants/UseCaseTokens");
 const ZodHelper_1 = require("../schemas/common/ZodHelper");
 const UserDTO_1 = require("../schemas/user/UserDTO");
-const zod_1 = require("zod");
+const catchAsync_1 = require("../../infrastructure/utils/catchAsync");
 let UserController = class UserController {
     constructor(_registerUsecase, _getUserDataUsecase, _verifyOtpUsecase, _resendOtpUsecase, _loginUsecase, _addVehicleUsecase, _editVehicleUsecase, _getVehiclebyUserUsecase, _updateuserUsecase, _findNearbyDrivers, _createPaymentUsecase, _getDriverProfileUsecase, _walletTransactionUsecase, _submitReviewUsecase, _getNearbyDriverDetailsUseCase) {
         this._registerUsecase = _registerUsecase;
@@ -40,9 +40,7 @@ let UserController = class UserController {
         this._walletTransactionUsecase = _walletTransactionUsecase;
         this._submitReviewUsecase = _submitReviewUsecase;
         this._getNearbyDriverDetailsUseCase = _getNearbyDriverDetailsUseCase;
-    }
-    async register(req, res, next) {
-        try {
+        this.register = (0, catchAsync_1.catchAsync)(async (req, res) => {
             // 1. DTO Validation
             const validatedData = ZodHelper_1.ZodHelper.validate(UserDTO_1.RegisterSchema, req.body);
             // 2. Execute Use Case
@@ -53,20 +51,8 @@ let UserController = class UserController {
                 message: Info_Messages_1.INFO_MESSAGES.USER.REGISTERED,
                 user: result
             });
-        }
-        catch (error) {
-            if (error instanceof zod_1.z.ZodError) {
-                res.status(HttpStatusCode_1.HTTP_STATUS_CODES.BAD_REQUEST).json({
-                    success: false,
-                    errors: error.issues
-                });
-                return;
-            }
-            next(error);
-        }
-    }
-    async verifyOTPUser(req, res, next) {
-        try {
+        });
+        this.verifyOTPUser = (0, catchAsync_1.catchAsync)(async (req, res) => {
             // 1. DTO Validation
             const { email, otp } = ZodHelper_1.ZodHelper.validate(UserDTO_1.VerifyOtpSchema, req.body);
             // 2. Execute Use Case
@@ -79,40 +65,16 @@ let UserController = class UserController {
                 maxAge: Number(process.env.COOKIE_MAX_AGE) || 7 * 24 * 60 * 60 * 1000,
             });
             res.status(HttpStatusCode_1.HTTP_STATUS_CODES.OK).json({ success: true, accessToken, user });
-        }
-        catch (error) {
-            if (error instanceof zod_1.z.ZodError) {
-                res.status(HttpStatusCode_1.HTTP_STATUS_CODES.BAD_REQUEST).json({
-                    success: false,
-                    errors: error.issues
-                });
-                return;
-            }
-            next(error);
-        }
-    }
-    async resendOTP(req, res, next) {
-        try {
+        });
+        this.resendOTP = (0, catchAsync_1.catchAsync)(async (req, res) => {
             // 1. DTO Validation
             const { email, role } = ZodHelper_1.ZodHelper.validate(UserDTO_1.ResendOtpSchema, req.body);
             // 2. Execute Use Case
             const result = await this._resendOtpUsecase.execute(email, role);
             // 3. Response
             res.status(HttpStatusCode_1.HTTP_STATUS_CODES.OK).json({ success: true, ...result });
-        }
-        catch (error) {
-            if (error instanceof zod_1.z.ZodError) {
-                res.status(HttpStatusCode_1.HTTP_STATUS_CODES.BAD_REQUEST).json({
-                    success: false,
-                    errors: error.issues
-                });
-                return;
-            }
-            next(error);
-        }
-    }
-    async login(req, res, next) {
-        try {
+        });
+        this.login = (0, catchAsync_1.catchAsync)(async (req, res) => {
             // 1. DTO Validation
             const { email, password, role } = ZodHelper_1.ZodHelper.validate(UserDTO_1.LoginSchema, req.body);
             // 2. Execute Use Case
@@ -128,20 +90,8 @@ let UserController = class UserController {
                 accessToken: result.accessToken,
                 role: result.role,
             });
-        }
-        catch (error) {
-            if (error instanceof zod_1.z.ZodError) {
-                res.status(HttpStatusCode_1.HTTP_STATUS_CODES.BAD_REQUEST).json({
-                    success: false,
-                    errors: error.issues
-                });
-                return;
-            }
-            next(error);
-        }
-    }
-    async addVehicle(req, res, next) {
-        try {
+        });
+        this.addVehicle = (0, catchAsync_1.catchAsync)(async (req, res) => {
             // 1. DTO Validation
             const validatedData = ZodHelper_1.ZodHelper.validate(UserDTO_1.AddVehicleSchema, req.body);
             const userId = req.user?.id;
@@ -154,66 +104,32 @@ let UserController = class UserController {
                 userId: userId,
             });
             res.status(HttpStatusCode_1.HTTP_STATUS_CODES.OK).json({ success: true, data: vehicle });
-        }
-        catch (error) {
-            if (error instanceof zod_1.z.ZodError) {
-                res.status(HttpStatusCode_1.HTTP_STATUS_CODES.BAD_REQUEST).json({
-                    success: false,
-                    errors: error.issues
-                });
-                return;
-            }
-            next(error);
-        }
-    }
-    async editVehicle(req, res, next) {
-        try {
+        });
+        this.editVehicle = (0, catchAsync_1.catchAsync)(async (req, res) => {
             // 1. DTO Validation
             const { vehicleId } = ZodHelper_1.ZodHelper.validate(UserDTO_1.VehicleIdParamSchema, req.params);
             const validatedData = ZodHelper_1.ZodHelper.validate(UserDTO_1.EditVehicleSchema, req.body);
             // 2. Execute Use Case
             const updatedVehicle = await this._editVehicleUsecase.execute(vehicleId, validatedData);
             res.status(HttpStatusCode_1.HTTP_STATUS_CODES.OK).json({ success: true, data: updatedVehicle });
-        }
-        catch (error) {
-            if (error instanceof zod_1.z.ZodError) {
-                res.status(HttpStatusCode_1.HTTP_STATUS_CODES.BAD_REQUEST).json({
-                    success: false,
-                    errors: error.issues
-                });
-                return;
-            }
-            next(error);
-        }
-    }
-    async getAllVehicle(req, res, next) {
-        try {
+        });
+        this.getAllVehicle = (0, catchAsync_1.catchAsync)(async (req, res) => {
             const userId = req.user?.id;
             if (!userId) {
                 throw new Autherror_1.AuthError(ErrorMessages_1.ERROR_MESSAGES.USER_ID_NOT_FOUND, HttpStatusCode_1.HTTP_STATUS_CODES.BAD_REQUEST);
             }
             const vehicles = await this._getVehiclebyUserUsecase.execute(userId);
             res.status(HttpStatusCode_1.HTTP_STATUS_CODES.OK).json({ success: true, data: vehicles });
-        }
-        catch (error) {
-            next(error);
-        }
-    }
-    async getUserData(req, res, next) {
-        try {
+        });
+        this.getUserData = (0, catchAsync_1.catchAsync)(async (req, res) => {
             const userId = req.user?.id;
             if (!userId) {
                 throw new Autherror_1.AuthError(ErrorMessages_1.ERROR_MESSAGES.USER_ID_NOT_FOUND, HttpStatusCode_1.HTTP_STATUS_CODES.BAD_REQUEST);
             }
             const user = await this._getUserDataUsecase.execute(userId);
             res.status(HttpStatusCode_1.HTTP_STATUS_CODES.OK).json({ success: true, user });
-        }
-        catch (error) {
-            next(error);
-        }
-    }
-    async updateUser(req, res, next) {
-        try {
+        });
+        this.updateUser = (0, catchAsync_1.catchAsync)(async (req, res) => {
             const userId = req.params.id;
             // 1. DTO Validation
             const validatedData = ZodHelper_1.ZodHelper.validate(UserDTO_1.UpdateUserSchema, req.body);
@@ -227,20 +143,8 @@ let UserController = class UserController {
                 message: "User Profile Updated Sucessfully",
                 user,
             });
-        }
-        catch (error) {
-            if (error instanceof zod_1.z.ZodError) {
-                res.status(HttpStatusCode_1.HTTP_STATUS_CODES.BAD_REQUEST).json({
-                    success: false,
-                    errors: error.issues
-                });
-                return;
-            }
-            next(error);
-        }
-    }
-    async fetchDrivers(req, res, next) {
-        try {
+        });
+        this.fetchDrivers = (0, catchAsync_1.catchAsync)(async (req, res) => {
             // 1. Authenticated User Check
             const userId = req.user?.id;
             if (!userId) {
@@ -250,51 +154,23 @@ let UserController = class UserController {
             const { page, limit, search, lat, lng } = ZodHelper_1.ZodHelper.validate(UserDTO_1.FetchDriversSchema, req.query);
             // 3. Execute the use case
             const paginatedDrivers = await this._findNearbyDrivers.execute(userId, page, limit, search, lat, lng);
-            console.log(paginatedDrivers, 'paginated drivers');
-            // 4. Send paginated Response DTOs
+            // 4. Send paginated Response
             res.status(HttpStatusCode_1.HTTP_STATUS_CODES.OK).json({
                 success: true,
                 drivers: paginatedDrivers
             });
-        }
-        catch (error) {
-            if (error instanceof zod_1.z.ZodError) {
-                res.status(HttpStatusCode_1.HTTP_STATUS_CODES.BAD_REQUEST).json({
-                    success: false,
-                    errors: error.issues
-                });
-                return;
-            }
-            next(error);
-        }
-    }
-    async getDriverDetails(req, res, next) {
-        try {
+        });
+        this.getDriverDetails = (0, catchAsync_1.catchAsync)(async (req, res) => {
             // 1. Param Validation
             const { driverId } = ZodHelper_1.ZodHelper.validate(UserDTO_1.DriverIdParamSchema, req.params);
-            console.log(req.query, 'query');
             // 2. Query Validation (Optional coordinates)
             const { lat, lng } = ZodHelper_1.ZodHelper.validate(UserDTO_1.GetNearbyDriverQuerySchema, req.query);
             const userId = req.user?.id;
             // 3. Execute and return safe Response DTO
             const driver = await this._getNearbyDriverDetailsUseCase.execute(userId, driverId, lat, lng);
-            console.log(driver, 'reach here ');
             res.status(HttpStatusCode_1.HTTP_STATUS_CODES.OK).json(driver);
-        }
-        catch (error) {
-            console.log(error, 'error');
-            if (error instanceof zod_1.z.ZodError) {
-                res.status(HttpStatusCode_1.HTTP_STATUS_CODES.BAD_REQUEST).json({
-                    success: false,
-                    errors: error.issues
-                });
-                return;
-            }
-            next(error);
-        }
-    }
-    async createPaymentIntent(req, res, next) {
-        try {
+        });
+        this.createPaymentIntent = (0, catchAsync_1.catchAsync)(async (req, res) => {
             // 1. DTO Validation
             const { amount, driverId } = ZodHelper_1.ZodHelper.validate(UserDTO_1.CreatePaymentIntentSchema, req.body);
             // 2. Execute Use Case
@@ -304,27 +180,14 @@ let UserController = class UserController {
             });
             // 3. Response 
             res.status(HttpStatusCode_1.HTTP_STATUS_CODES.OK).json(result);
-        }
-        catch (error) {
-            if (error instanceof zod_1.z.ZodError) {
-                res.status(HttpStatusCode_1.HTTP_STATUS_CODES.BAD_REQUEST).json({
-                    success: false,
-                    errors: error.issues
-                });
-                return;
-            }
-            next(error);
-        }
-    }
-    async getDriverById(req, res, next) {
-        try {
+        });
+        this.getDriverById = (0, catchAsync_1.catchAsync)(async (req, res) => {
             // 1. Param Validation
             const { driverId } = ZodHelper_1.ZodHelper.validate(UserDTO_1.DriverIdParamSchema, {
                 driverId: req.params.id,
             });
             // 2. Execute
             const driver = await this._getDriverProfileUsecase.execute(driverId);
-            console.log(driver, 'driver');
             if (!driver) {
                 throw new Autherror_1.AuthError(ErrorMessages_1.ERROR_MESSAGES.DRIVER_NOT_FOUND, HttpStatusCode_1.HTTP_STATUS_CODES.NOT_FOUND);
             }
@@ -332,20 +195,8 @@ let UserController = class UserController {
             res
                 .status(HttpStatusCode_1.HTTP_STATUS_CODES.OK)
                 .json({ success: true, driver });
-        }
-        catch (error) {
-            if (error instanceof zod_1.z.ZodError) {
-                res.status(HttpStatusCode_1.HTTP_STATUS_CODES.BAD_REQUEST).json({
-                    success: false,
-                    errors: error.issues
-                });
-                return;
-            }
-            next(error);
-        }
-    }
-    async WalletTransaction(req, res, next) {
-        try {
+        });
+        this.WalletTransaction = (0, catchAsync_1.catchAsync)(async (req, res) => {
             // 1. DTO Validation (Automatic numeric coercion)
             const { page, limit } = ZodHelper_1.ZodHelper.validate(UserDTO_1.WalletPaginationSchema, req.query);
             const userId = req.user?.id;
@@ -357,20 +208,8 @@ let UserController = class UserController {
             const ballence = await this._walletTransactionUsecase.getWalletBalance(userId);
             // 3. Response
             res.status(HttpStatusCode_1.HTTP_STATUS_CODES.OK).json({ success: true, ...transactionHistory, ballence });
-        }
-        catch (error) {
-            if (error instanceof zod_1.z.ZodError) {
-                res.status(HttpStatusCode_1.HTTP_STATUS_CODES.BAD_REQUEST).json({
-                    success: false,
-                    errors: error.issues
-                });
-                return;
-            }
-            next(error);
-        }
-    }
-    async submitReview(req, res, next) {
-        try {
+        });
+        this.submitReview = (0, catchAsync_1.catchAsync)(async (req, res) => {
             // 1. DTO Validation
             const { driverId, rideId, rating, review } = ZodHelper_1.ZodHelper.validate(UserDTO_1.SubmitReviewSchema, req.body);
             const userId = req.user?.id;
@@ -387,17 +226,7 @@ let UserController = class UserController {
             });
             // 3. Response
             res.status(HttpStatusCode_1.HTTP_STATUS_CODES.CREATED).json(createdReview);
-        }
-        catch (error) {
-            if (error instanceof zod_1.z.ZodError) {
-                res.status(HttpStatusCode_1.HTTP_STATUS_CODES.BAD_REQUEST).json({
-                    success: false,
-                    errors: error.issues
-                });
-                return;
-            }
-            next(error);
-        }
+        });
     }
 };
 exports.UserController = UserController;

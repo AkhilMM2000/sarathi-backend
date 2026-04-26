@@ -1,5 +1,6 @@
 import { ErrorRequestHandler } from "express";
 import { JsonWebTokenError, TokenExpiredError } from "jsonwebtoken";
+import { z } from "zod";
 import { BaseError } from "../domain/errors/BaseError";
 import { ERROR_MESSAGES } from "../constants/ErrorMessages";
 
@@ -34,7 +35,17 @@ export const errorHandler: ErrorRequestHandler = (err, req, res, _next) => {
     return;
   }
 
-  // 3. Fallback for unexpected or programming errors
+  // 3. Handle Validation Errors (Zod)
+  if (err instanceof z.ZodError) {
+    res.status(400).json({
+      success: false,
+      message: "Validation failed",
+      errors: err.issues,
+    });
+    return;
+  }
+
+  // 4. Fallback for unexpected or programming errors
   console.error("Unexpected error:", err);
 
   res.status(500).json({

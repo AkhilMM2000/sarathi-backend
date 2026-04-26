@@ -16,6 +16,8 @@ import { IGetVehiclesByUserUseCase } from "../../application/use_cases/User/inte
 import { IGetAdminDashboardStatsUseCase } from "../../application/use_cases/Admin/Interfaces/IGetAdminDashboardStatsUseCase";
 import { AdminLoginSchema, UserIdParamSchema, UpdateUserStatusSchema, DriverIdParamSchema, ChangeDriverStatusSchema, HandleBlockStatusSchema, AdminPaginationSchema } from "../schemas/admin/AdminRequestDTO";
 
+import { catchAsync } from "../../infrastructure/utils/catchAsync";
+
 @injectable()
 export class AdminController {
   constructor(
@@ -37,148 +39,116 @@ export class AdminController {
     private _getAdminDashboardStatsUseCase: IGetAdminDashboardStatsUseCase,
   ){}
 
-  async login(req: Request, res: Response, next: NextFunction) {
-    try {
-      // 1. DTO Validation
-      const { email, password, role } = ZodHelper.validate(AdminLoginSchema, req.body);
+  login = catchAsync(async (req: Request, res: Response) => {
+    // 1. DTO Validation
+    const { email, password, role } = ZodHelper.validate(AdminLoginSchema, req.body);
 
-      // 2. Execute
-      const { accessToken, refreshToken } = await this._loginUsecase.execute(email, password, role);
+    // 2. Execute
+    const { accessToken, refreshToken } = await this._loginUsecase.execute(email, password, role);
 
-      res.cookie('refresh_token', refreshToken, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
-        maxAge: Number(process.env.COOKIE_MAX_AGE) || 7 * 24 * 60 * 60 * 1000,
-      });
+    res.cookie('refresh_token', refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+      maxAge: Number(process.env.COOKIE_MAX_AGE) || 7 * 24 * 60 * 60 * 1000,
+    });
 
-      res.status(HTTP_STATUS_CODES.OK).json({
-        success: true,
-        accessToken,
-        role,
-        message: "your admin login successfull",
-      });
-    } catch (error) {
-      next(error);
+    res.status(HTTP_STATUS_CODES.OK).json({
+      success: true,
+      accessToken,
+      role,
+      message: "your admin login successfull",
+    });
+  });
+
+  getAllUsers = catchAsync(async (req: Request, res: Response) => {
+    // 1. Request Validation (Optional pagination params)
+    const { page, limit } = ZodHelper.validate(AdminPaginationSchema, req.query);
+
+    // 2. Execute
+    const usersWithVehicleCount = await this._getAllUsersUseCase.execute();
+
+    res.status(HTTP_STATUS_CODES.OK).json({
+      success: true,
+      data: usersWithVehicleCount,
+      pagination: { page, limit }
+    });
+  });
+
+  updateUserStatus = catchAsync(async (req: Request, res: Response) => {
+    // 1. Param & Body Validation
+    const { userId } = ZodHelper.validate(UserIdParamSchema, req.params);
+    const { isBlock } = ZodHelper.validate(UpdateUserStatusSchema, req.body);
+  
+    // 2. Execute
+    const blockedUser = await this._blockUserUseCase.execute(userId, isBlock);
+
+    res.status(HTTP_STATUS_CODES.OK).json({
+      success: true,
+      message: isBlock
+      ? "User blocked successfully"
+      : "User unblocked successfully",
+      user: blockedUser,
+    });
+  });
+
+  getAllDrivers = catchAsync(async (req: Request, res: Response) => {
+    // 1. Request Validation (pagination params)
+    const { page, limit } = ZodHelper.validate(AdminPaginationSchema, req.query);
+
+    // 2. Execute
+    const paginatedDrivers = await this._getDriversUseCase.execute(page, limit);
+
+    res.status(HTTP_STATUS_CODES.OK).json({
+      success: true,
+      ...paginatedDrivers
+    });
+  });
+
+  changeDriverStatus = catchAsync(async (req: Request, res: Response) => {
+    // 1. Param & Body Validation
+    const { driverId } = ZodHelper.validate(DriverIdParamSchema, req.params);
+    const { status, reason } = ZodHelper.validate(ChangeDriverStatusSchema, req.body);
+
+    // 2. Execute the use case
+    const updatedDriver = await this._changeDriverStatusUseCase.execute(driverId, status, reason);
+
+    if (!updatedDriver) {
+      throw new AuthError(ERROR_MESSAGES.DRIVER_NOT_FOUND, HTTP_STATUS_CODES.NOT_FOUND)
     }
-  }
 
-  async getAllUsers(req: Request, res: Response, next: NextFunction) {
-    try {
-      // 1. Request Validation (Optional pagination params)
-      const { page, limit } = ZodHelper.validate(AdminPaginationSchema, req.query);
+   res.status(HTTP_STATUS_CODES.OK).json({
+      message: "Driver status updated successfully",
+      driver: updatedDriver
+    });
+  });
 
-      // 2. Execute
-      const usersWithVehicleCount = await this._getAllUsersUseCase.execute();
+  handleBlockStatus = catchAsync(async (req: Request, res: Response) => {
+    // 1. Param & Body Validation
+    const { driverId } = ZodHelper.validate(DriverIdParamSchema, req.params);
+    const { isBlock } = ZodHelper.validate(HandleBlockStatusSchema, req.body);
 
-      res.status(HTTP_STATUS_CODES.OK).json({
-        success: true,
-        data: usersWithVehicleCount,
-        pagination: { page, limit }
-      });
-    } catch (error) {
-      next(error);
-    }
-  }
+    // 2. Execute the use case
+    await this._blockOrUnblockDriverUseCase.execute(driverId, isBlock);
 
-  async updateUserStatus(req: Request, res: Response,next:NextFunction) {
-    try {
-      // 1. Param & Body Validation
-      const { userId } = ZodHelper.validate(UserIdParamSchema, req.params);
-      const { isBlock } = ZodHelper.validate(UpdateUserStatusSchema, req.body);
+    res.status(HTTP_STATUS_CODES.OK).json({ success:true, message: `Driver ${isBlock ? "blocked" : "unblocked"} successfully` });
+  });
+
+  getVehiclesByUser = catchAsync(async (req: Request, res: Response) => {
+    // 1. Param Validation
+    const { userId } = ZodHelper.validate(UserIdParamSchema, req.params);
     
-      // 2. Execute
-      const blockedUser = await this._blockUserUseCase.execute(userId, isBlock);
+    // 2. Execute
+    const vehicles = await this._getVehicleByUserUseCase.execute(userId);
+    
+    res.status(HTTP_STATUS_CODES.OK).json({ success: true, data: vehicles });
+  });
 
-      res.status(HTTP_STATUS_CODES.OK).json({
-        success: true,
-        message: isBlock
-        ? "User blocked successfully"
-        : "User unblocked successfully",
-        user: blockedUser,
-      });
-    } catch (error) {
-      next(error)
-    }
-  }
-
-  async getAllDrivers(req: Request, res: Response, next: NextFunction) {
-    try {
-      // 1. Request Validation (pagination params)
-      const { page, limit } = ZodHelper.validate(AdminPaginationSchema, req.query);
-
-      // 2. Execute
-      const paginatedDrivers = await this._getDriversUseCase.execute(page, limit);
-
-      res.status(HTTP_STATUS_CODES.OK).json({
-        success: true,
-        ...paginatedDrivers
-      });
-    } catch (error) {
-      next(error);
-    }
-  }
-
-  async changeDriverStatus(req: Request, res: Response,next:NextFunction) {
-    try {
-      // 1. Param & Body Validation
-      const { driverId } = ZodHelper.validate(DriverIdParamSchema, req.params);
-      const { status, reason } = ZodHelper.validate(ChangeDriverStatusSchema, req.body);
-
-      // 2. Execute the use case
-      const updatedDriver = await this._changeDriverStatusUseCase.execute(driverId, status, reason);
-
-      if (!updatedDriver) {
-        throw new AuthError(ERROR_MESSAGES.DRIVER_NOT_FOUND,HTTP_STATUS_CODES.NOT_FOUND)
-      }
-
-     res.status(HTTP_STATUS_CODES.OK).json({
-        message: "Driver status updated successfully",
-        driver: updatedDriver
-      });
-    } catch (error: any) {
-       next(error)
-    }
-  }
-
-  async handleBlockStatus(req: Request, res: Response,next:NextFunction){
-    try {
-      // 1. Param & Body Validation
-      const { driverId } = ZodHelper.validate(DriverIdParamSchema, req.params);
-      const { isBlock } = ZodHelper.validate(HandleBlockStatusSchema, req.body);
-
-      // 2. Execute the use case
-      await this._blockOrUnblockDriverUseCase.execute(driverId, isBlock);
-
-      res.status(HTTP_STATUS_CODES.OK).json({ success:true, message: `Driver ${isBlock ? "blocked" : "unblocked"} successfully` });
-    } catch (error: any) {
-    next(error)
-    }
-  }
-
-  async getVehiclesByUser(req: Request, res: Response,next:NextFunction) {
-    try {
-      // 1. Param Validation
-      const { userId } = ZodHelper.validate(UserIdParamSchema, req.params);
-      
-      // 2. Execute
-      const vehicles = await this._getVehicleByUserUseCase.execute(userId);
-      
-      res.status(HTTP_STATUS_CODES.OK).json({ success: true, data: vehicles });
-    } catch (error:any) {
-       next(error)
-    }
-  }
-
-  async getDashboardStats(req: Request, res: Response, next: NextFunction) {
-    try {
-      const stats = await this._getAdminDashboardStatsUseCase.execute();
-      res.status(HTTP_STATUS_CODES.OK).json({
-        success: true,
-        data: stats,
-      });
-    } catch (error) {
-      next(error);
-    }
-  }
+  getDashboardStats = catchAsync(async (req: Request, res: Response) => {
+    const stats = await this._getAdminDashboardStatsUseCase.execute();
+    res.status(HTTP_STATUS_CODES.OK).json({
+      success: true,
+      data: stats,
+    });
+  });
 }

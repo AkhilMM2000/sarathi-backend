@@ -16,6 +16,7 @@ exports.MongoUserRepository = void 0;
 const tsyringe_1 = require("tsyringe");
 const userschema_1 = __importDefault(require("./modals/userschema")); // MongoDB Schema
 const mongoose_1 = require("mongoose");
+const ConflictError_1 = require("../../domain/errors/ConflictError");
 const BaseRepository_1 = require("./BaseRepository");
 let MongoUserRepository = class MongoUserRepository extends BaseRepository_1.BaseRepository {
     constructor() {
@@ -25,14 +26,22 @@ let MongoUserRepository = class MongoUserRepository extends BaseRepository_1.Bas
         return super.create(user);
     }
     async updateUser(userId, data) {
-        if (!(0, mongoose_1.isValidObjectId)(userId))
-            throw new Error("Invalid user ID");
-        const user = await userschema_1.default.findById(userId);
-        if (!user)
-            return null;
-        Object.assign(user, data);
-        await user.save();
-        return user.toObject();
+        try {
+            if (!(0, mongoose_1.isValidObjectId)(userId))
+                throw new Error("Invalid user ID");
+            const user = await userschema_1.default.findById(userId);
+            if (!user)
+                return null;
+            Object.assign(user, data);
+            await user.save();
+            return user.toObject();
+        }
+        catch (error) {
+            if (error.code === 11000) {
+                throw new ConflictError_1.ConflictError("User with this email or mobile already exists");
+            }
+            throw error;
+        }
     }
     async findByEmail(email) {
         return super.findOne({ email });
