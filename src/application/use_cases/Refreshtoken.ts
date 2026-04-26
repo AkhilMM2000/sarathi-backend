@@ -2,7 +2,6 @@ import { inject, injectable } from "tsyringe";
 import { TOKENS } from "../../constants/Tokens";
 import { IUserRepository } from "../../domain/repositories/IUserepository";
 import { IDriverRepository } from "../../domain/repositories/IDriverepository";
-import { IAdminRepository } from "../../domain/repositories/IAdminrepository";
 import { AuthService } from "../services/AuthService";
 import { AuthError } from "../../domain/errors/Autherror";
 import { ERROR_MESSAGES } from "../../constants/ErrorMessages";
@@ -14,47 +13,48 @@ import jwt from "jsonwebtoken";
 export class RefreshToken implements IRefreshTokenUseCase {
   constructor(
     @inject(TOKENS.IUSER_REPO) private userRepository: IUserRepository,
-    @inject(TOKENS.IDRIVER_REPO) private driverRepository: IDriverRepository,
-    @inject(TOKENS.IADMIN_REPO) private adminRepository: IAdminRepository
+    @inject(TOKENS.IDRIVER_REPO) private driverRepository: IDriverRepository
   ) {}
 
   async execute(refreshToken: string): Promise<string> {
     if (!refreshToken) {
-      throw new AuthError(ERROR_MESSAGES.INVALID_REFRESH_TOKEN, HTTP_STATUS_CODES.UNAUTHORIZED);
+      throw new AuthError(ERROR_MESSAGES.REFRESHTOKEN_NOTFOUND, HTTP_STATUS_CODES.UNAUTHORIZED);
     }
 
     // 1. Decode token to find role
     const decoded = jwt.decode(refreshToken) as any;
     if (!decoded || !decoded.role) {
-       throw new AuthError(ERROR_MESSAGES.INVALID_REFRESH_TOKEN, HTTP_STATUS_CODES.UNAUTHORIZED);
+       throw new AuthError(ERROR_MESSAGES.REFRESHTOKEN_NOTFOUND, HTTP_STATUS_CODES.UNAUTHORIZED);
     }
 
     const { role } = decoded;
 
-    // 2. Verify token
-    let secret = "";
-    if (role === "user") secret = process.env.USER_REFRESH_TOKEN_SECRET!;
-    else if (role === "driver") secret = process.env.DRIVER_REFRESH_TOKEN_SECRET!;
-    else if (role === "admin") secret = process.env.ADMIN_REFRESH_TOKEN_SECRET!;
-
+    // 2. Verify token using unified secret
     try {
-      jwt.verify(refreshToken, secret);
+      jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET!);
     } catch (err) {
-      throw new AuthError(ERROR_MESSAGES.INVALID_REFRESH_TOKEN, HTTP_STATUS_CODES.UNAUTHORIZED);
+      throw new AuthError(ERROR_MESSAGES.INVALID_TOKEN, HTTP_STATUS_CODES.UNAUTHORIZED);
     }
 
     // 3. Fetch User based on role
     let user: any = null;
-    if (role === "user") {
+    if (role === "user" || role === "admin") {
       user = await this.userRepository.findByEmail(decoded.email);
+      
+      if (!user) {
+        throw new AuthError(ERROR_MESSAGES.USER_NOT_FOUND, HTTP_STATUS_CODES.NOT_FOUND);
+      }
+
+      // Verify if admin role is actually authorized
+      if (role === "admin" && user.role !== "admin") {
+        throw new AuthError(ERROR_MESSAGES.NOT_AUTHORIZED_ADMIN, HTTP_STATUS_CODES.FORBIDDEN);
+      }
     } else if (role === "driver") {
       user = await this.driverRepository.findByEmail(decoded.email);
-    } else if (role === "admin") {
-      user = await this.adminRepository.findByEmail(decoded.email);
-    }
-
-    if (!user) {
-      throw new AuthError(ERROR_MESSAGES.USER_NOT_FOUND, HTTP_STATUS_CODES.NOT_FOUND);
+      
+      if (!user) {
+        throw new AuthError(ERROR_MESSAGES.DRIVER_NOT_FOUND, HTTP_STATUS_CODES.NOT_FOUND);
+      }
     }
 
     // 4. Generate new Access Token
