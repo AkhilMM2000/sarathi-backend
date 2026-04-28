@@ -30,6 +30,10 @@ export interface AdminDriverResponseDto {
   place: string;
   averageRating: number;
   totalRatings: number;
+  aadhaarNumber: string;
+  licenseNumber: string;
+  aadhaarImage: string;
+  licenseImage: string;
   createdAt?: string;
 }
 
@@ -62,6 +66,10 @@ export const toAdminDriverResponse = (driver: Driver): AdminDriverResponseDto =>
     place: driver.place || "",
     averageRating: driver.averageRating || 0,
     totalRatings: driver.totalRatings || 0,
+    aadhaarNumber: driver.aadhaarNumber || "",
+    licenseNumber: driver.licenseNumber || "",
+    aadhaarImage: driver.aadhaarImage || "",
+    licenseImage: driver.licenseImage || "",
     createdAt: driver.createdAt instanceof Date ? driver.createdAt.toISOString() : String(driver.createdAt)
   };
 };
