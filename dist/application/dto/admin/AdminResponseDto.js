@@ -30,6 +30,10 @@ const toAdminDriverResponse = (driver) => {
         place: driver.place || "",
         averageRating: driver.averageRating || 0,
         totalRatings: driver.totalRatings || 0,
+        aadhaarNumber: driver.aadhaarNumber || "",
+        licenseNumber: driver.licenseNumber || "",
+        aadhaarImage: driver.aadhaarImage || "",
+        licenseImage: driver.licenseImage || "",
         createdAt: driver.createdAt instanceof Date ? driver.createdAt.toISOString() : String(driver.createdAt)
     };
 };
