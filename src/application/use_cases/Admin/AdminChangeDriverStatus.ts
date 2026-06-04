@@ -35,3 +35,5 @@ export class AdminChangeDriverStatus implements IAdminChangeDriverStatusUseCase 
     return updatedDriver ? toAdminDriverResponse(updatedDriver) : null;
   }
 }
+
+
