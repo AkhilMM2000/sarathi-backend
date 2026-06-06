@@ -35,6 +35,8 @@ export class CancelBookingInputUseCase  implements ICancelBookingUseCase{
       status,
       reason
     });
-   await this._notificationService.cancelBookingNotification(booking.driverId.toString(),{status,reason,startDate:booking.startDate,bookingId})
+    if (booking.driverId) {
+      await this._notificationService.cancelBookingNotification(booking.driverId.toString(), { status, reason, startDate: booking.startDate, bookingId })
+    }
   }
 }

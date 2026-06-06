@@ -70,10 +70,10 @@ booking.walletDeduction=walletDeduction;
   }
 
     await this._bookingRepo.updateBooking(rideId, booking);
-   console.log(booking.driverId.toString())
-   if(paymentstatus=='COMPLETED'){
-   await this._notificationService.paymentNotification(booking.driverId.toString(),{status:paymentstatus,startDate:booking.startDate,bookingId:rideId})
-   }
+    if (paymentstatus == 'COMPLETED' && booking.driverId) {
+      console.log(booking.driverId.toString());
+      await this._notificationService.paymentNotification(booking.driverId.toString(), { status: paymentstatus, startDate: booking.startDate, bookingId: rideId })
+    }
 
   }
 }

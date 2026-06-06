@@ -27,22 +27,27 @@ export class WalletPayment  implements IWalletPaymentUseCase {
       };
 
       const Ride = await this._bookingRepo.findBookingById(rideId);
-      const driver = await this._driverRepository.findDriverById(
-        Ride?.driverId.toString()!
-      );
       if (!Ride) {
         throw new AuthError("Ride not found", HTTP_STATUS_CODES.NOT_FOUND);
       }
+      if (!Ride.driverId) {
+        throw new AuthError("No driver assigned to this ride", HTTP_STATUS_CODES.BAD_REQUEST);
+      }
+
+      const driver = await this._driverRepository.findDriverById(
+        Ride.driverId.toString()
+      );
+
       if (!driver?.stripeAccountId) {
         throw new AuthError(
           "stripe connected account not found",
           HTTP_STATUS_CODES.NOT_FOUND
         );
       }
- await this._stripeService.transferToDriverFromWallet(
-        Ride?.driverId.toString(),
+      await this._stripeService.transferToDriverFromWallet(
+        Ride.driverId.toString(),
         amount,
-        driver?.stripeAccountId
+        driver.stripeAccountId
       );
       await this._bookingRepo.updateBooking(rideId, {...Payment,walletDeduction:amount,driver_fee:Math.floor(amount*0.9)});
       await this._walletRepository.debitAmount(

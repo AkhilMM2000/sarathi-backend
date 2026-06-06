@@ -7,7 +7,7 @@ import { rideHistory } from "../../../domain/repositories/IBookingrepository";
 export interface RideHistoryResponseDto {
   _id: string;
   userId: string;
-  driverId: string;
+  driverId?: string;
   fromLocation: string;
   toLocation: string;
   startDate: string; // ISO String
@@ -32,7 +32,7 @@ export const toRideHistoryResponse = (booking: rideHistory): RideHistoryResponse
   return {
     _id: booking.id || (booking as any)._id?.toString() || "",
     userId: booking.userId.toString(),
-    driverId: booking.driverId.toString(),
+    driverId: booking.driverId ? booking.driverId.toString() : undefined,
     fromLocation: booking.fromLocation || "",
     toLocation: booking.toLocation || "",
     startDate: booking.startDate instanceof Date ? booking.startDate.toISOString() : String(booking.startDate),
