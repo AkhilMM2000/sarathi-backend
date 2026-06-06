@@ -8,6 +8,7 @@ import { INotificationService } from "../../services/NotificationService";
 import { TOKENS } from "../../../constants/Tokens";
 import { IBookDriverUseCase } from "./interfaces/IBookDriverUseCase";
 import { IDriverRepository } from "../../../domain/repositories/IDriverepository";
+import { GoogleDistanceService } from "../../services/GoogleDistanceService";
 
 export interface BookDriverInput {
   userId: string;
@@ -29,6 +30,7 @@ export class BookDriver implements IBookDriverUseCase  {
   constructor(
     @inject(TOKENS.IBOOKING_REPO) private _bookingRepo: IBookingRepository,
     @inject(TOKENS.IDRIVER_REPO) private _driverRepo: IDriverRepository,
+    @inject(TOKENS.GOOGLE_DISTANCE_SERVICE) private _distanceService: GoogleDistanceService,
     @inject(TOKENS.IFARE_CALCULATE_SERVICE) private _fareCalculator: IFareCalculatorService,
     @inject(TOKENS.NOTIFICATION_SERVICE)
     private _notificationService: INotificationService
@@ -59,12 +61,34 @@ export class BookDriver implements IBookDriverUseCase  {
     const nearbyDrivers = await this._driverRepo.findNearbyDriversWithinRadius(
       { latitude: data.fromLat, longitude: data.fromLng },
       [],
-      15 // 15 km radius
+      30 // 30 km straight-line radius
     );
 
-    // If there are absolutely no online/available drivers, throw an error
     if (nearbyDrivers.length === 0) {
-      throw new AuthError("No online drivers available in your 15km area.", HTTP_STATUS_CODES.BAD_REQUEST);
+      throw new AuthError("No online drivers available in your area.", HTTP_STATUS_CODES.BAD_REQUEST);
+    }
+
+    // Filter drivers by Google Maps road distance
+    const driverLocations = nearbyDrivers.map(d => ({
+      id: d._id.toString(),
+      latitude: d.latitude,
+      longitude: d.longitude
+    }));
+
+    const distances = await this._distanceService.getDistances(
+      { latitude: data.fromLat, longitude: data.fromLng },
+      driverLocations
+    );
+
+    const targetedDriverIds = nearbyDrivers
+      .filter(d => {
+        const roadDist = distances[d._id.toString()];
+        return roadDist !== undefined && roadDist <= 20; // 20 km road distance limit
+      })
+      .map(d => d._id.toString());
+
+    if (targetedDriverIds.length === 0) {
+      throw new AuthError("No online drivers available within 20km road distance.", HTTP_STATUS_CODES.BAD_REQUEST);
     }
 
     const newBooking: Booking = {
@@ -87,8 +111,7 @@ export class BookDriver implements IBookDriverUseCase  {
     if (savedBooking.driverId) {
       await this._notificationService.sendBookingNotification(savedBooking.driverId.toString(), { startDate, newRide: savedBooking });
     } else {
-      const driverIds = nearbyDrivers.map(d => d._id.toString());
-      await this._notificationService.broadcastBookingNotification(driverIds, { startDate, newRide: savedBooking });
+      await this._notificationService.broadcastBookingNotification(targetedDriverIds, { startDate, newRide: savedBooking });
     }
 
     return savedBooking;
