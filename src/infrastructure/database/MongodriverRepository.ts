@@ -161,7 +161,7 @@ export class MongoDriverRepository extends BaseRepository<Driver, IDriver> imple
       $geoNear: {
         near: { type: "Point", coordinates: [lng, lat] },
         distanceField: "distance",
-        maxDistance: 50000, // 50km equivalent in meters
+        maxDistance: 20000, // 20km equivalent in meters
         spherical: true,
         query: matchStage
       }
@@ -266,6 +266,7 @@ async findNearbyDriversWithinRadius(
             onlineStatus: 'online',
             isBlock: false,
             status: 'approved',
+            activePayment: true,
           },
         },
       },
