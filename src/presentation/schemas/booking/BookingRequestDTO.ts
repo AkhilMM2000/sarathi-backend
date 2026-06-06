@@ -6,13 +6,15 @@ import { BookingType, BookingStatus } from "../../../domain/models/Booking";
  * Handles validation and date coercion for the initial booking request
  */
 export const BookDriverSchema = z.object({
-  driverId: z.string().min(1, "Driver ID is required"),
+  driverId: z.string().optional(),
   fromLocation: z.string().min(1, "From location is required"),
   toLocation: z.string().optional(),
   startDate: z.coerce.date(),
   endDate: z.coerce.date().optional(),
   estimatedKm: z.coerce.number().nonnegative().optional(),
   bookingType: z.nativeEnum(BookingType),
+  fromLat: z.coerce.number(),
+  fromLng: z.coerce.number(),
 }).refine((data) => {
   if (data.endDate && data.startDate > data.endDate) {
     return false;

@@ -6,7 +6,7 @@ export interface BookingDocument extends Omit<Booking, "id">, Document {} // use
 const bookingSchema = new Schema<BookingDocument>(
   {
     userId: { type: Schema.Types.ObjectId, ref: "User", required: true },
-    driverId: { type: Schema.Types.ObjectId, ref: "Driver", required: true },
+    driverId: { type: Schema.Types.ObjectId, ref: "Driver" },
     fromLocation: { type: String },
     toLocation: { type: String },
     startDate: { type: Date, required: true },

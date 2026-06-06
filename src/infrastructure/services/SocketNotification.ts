@@ -15,6 +15,15 @@ export class SocketNotificationService implements INotificationService {
       this.io.to(socketId).emit("booking:new", data);
     }
   }
+  async broadcastBookingNotification(driverIds: string[], data: any): Promise<void> {
+    for (const driverId of driverIds) {
+      const socketId = await redis.get<string>(`driver:socket:${driverId}`);
+      console.log('booking notification broadcast to driver', driverId, socketId)
+      if (socketId) {
+        this.io.to(socketId).emit("booking:new", data);
+      }
+    }
+  }
 async cancelBookingNotification(driverId: string, data: any):Promise< void> {
   const socketId = await redis.get<string>(`driver:socket:${driverId}`);
   console.log('booking notifciationcancel',socketId)

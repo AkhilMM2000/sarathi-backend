@@ -19,7 +19,7 @@ export enum BookingType {
 export interface Booking {
     id?: string;
     userId:Types.ObjectId;
-    driverId: Types.ObjectId;
+    driverId?: Types.ObjectId;
     fromLocation?: string;
     toLocation?: string; 
     startDate: Date;
