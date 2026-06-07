@@ -1,5 +1,9 @@
 import { Booking } from "../../../../domain/models/Booking";
-import { AcceptBookingInput } from "../AcceptBooking";
+
+export interface AcceptBookingInput {
+  bookingId: string;
+  driverId: string;
+}
 
 export interface IAcceptBookingUseCase {
   execute(data: AcceptBookingInput): Promise<Booking>;

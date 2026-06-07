@@ -7,12 +7,7 @@ import { TOKENS } from "../../../constants/Tokens";
 import { HTTP_STATUS_CODES } from "../../../constants/HttpStatusCode";
 import BookingModel from "../../../infrastructure/database/modals/Bookingschema";
 import { Types } from "mongoose";
-import { IAcceptBookingUseCase } from "./interfaces/IAcceptBookingUseCase";
-
-export interface AcceptBookingInput {
-  bookingId: string;
-  driverId: string;
-}
+import { IAcceptBookingUseCase, AcceptBookingInput } from "./interfaces/IAcceptBookingUseCase";
 
 @injectable()
 export class AcceptBooking implements IAcceptBookingUseCase {
