@@ -263,7 +263,6 @@ async findNearbyDriversWithinRadius(
           spherical: true,
           query: {
             _id: { $nin: excludedObjectIds },
-            onlineStatus: 'online',
             isBlock: false,
             status: 'approved',
             activePayment: true,

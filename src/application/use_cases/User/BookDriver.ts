@@ -61,6 +61,7 @@ export class BookDriver implements IBookDriverUseCase  {
 
     if (!driverId) {
       // 1. Find all online, approved, active-payment drivers within 30km straight-line radius
+      console.log(data.fromLat,data.fromLng,"fromLat,fromLng")
       const nearbyDrivers = await this._driverRepo.findNearbyDriversWithinRadius(
         { latitude: data.fromLat, longitude: data.fromLng },
         [],
@@ -91,7 +92,7 @@ export class BookDriver implements IBookDriverUseCase  {
 
       // If there are no drivers within 20km road distance, throw error
       if (targetedDriverIds.length === 0) {
-        throw new AuthError("No online drivers available within 20km road distance in your area.", HTTP_STATUS_CODES.BAD_REQUEST);
+        throw new AuthError("No drivers available within 20km road distance from your pickup location.", HTTP_STATUS_CODES.BAD_REQUEST);
       }
     }
 
