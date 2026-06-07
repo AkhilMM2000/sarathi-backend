@@ -85,9 +85,11 @@ export class BookDriver implements IBookDriverUseCase  {
         targetedDriverIds = nearbyDrivers
           .filter((d) => {
             const roadDist = distances[d._id.toString()];
+            console.log(`[Matchmaking Filter] Driver ${d._id} road distance: ${roadDist} km`);
             return roadDist !== undefined && roadDist <= 20; // 20 km road distance limit
           })
           .map((d) => d._id.toString());
+        console.log("🎯 final targetedDriverIds within 20km:", targetedDriverIds);
       }
 
       // If there are no drivers within 20km road distance, throw error

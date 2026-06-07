@@ -63,7 +63,9 @@ export const NotificationSocket = () => {
         // Emit booking:new to this driver for all bookings <= 20 km
         for (const booking of pendingBookings) {
           const roadDist = distances[(booking._id as any).toString()];
+          console.log(`[Catch-Up Check] Booking ${(booking._id as any).toString()} is ${roadDist} km away from Driver ${driverId}`);
           if (roadDist !== undefined && roadDist <= 20) {
+            console.log(`📣 Emitting catch-up notification to Driver ${driverId} for Booking ${(booking._id as any).toString()}`);
             socket.emit("booking:new", {
               bookingId: (booking._id as any).toString(),
               fromLocation: booking.fromLocation,
