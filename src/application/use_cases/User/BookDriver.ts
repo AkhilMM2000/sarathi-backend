@@ -57,40 +57,42 @@ export class BookDriver implements IBookDriverUseCase  {
       endDate,
     });
 
-    // 1. Find all online, approved, active-payment drivers within 30km straight-line radius
-    const nearbyDrivers = await this._driverRepo.findNearbyDriversWithinRadius(
-      { latitude: data.fromLat, longitude: data.fromLng },
-      [],
-      30 // 30 km straight-line radius
-    );
-
-    // 2. Query Google Maps Distance API to filter by road distance
-    const driverLocations = nearbyDrivers.map((d) => ({
-      id: d._id.toString(),
-      latitude: d.latitude,
-      longitude: d.longitude,
-    }));
-
     let targetedDriverIds: string[] = [];
 
-    if (driverLocations.length > 0) {
-      const distances = await this._distanceService.getDistances(
+    if (!driverId) {
+      // 1. Find all online, approved, active-payment drivers within 30km straight-line radius
+      const nearbyDrivers = await this._driverRepo.findNearbyDriversWithinRadius(
         { latitude: data.fromLat, longitude: data.fromLng },
-        driverLocations
+        [],
+        30 // 30 km straight-line radius
       );
+      console.log(nearbyDrivers,"nearbyDrivers")
+      // 2. Query Google Maps Distance API to filter by road distance
+      const driverLocations = nearbyDrivers.map((d) => ({
+        id: d._id.toString(),
+        latitude: d.latitude,
+        longitude: d.longitude,
+      }));
 
-      // 3. Keep only drivers whose road distance is <= 20 km
-      targetedDriverIds = nearbyDrivers
-        .filter((d) => {
-          const roadDist = distances[d._id.toString()];
-          return roadDist !== undefined && roadDist <= 20; // 20 km road distance limit
-        })
-        .map((d) => d._id.toString());
-    }
+      if (driverLocations.length > 0) {
+        const distances = await this._distanceService.getDistances(
+          { latitude: data.fromLat, longitude: data.fromLng },
+          driverLocations
+        );
 
-    // If there are no drivers within 20km road distance, throw error
-    if (targetedDriverIds.length === 0) {
-      throw new AuthError("No online drivers available within 20km road distance in your area.", HTTP_STATUS_CODES.BAD_REQUEST);
+        // 3. Keep only drivers whose road distance is <= 20 km
+        targetedDriverIds = nearbyDrivers
+          .filter((d) => {
+            const roadDist = distances[d._id.toString()];
+            return roadDist !== undefined && roadDist <= 20; // 20 km road distance limit
+          })
+          .map((d) => d._id.toString());
+      }
+
+      // If there are no drivers within 20km road distance, throw error
+      if (targetedDriverIds.length === 0) {
+        throw new AuthError("No online drivers available within 20km road distance in your area.", HTTP_STATUS_CODES.BAD_REQUEST);
+      }
     }
 
     const newBooking: Booking = {
