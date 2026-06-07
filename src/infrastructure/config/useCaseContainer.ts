@@ -29,6 +29,8 @@ import { SubmitDriverReview } from "../../application/use_cases/User/SubmitRatin
 import { USECASE_TOKENS } from "../../constants/UseCaseTokens";
 import { IRegisterDriverUseCase } from "../../application/use_cases/Driver/interfaces/IRegisterDriverUseCase";
 import { RegisterDriver } from "../../application/use_cases/Driver/RegisterDriver";
+import { IAcceptBookingUseCase } from "../../application/use_cases/Driver/interfaces/IAcceptBookingUseCase";
+import { AcceptBooking } from "../../application/use_cases/Driver/AcceptBooking";
 import { EditDriverProfile } from "../../application/use_cases/Driver/EditDriverProfile";
 import { IEditDriverProfile } from "../../application/use_cases/Driver/interfaces/IEditDriverProfile";
 import { IOnboardDriverUseCase } from "../../application/use_cases/Driver/interfaces/IOnboardDriverUseCase";
@@ -164,6 +166,10 @@ container.registerSingleton<IVerifyDriverPaymentAccount>(
 container.registerSingleton<IBookDriverUseCase>(
  USECASE_TOKENS.BOOK_DRIVER_USECASE,
   BookDriver
+);
+container.registerSingleton<IAcceptBookingUseCase>(
+  USECASE_TOKENS.ACCEPT_BOOKING_USECASE,
+  AcceptBooking
 );
 container.registerSingleton<IGetEstimatedFare>(
   USECASE_TOKENS.GET_ESTIMATED_FARE_USECASE,

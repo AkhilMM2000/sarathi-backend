@@ -48,6 +48,9 @@ async paymentNotification(driverId: string, data: any):Promise<void> {
         this.io.to(socketId).emit("booking:confirmation", data);
         }
     }
+  bookingAssignedNotification(bookingId: string): void {
+    this.io.emit("booking:assigned", { bookingId });
+  }
 
 async rejectBookingNotification(userId: string, data: any): Promise<void> {
   const socketId = await redis.get<string>(`user:socket:${userId}`);

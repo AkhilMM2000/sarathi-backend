@@ -103,5 +103,6 @@ export const ROUTES = {
     BASE: "/api",
     SLOT: "/book/slot",
     ESTIMATE_FARE: "/book/estimate-fare",
+    ACCEPT: "/booking/accept/:bookingId",
   }
 } as const;

@@ -12,6 +12,7 @@ import { BookDriverSchema, GetEstimatedFareSchema, UserBookingPaginationSchema, 
 import { USECASE_TOKENS } from "../../constants/UseCaseTokens";
 import { GenerateChatSignedUrl } from "../../application/use_cases/chatGetSignedUrl";
 import { IBookDriverUseCase } from "../../application/use_cases/User/interfaces/IBookDriverUseCase";
+import { IAcceptBookingUseCase } from "../../application/use_cases/Driver/interfaces/IAcceptBookingUseCase";
 import { IGetEstimatedFare } from "../../application/use_cases/User/interfaces/IGetEstimatedFare";
 import { IGetUserBookingsUseCase } from "../../application/use_cases/User/interfaces/IGetUserBookingsUseCase";
 import { IAttachPaymentIntentIdToBookingUseCase } from "../../application/use_cases/User/interfaces/IAttachPaymentIntentIdToBookingUseCase";
@@ -66,7 +67,9 @@ private _bookDriverUseCase: IBookDriverUseCase,
     @inject(USECASE_TOKENS.GET_RIDE_HISTORY_USECASE)
   private _getRideHistoryUseCase: IGetRideHistoryUseCase,
     @inject(USECASE_TOKENS.GENERATE_CHAT_SIGNED_URL_USECASE)
-  private _generateChatSignedUrlUseCase: GenerateChatSignedUrl
+  private _generateChatSignedUrlUseCase: GenerateChatSignedUrl,
+    @inject(USECASE_TOKENS.ACCEPT_BOOKING_USECASE)
+  private _acceptBookingUseCase: IAcceptBookingUseCase
 
    ){}
   bookDriver = catchAsync(async (req: AuthenticatedRequest, res: Response) => {
@@ -85,6 +88,22 @@ private _bookDriverUseCase: IBookDriverUseCase,
     });
 
     res.status(HTTP_STATUS_CODES.CREATED).json({ success: true, data: booking });
+  });
+
+  acceptBooking = catchAsync(async (req: AuthenticatedRequest, res: Response) => {
+    const driverId = req.user?.id;
+    const { bookingId } = req.params;
+
+    if (!driverId) {
+      throw new AuthError(ERROR_MESSAGES.USER_ID_NOT_FOUND, HTTP_STATUS_CODES.UNAUTHORIZED);
+    }
+
+    const booking = await this._acceptBookingUseCase.execute({
+      bookingId,
+      driverId
+    });
+
+    res.status(HTTP_STATUS_CODES.OK).json({ success: true, data: booking });
   });
 
   getEstimatedFare = catchAsync(async (req: Request, res: Response) => {
