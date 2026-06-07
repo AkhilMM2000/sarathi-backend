@@ -59,8 +59,11 @@ initializeSocket(server);
 initializeReferralSocket();
 NotificationSocket();
 
+import { CronScheduler } from "./infrastructure/services/CronScheduler";
+
 // 5️⃣ DB + Server start
 connectDB().then(() => {
+  CronScheduler.start();
   server.listen(PORT, () => console.log(`Server running on port ${PORT}`));
 });
 
