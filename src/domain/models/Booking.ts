@@ -37,6 +37,8 @@ paymentIntentId?:string;
     driver_fee?: number;
     platform_fee?: number;
     walletDeduction?: number;
+    fromLat?: number;
+    fromLng?: number;
     createdAt?: Date;   
     updatedAt?: Date;
   }

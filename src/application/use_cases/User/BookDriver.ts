@@ -107,6 +107,8 @@ export class BookDriver implements IBookDriverUseCase  {
       estimatedFare,
       status: BookingStatus.PENDING,
       paymentMode: "stripe",
+      fromLat: data.fromLat,
+      fromLng: data.fromLng,
     };
    
     // Save booking

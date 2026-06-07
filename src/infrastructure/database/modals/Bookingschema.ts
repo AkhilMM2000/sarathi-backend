@@ -40,7 +40,9 @@ const bookingSchema = new Schema<BookingDocument>(
  driver_fee: { type: Number },
     platform_fee: { type: Number },
     reason: { type: String },
-    walletDeduction:{type:Number}
+    walletDeduction:{type:Number},
+    fromLat: { type: Number },
+    fromLng: { type: Number }
   },
  
   {
