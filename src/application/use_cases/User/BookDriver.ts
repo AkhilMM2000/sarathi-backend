@@ -1,6 +1,6 @@
 import { inject, injectable } from "tsyringe";
 import { IBookingRepository } from "../../../domain/repositories/IBookingrepository";
-import { BookingStatus,Booking, BookingType } from "../../../domain/models/Booking"; 
+import { BookingStatus, Booking, BookingType } from "../../../domain/models/Booking"; 
 import { IFareCalculatorService } from "../../services/FareCalculatorService"; 
 import { Types } from "mongoose";
 import { AuthError } from "../../../domain/errors/Autherror";
@@ -9,6 +9,7 @@ import { TOKENS } from "../../../constants/Tokens";
 import { IBookDriverUseCase } from "./interfaces/IBookDriverUseCase";
 import { IDriverRepository } from "../../../domain/repositories/IDriverepository";
 import { GoogleDistanceService } from "../../services/GoogleDistanceService";
+import { HTTP_STATUS_CODES } from "../../../constants/HttpStatusCode";
 
 export interface BookDriverInput {
   userId: string;
@@ -22,8 +23,6 @@ export interface BookDriverInput {
   fromLat: number;
   fromLng: number;
 }
- 
-import { HTTP_STATUS_CODES } from "../../../constants/HttpStatusCode";
 
 @injectable()
 export class BookDriver implements IBookDriverUseCase  {
@@ -38,7 +37,7 @@ export class BookDriver implements IBookDriverUseCase  {
   async execute(data: BookDriverInput): Promise<Booking> {
     const { driverId, startDate, endDate, bookingType} = data;
 
-    if(endDate && startDate > endDate) {
+    if (endDate && startDate > endDate) {
       throw new AuthError("End date must be greater than start date", HTTP_STATUS_CODES.BAD_REQUEST);
     }
 
@@ -60,14 +59,15 @@ export class BookDriver implements IBookDriverUseCase  {
     let targetedDriverIds: string[] = [];
 
     if (!driverId) {
-      // 1. Find all online, approved, active-payment drivers within 30km straight-line radius
-      console.log(data.fromLat,data.fromLng,"fromLat,fromLng")
+      // 1. Find all approved, active-payment drivers within 30km straight-line radius
+      console.log(data.fromLat, data.fromLng, "fromLat,fromLng")
       const nearbyDrivers = await this._driverRepo.findNearbyDriversWithinRadius(
         { latitude: data.fromLat, longitude: data.fromLng },
         [],
         30 // 30 km straight-line radius
       );
-      console.log(nearbyDrivers,"nearbyDrivers")
+      console.log(nearbyDrivers, "nearbyDrivers")
+
       // 2. Query Google Maps Distance API to filter by road distance
       const driverLocations = nearbyDrivers.map((d) => ({
         id: d._id.toString(),
@@ -116,9 +116,23 @@ export class BookDriver implements IBookDriverUseCase  {
     const savedBooking = await this._bookingRepo.createBooking(newBooking);
 
     if (savedBooking.driverId) {
-      await this._notificationService.sendBookingNotification(savedBooking.driverId.toString(), { startDate, newRide: savedBooking });
+      await this._notificationService.sendBookingNotification(savedBooking.driverId.toString(), {
+        bookingId: (savedBooking as any)._id?.toString() || savedBooking.id,
+        fromLocation: savedBooking.fromLocation,
+        toLocation: savedBooking.toLocation,
+        estimatedFare: savedBooking.estimatedFare,
+        startDate,
+        newRide: savedBooking
+      });
     } else {
-      await this._notificationService.broadcastBookingNotification(targetedDriverIds, { startDate, newRide: savedBooking });
+      await this._notificationService.broadcastBookingNotification(targetedDriverIds, {
+        bookingId: (savedBooking as any)._id?.toString() || savedBooking.id,
+        fromLocation: savedBooking.fromLocation,
+        toLocation: savedBooking.toLocation,
+        estimatedFare: savedBooking.estimatedFare,
+        startDate,
+        newRide: savedBooking
+      });
     }
 
     return savedBooking;

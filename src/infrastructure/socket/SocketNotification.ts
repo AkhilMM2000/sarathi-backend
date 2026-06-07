@@ -65,6 +65,10 @@ export const NotificationSocket = () => {
           const roadDist = distances[(booking._id as any).toString()];
           if (roadDist !== undefined && roadDist <= 20) {
             socket.emit("booking:new", {
+              bookingId: (booking._id as any).toString(),
+              fromLocation: booking.fromLocation,
+              toLocation: booking.toLocation,
+              estimatedFare: booking.estimatedFare,
               startDate: booking.startDate,
               newRide: booking
             });
