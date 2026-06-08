@@ -24,18 +24,25 @@ export class AcceptBooking implements IAcceptBookingUseCase {
       { _id: new Types.ObjectId(bookingId), status: BookingStatus.PENDING },
       { status: BookingStatus.CONFIRMED, driverId: new Types.ObjectId(driverId) },
       { new: true }
-    );
+    ).populate("driverId", "name profileImage mobile");
 
     // If updatedBooking is null, it was either already accepted or expired
     if (!updatedBooking) {
       throw new AuthError("This booking request is no longer available.", HTTP_STATUS_CODES.BAD_REQUEST);
     }
 
+    const driverObj = updatedBooking.driverId as any;
+
     // Notify user via Socket.IO
     await this._notificationService.sendBookingConfirmation(updatedBooking.userId.toString(), {
       bookingId: (updatedBooking._id as any).toString(),
-      driverId,
       status: BookingStatus.CONFIRMED,
+      driver: driverObj ? {
+        _id: driverObj._id.toString(),
+        name: driverObj.name,
+        mobile: driverObj.mobile,
+        profileImage: driverObj.profileImage
+      } : undefined
     });
 
     // Notify other online drivers to dismiss their popups
