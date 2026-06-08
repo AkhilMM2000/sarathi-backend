@@ -46,7 +46,7 @@ export class AcceptBooking implements IAcceptBookingUseCase {
     });
 
     // Notify other online drivers to dismiss their popups
-    this._notificationService.bookingAssignedNotification((updatedBooking._id as any).toString());
+    this._notificationService.bookingAssignedNotification((updatedBooking._id as any).toString(), driverId);
 
     return updatedBooking.toObject() as Booking;
   }

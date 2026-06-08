@@ -48,8 +48,8 @@ async paymentNotification(driverId: string, data: any):Promise<void> {
         this.io.to(socketId).emit("booking:confirmation", data);
         }
     }
-  bookingAssignedNotification(bookingId: string): void {
-    this.io.emit("booking:assigned", { bookingId });
+  bookingAssignedNotification(bookingId: string, driverId?: string): void {
+    this.io.emit("booking:assigned", { bookingId, driverId });
   }
 
 async rejectBookingNotification(userId: string, data: any): Promise<void> {
