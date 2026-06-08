@@ -8,12 +8,13 @@ export class CronScheduler {
   static start() {
     console.log("[CronScheduler] Booking expiration scheduler started.");
     
-    // Check every 1 minute
+    // Check every 30 seconds to catch expired bookings promptly
     setInterval(async () => {
       try {
-        const expirationTime = new Date(Date.now() - 30 * 60 * 1000);
+        const limitMinutes = parseInt(process.env.BOOKING_EXPIRATION_LIMIT_MINUTES || "3", 10);
+        const expirationTime = new Date(Date.now() - limitMinutes * 60 * 1000);
         
-        // Find all pending bookings created more than 30 minutes ago
+        // Find all pending bookings created more than the limit time ago
         const expiredBookings = await BookingModel.find({
           status: BookingStatus.PENDING,
           createdAt: { $lt: expirationTime }
@@ -24,19 +25,19 @@ export class CronScheduler {
         const notificationService = container.resolve<INotificationService>(TOKENS.NOTIFICATION_SERVICE);
 
         for (const booking of expiredBookings) {
-          booking.status = BookingStatus.CANCELLED;
-          booking.reason = "No driver accepted the request within 30 minutes.";
+          booking.status = BookingStatus.EXPIRED;
+          booking.reason = `No driver accepted the request within ${limitMinutes} minutes.`;
           await booking.save();
 
-          // Notify the user
-          await notificationService.rejectBookingNotification(booking.userId.toString(), {
+          // 1. Notify the user
+          notificationService.rejectBookingNotification(booking.userId.toString(), {
             bookingId: (booking._id as any).toString(),
-            status: BookingStatus.CANCELLED,
+            status: BookingStatus.EXPIRED,
             startDate: booking.startDate,
             reason: booking.reason
           });
 
-          // Dismiss request popup for all online drivers
+          // 2. Dismiss request popup for all online drivers
           notificationService.bookingAssignedNotification((booking._id as any).toString());
         }
 
@@ -44,6 +45,6 @@ export class CronScheduler {
       } catch (error) {
         console.error("[CronScheduler] Error running expiration cron:", error);
       }
-    }, 60 * 1000);
+    }, 30 * 1000);
   }
 }

@@ -134,38 +134,7 @@ export class BookDriver implements IBookDriverUseCase  {
         estimatedFare: savedBooking.estimatedFare,
         startDate,
         newRide: savedBooking
-      });
     }
-
-    const bookingIdStr = (savedBooking as any)._id?.toString() || savedBooking.id;
-
-    // Set 3-minute timeout for PENDING booking expiration
-    setTimeout(async () => {
-      try {
-        console.log(`[Timer] Checking booking ${bookingIdStr} for expiration...`);
-        const currentBooking = await this._bookingRepo.findBookingById(bookingIdStr);
-        if (currentBooking && currentBooking.status === BookingStatus.PENDING) {
-          console.log(`[Timer] Booking ${bookingIdStr} is still PENDING. Expiring...`);
-          
-          await this._bookingRepo.updateBooking(bookingIdStr, {
-            status: BookingStatus.EXPIRED
-          });
-
-          // 1. Broadcast bookingAssignedNotification to clear all drivers' modals
-          this._notificationService.bookingAssignedNotification(bookingIdStr);
-
-          // 2. Notify the user that the request expired
-          this._notificationService.rejectBookingNotification(savedBooking.userId.toString(), {
-            bookingId: bookingIdStr,
-            status: BookingStatus.EXPIRED,
-            startDate: savedBooking.startDate,
-            reason: "No driver accepted your request within 3 minutes."
-          });
-        }
-      } catch (err: any) {
-        console.error(`[Timer Error] Error expiring booking ${bookingIdStr}:`, err);
-      }
-    }, 180000); // 3 minutes
 
     return savedBooking;
   }
