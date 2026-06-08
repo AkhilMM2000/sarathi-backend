@@ -134,6 +134,7 @@ export class BookDriver implements IBookDriverUseCase  {
         estimatedFare: savedBooking.estimatedFare,
         startDate,
         newRide: savedBooking
+      });
     }
 
     return savedBooking;
