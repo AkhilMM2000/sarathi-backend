@@ -28,6 +28,7 @@ import { IGetDriverReviewsUseCase } from "../../application/use_cases/Driver/int
 import { IGetBookingStatusSummaryUseCase } from "../../application/use_cases/Driver/interfaces/IGetBookingStatusSummaryUseCase";
 import { IGetDriverEarningsSummaryUseCase } from "../../application/use_cases/Driver/interfaces/IGetDriverEarningsSummaryUseCase";
 import { IGetDriverDashboardStatsUseCase } from "../../application/use_cases/Driver/interfaces/IGetDriverDashboardStatsUseCase";
+import { IAcknowledgeBookingUseCase } from "../../application/use_cases/User/interfaces/IAcknowledgeBookingUseCase";
 @injectable()
 export class BookingController {
 
@@ -69,7 +70,9 @@ private _bookDriverUseCase: IBookDriverUseCase,
     @inject(USECASE_TOKENS.GENERATE_CHAT_SIGNED_URL_USECASE)
   private _generateChatSignedUrlUseCase: GenerateChatSignedUrl,
     @inject(USECASE_TOKENS.ACCEPT_BOOKING_USECASE)
-  private _acceptBookingUseCase: IAcceptBookingUseCase
+  private _acceptBookingUseCase: IAcceptBookingUseCase,
+    @inject(USECASE_TOKENS.ACKNOWLEDGE_BOOKING_USECASE)
+  private _acknowledgeBookingUseCase: IAcknowledgeBookingUseCase
 
    ){}
   bookDriver = catchAsync(async (req: AuthenticatedRequest, res: Response) => {
@@ -310,6 +313,16 @@ private _bookDriverUseCase: IBookDriverUseCase,
 
     const result = await this._getDriverDashboardStatsUseCase.execute(driverId);
     res.status(HTTP_STATUS_CODES.OK).json(result);
+  });
+
+  acknowledgeBooking = catchAsync(async (req: AuthenticatedRequest, res: Response) => {
+    const userId = req.user?.id;
+    if (!userId) {
+      throw new AuthError(ERROR_MESSAGES.USER_ID_NOT_FOUND, HTTP_STATUS_CODES.UNAUTHORIZED);
+    }
+    const { bookingId } = ZodHelper.validate(BookingIdParamSchema, req.params);
+    await this._acknowledgeBookingUseCase.execute(bookingId);
+    res.status(HTTP_STATUS_CODES.OK).json({ success: true, message: "Booking acknowledged successfully" });
   });
 
 }

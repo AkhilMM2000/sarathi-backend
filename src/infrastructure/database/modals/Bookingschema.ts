@@ -42,7 +42,8 @@ const bookingSchema = new Schema<BookingDocument>(
     reason: { type: String },
     walletDeduction:{type:Number},
     fromLat: { type: Number },
-    fromLng: { type: Number }
+    fromLng: { type: Number },
+    userAcknowledged: { type: Boolean, default: false }
   },
  
   {

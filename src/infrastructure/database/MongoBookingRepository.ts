@@ -161,6 +161,10 @@ async findBookingsByUser(userId: string, page: number, limit: number): Promise<P
           userId,
   status: { $nin: ["CANCELLED", "REJECTED"] },
   paymentStatus: { $ne: "COMPLETED" },
+  $or: [
+    { status: { $ne: "EXPIRED" } },
+    { status: "EXPIRED", userAcknowledged: { $ne: true } }
+  ]
 };
     const [bookings, total] = await Promise.all([
       BookingModel.find(query)
@@ -207,7 +211,7 @@ async getRideHistoryByRole(
     // Step 1: Construct dynamic query
     const query: any = {
       $or: [
-        { status: { $in: ["CANCELLED", "REJECTED"] } },
+        { status: { $in: ["CANCELLED", "REJECTED", "EXPIRED"] } },
         { paymentStatus: "COMPLETED" },
       ],
     };

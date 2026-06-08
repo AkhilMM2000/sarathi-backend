@@ -98,6 +98,8 @@ import { GetDriverDashboardStats } from "../../application/use_cases/Driver/GetD
 import { GetAdminDashboardStats } from "../../application/use_cases/Admin/GetAdminDashboardStats";
 import { IGetAdminDashboardStatsUseCase } from "../../application/use_cases/Admin/Interfaces/IGetAdminDashboardStatsUseCase";
 import { GenerateChatSignedUrl } from "../../application/use_cases/chatGetSignedUrl";
+import { IAcknowledgeBookingUseCase } from "../../application/use_cases/User/interfaces/IAcknowledgeBookingUseCase";
+import { AcknowledgeBookingUseCase } from "../../application/use_cases/User/AcknowledgeBooking";
 
 container.registerSingleton<IRegisterUser>(
   TOKENS.REGISTER_USER_USECASE,
@@ -287,4 +289,8 @@ container.registerSingleton<IGetDriverDashboardStatsUseCase>(
 container.registerSingleton<IGetAdminDashboardStatsUseCase>(
   USECASE_TOKENS.GET_ADMIN_DASHBOARD_STATS_USECASE,
   GetAdminDashboardStats
+);
+container.registerSingleton<IAcknowledgeBookingUseCase>(
+  USECASE_TOKENS.ACKNOWLEDGE_BOOKING_USECASE,
+  AcknowledgeBookingUseCase
 );

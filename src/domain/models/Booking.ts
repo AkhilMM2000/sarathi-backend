@@ -11,6 +11,7 @@ export enum BookingStatus {
   COMPLETED = "COMPLETED",          
   CANCELLED = "CANCELLED",
   REJECTED= "REJECTED",
+  EXPIRED = "EXPIRED",
     }
 export enum BookingType {
   ONE_WAY = "ONE_RIDE",
@@ -39,6 +40,7 @@ paymentIntentId?:string;
     walletDeduction?: number;
     fromLat?: number;
     fromLng?: number;
+    userAcknowledged?: boolean;
     createdAt?: Date;   
     updatedAt?: Date;
   }

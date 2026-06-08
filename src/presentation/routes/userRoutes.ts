@@ -141,6 +141,11 @@ router
   ).get(ROUTES.USER.REVIEW.BY_ID,
     protectRoute(['user']),checkBlockedMiddleware.handle.bind(checkBlockedMiddleware),
     bookingController.ReviewDriver.bind(bookingController) )
+  .patch(ROUTES.USER.ACKNOWLEDGE_BOOKING,
+    protectRoute(["user"]),
+    checkBlockedMiddleware.handle.bind(checkBlockedMiddleware),
+    bookingController.acknowledgeBooking.bind(bookingController)
+  )
 
   
 export default router; 

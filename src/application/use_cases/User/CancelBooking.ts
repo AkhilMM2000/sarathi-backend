@@ -31,10 +31,13 @@ export class CancelBookingInputUseCase  implements ICancelBookingUseCase{
       throw new AuthError(ERROR_MESSAGES.BOOKING_NOT_FOUND, HTTP_STATUS_CODES.NOT_FOUND);
     }
 
-    const threeHours = 3 * 60 * 60 * 1000;
-    const timeDiff = new Date(booking.startDate).getTime() - Date.now();
-    if (timeDiff < threeHours) {
-      throw new AuthError("Bookings can only be cancelled up to 3 hours before start time.", HTTP_STATUS_CODES.BAD_REQUEST);
+    // Only restrict cancellation if the booking is already CONFIRMED (assigned to a driver)
+    if (booking.status === BookingStatus.CONFIRMED) {
+      const threeHours = 3 * 60 * 60 * 1000;
+      const timeDiff = new Date(booking.startDate).getTime() - Date.now();
+      if (timeDiff < threeHours) {
+        throw new AuthError("Bookings can only be cancelled up to 3 hours before start time.", HTTP_STATUS_CODES.BAD_REQUEST);
+      }
     }
 
     await this._bookingRepo.updateBooking(bookingId, {
