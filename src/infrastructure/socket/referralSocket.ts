@@ -67,10 +67,29 @@ export const initializeReferralSocket = () => {
 
 
     socket.on("call:request", async ({ fromId, toId, callerName, role }) => {
-      const receiverSocketId = await redis.get<string>(
-        role === "user" ? `driver:socket:${toId}` : `user:socket:${toId}`
-      );
-     console.log(receiverSocketId,'reach here')
+      console.log("[DIAGNOSTIC] Backend call:request received. fromId:", fromId, "toId:", toId, "callerName:", callerName, "role:", role);
+
+      // Log the complete online users/socket map
+      try {
+        const keys = await redis.keys("*socket*");
+        console.log("[DIAGNOSTIC] All active socket keys in Redis:", keys);
+        if (keys && keys.length > 0) {
+          const pairs = await Promise.all(keys.map(async (key) => {
+            const val = await redis.get(key);
+            return { key, val };
+          }));
+          console.log("[DIAGNOSTIC] Socket map entries:", pairs);
+        }
+      } catch (redisErr) {
+        console.error("[DIAGNOSTIC] Failed to list Redis keys:", redisErr);
+      }
+
+      const lookupKey = role === "user" ? `driver:socket:${toId}` : `user:socket:${toId}`;
+      console.log("[DIAGNOSTIC] Lookup key in Redis:", lookupKey);
+
+      const receiverSocketId = await redis.get<string>(lookupKey);
+      console.log("[DIAGNOSTIC] Resolved receiverSocketId:", receiverSocketId, "reach here");
+
       if (receiverSocketId) {
         io.to(receiverSocketId).emit("call:incoming", {
           fromId,
