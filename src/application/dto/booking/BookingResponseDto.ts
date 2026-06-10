@@ -30,7 +30,7 @@ export interface RideHistoryResponseDto {
  */
 export const toRideHistoryResponse = (booking: rideHistory): RideHistoryResponseDto => {
   return {
-    _id: booking.id || (booking as any)._id?.toString() || "",
+    _id: booking.id || booking._id?.toString() || "",
     userId: booking.userId.toString(),
     driverId: booking.driverId ? booking.driverId.toString() : undefined,
     fromLocation: booking.fromLocation || "",

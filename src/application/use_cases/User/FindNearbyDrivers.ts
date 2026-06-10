@@ -85,7 +85,7 @@ export class FindNearbyDrivers implements IFindNearbyDriversUseCase{
     
     return {
       ...paginatedResult,
-      data: toDriverListResponse(sortedDrivers as any),
+      data: toDriverListResponse(sortedDrivers),
     };
   }
   

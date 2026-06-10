@@ -26,6 +26,7 @@ import { IGetNearbyDriverDetailsUseCase } from "../../application/use_cases/Inte
 import { ZodHelper } from "../schemas/common/ZodHelper";
 import { AddVehicleSchema, CreatePaymentIntentSchema, DriverIdParamSchema, EditVehicleSchema, FetchDriversSchema, GetNearbyDriverQuerySchema, LoginSchema, RegisterSchema, ResendOtpSchema, SubmitReviewSchema, UpdateUserSchema, VehicleIdParamSchema, VerifyOtpSchema, WalletPaginationSchema } from "../schemas/user/UserDTO";
 import { z } from "zod";
+import { User } from "../../domain/models/User";
 
 import { catchAsync } from "../../infrastructure/utils/catchAsync";
 
@@ -69,7 +70,7 @@ export class UserController {
     const validatedData = ZodHelper.validate(RegisterSchema, req.body);
 
     // 2. Execute Use Case
-    const result = await this._registerUsecase.execute(validatedData as any);
+    const result = await this._registerUsecase.execute(validatedData as User);
 
     // 3. Response
     res.status(HTTP_STATUS_CODES.CREATED).json({

@@ -8,6 +8,7 @@ import { HTTP_STATUS_CODES } from "../../../constants/HttpStatusCode";
 import BookingModel from "../../../infrastructure/database/modals/Bookingschema";
 import { Types } from "mongoose";
 import { IAcceptBookingUseCase, AcceptBookingInput } from "./interfaces/IAcceptBookingUseCase";
+import { PopulatedDriver } from "../../../infrastructure/database/interfaces/PopulatedBooking";
 
 @injectable()
 export class AcceptBooking implements IAcceptBookingUseCase {
@@ -31,22 +32,22 @@ export class AcceptBooking implements IAcceptBookingUseCase {
       throw new AuthError("This booking request is no longer available.", HTTP_STATUS_CODES.BAD_REQUEST);
     }
 
-    const driverObj = updatedBooking.driverId as any;
+    const driverObj = updatedBooking.driverId as unknown as PopulatedDriver;
 
     // Notify user via Socket.IO
     await this._notificationService.sendBookingConfirmation(updatedBooking.userId.toString(), {
-      bookingId: (updatedBooking._id as any).toString(),
+      bookingId: (updatedBooking._id as Types.ObjectId).toString(),
       status: BookingStatus.CONFIRMED,
       driver: driverObj ? {
         _id: driverObj._id.toString(),
         name: driverObj.name,
         mobile: driverObj.mobile,
-        profileImage: driverObj.profileImage
+        profileImage: driverObj.profileImage || "N/A"
       } : undefined
     });
 
     // Notify other online drivers to dismiss their popups
-    this._notificationService.bookingAssignedNotification((updatedBooking._id as any).toString(), driverId);
+    this._notificationService.bookingAssignedNotification((updatedBooking._id as Types.ObjectId).toString(), driverId);
 
     return updatedBooking.toObject() as Booking;
   }

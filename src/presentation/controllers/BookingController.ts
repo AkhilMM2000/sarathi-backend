@@ -153,7 +153,7 @@ private _bookDriverUseCase: IBookDriverUseCase,
       rideId,
       userId,
       ...validatedData,
-      paymentStatus: validatedData.paymentStatus as any 
+      paymentStatus: validatedData.paymentStatus
     });
 
     res.status(HTTP_STATUS_CODES.OK).json({

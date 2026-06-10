@@ -4,7 +4,7 @@ import { paymentStatus } from "../../../../domain/models/Booking";
 export interface AttachPaymentIntentParams extends AttachPaymentIntentRequest {
   rideId: string;
   userId: string;
-  paymentStatus: paymentStatus; // Override to use the enum
+  paymentStatus?: paymentStatus; // Override to use the enum
 }
 
 export interface IAttachPaymentIntentIdToBookingUseCase {

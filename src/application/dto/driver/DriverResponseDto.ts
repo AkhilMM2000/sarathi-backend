@@ -33,7 +33,7 @@ export interface DriverFullResponseDto extends DriverResponseDto {
 /**
  * Mapper: Domain Entity -> DriverResponseDto
  */
-export const toDriverResponse = (driver: any): DriverResponseDto => {
+export const toDriverResponse = (driver: Partial<Driver> & { distance?: number | null }): DriverResponseDto => {
   return {
     _id: driver._id ? driver._id.toString() : "",
     name: driver.name || "",
@@ -51,7 +51,7 @@ export const toDriverResponse = (driver: any): DriverResponseDto => {
 /**
  * Mapper: Domain Entity -> DriverFullResponseDto
  */
-export const toDriverFullResponse = (driver: any): DriverFullResponseDto => {
+export const toDriverFullResponse = (driver: Partial<Driver> & { distance?: number | null }): DriverFullResponseDto => {
   return {
     ...toDriverResponse(driver),
     email: driver.email || "",

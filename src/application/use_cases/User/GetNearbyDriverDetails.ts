@@ -8,6 +8,7 @@ import { HTTP_STATUS_CODES } from "../../../constants/HttpStatusCode";
 import { DriverResponseDto } from "../../dto/driver/DriverResponseDto";
 import { IGetNearbyDriverDetailsUseCase } from "../Interfaces/IGetNearbyDriverDetailsUseCase"; 
 import { toDriverResponse } from "../../dto/driver/DriverResponseDto";
+import { Driver } from "../../../domain/models/Driver";
 
 @injectable()
 export class GetNearbyDriverDetails
@@ -65,8 +66,8 @@ export class GetNearbyDriverDetails
 
     const distance = distances[driverId] || null;
 
-    const driverData = {
-      ...(driver as any),
+    const driverData: Partial<Driver> & { distance: number | null } = {
+      ...driver,
       distance
     };
 

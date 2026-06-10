@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { BookingType, BookingStatus } from "../../../domain/models/Booking";
+import { BookingType, BookingStatus, paymentStatus } from "../../../domain/models/Booking";
 
 /**
  * Book Driver Request Schema
@@ -116,7 +116,7 @@ export type UserBookingPaginationRequest = z.infer<typeof UserBookingPaginationS
  */
 export const AttachPaymentIntentSchema = z.object({
   paymentIntentId: z.string().min(1, "Payment Intent ID is required"),
-  paymentStatus: z.string().optional(),
+  paymentStatus: z.nativeEnum(paymentStatus).optional(),
   walletDeduction: z.coerce.number().nonnegative().optional().default(0),
 });
 

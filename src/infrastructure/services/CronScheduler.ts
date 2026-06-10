@@ -3,6 +3,7 @@ import BookingModel from "../database/modals/Bookingschema";
 import { BookingStatus } from "../../domain/models/Booking";
 import { INotificationService } from "../../application/services/NotificationService";
 import { TOKENS } from "../../constants/Tokens";
+import { Types } from "mongoose";
 
 export class CronScheduler {
   static start() {
@@ -31,14 +32,14 @@ export class CronScheduler {
 
           // 1. Notify the user
           notificationService.rejectBookingNotification(booking.userId.toString(), {
-            bookingId: (booking._id as any).toString(),
+            bookingId: (booking._id as Types.ObjectId).toString(),
             status: BookingStatus.EXPIRED,
             startDate: booking.startDate,
             reason: booking.reason
           });
 
           // 2. Dismiss request popup for all online drivers
-          notificationService.bookingAssignedNotification((booking._id as any).toString());
+          notificationService.bookingAssignedNotification((booking._id as Types.ObjectId).toString());
         }
 
         console.log(`[CronScheduler] Expired ${expiredBookings.length} pending booking(s).`);

@@ -10,7 +10,7 @@ import { IWalletRepository } from "../../../domain/repositories/IWalletRepositor
 import { TOKENS } from "../../../constants/Tokens";
 import { HTTP_STATUS_CODES } from "../../../constants/HttpStatusCode";
 import { ERROR_MESSAGES } from "../../../constants/ErrorMessages";
-import { IAttachPaymentIntentIdToBookingUseCase } from "./interfaces/IAttachPaymentIntentIdToBookingUseCase";
+import { IAttachPaymentIntentIdToBookingUseCase, AttachPaymentIntentParams } from "./interfaces/IAttachPaymentIntentIdToBookingUseCase";
 
 @injectable()
 export class AttachPaymentIntentIdToBooking implements IAttachPaymentIntentIdToBookingUseCase {
@@ -25,13 +25,7 @@ export class AttachPaymentIntentIdToBooking implements IAttachPaymentIntentIdToB
     private _notificationService: INotificationService
   ) {}
 
-  async execute(params: {
-    rideId: string;
-    walletDeduction: number;
-    paymentIntentId: string;
-    paymentStatus: paymentStatus;
-    userId: string;
-  }): Promise<void> {
+  async execute(params: AttachPaymentIntentParams): Promise<void> {
     const { rideId, walletDeduction, paymentIntentId, paymentStatus: paymentstatus, userId } = params;
     const booking = await this._bookingRepo.findBookingById(rideId);
     console.log(walletDeduction,'walletDeduction')
