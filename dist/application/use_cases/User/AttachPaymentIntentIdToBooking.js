@@ -55,8 +55,8 @@ let AttachPaymentIntentIdToBooking = class AttachPaymentIntentIdToBooking {
             }
         }
         await this._bookingRepo.updateBooking(rideId, booking);
-        console.log(booking.driverId.toString());
-        if (paymentstatus == 'COMPLETED') {
+        if (paymentstatus == 'COMPLETED' && booking.driverId) {
+            console.log(booking.driverId.toString());
             await this._notificationService.paymentNotification(booking.driverId.toString(), { status: paymentstatus, startDate: booking.startDate, bookingId: rideId });
         }
     }

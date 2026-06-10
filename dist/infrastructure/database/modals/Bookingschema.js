@@ -37,7 +37,7 @@ const mongoose_1 = __importStar(require("mongoose"));
 const Booking_1 = require("../../../domain/models/Booking");
 const bookingSchema = new mongoose_1.Schema({
     userId: { type: mongoose_1.Schema.Types.ObjectId, ref: "User", required: true },
-    driverId: { type: mongoose_1.Schema.Types.ObjectId, ref: "Driver", required: true },
+    driverId: { type: mongoose_1.Schema.Types.ObjectId, ref: "Driver" },
     fromLocation: { type: String },
     toLocation: { type: String },
     startDate: { type: Date, required: true },
@@ -69,7 +69,10 @@ const bookingSchema = new mongoose_1.Schema({
     driver_fee: { type: Number },
     platform_fee: { type: Number },
     reason: { type: String },
-    walletDeduction: { type: Number }
+    walletDeduction: { type: Number },
+    fromLat: { type: Number },
+    fromLng: { type: Number },
+    userAcknowledged: { type: Boolean, default: false }
 }, {
     timestamps: true,
 });

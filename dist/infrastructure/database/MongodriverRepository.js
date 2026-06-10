@@ -55,9 +55,10 @@ let MongoDriverRepository = class MongoDriverRepository extends BaseRepository_1
             if (data.location &&
                 "latitude" in data.location &&
                 "longitude" in data.location) {
+                const loc = data.location;
                 data.location = {
                     type: "Point",
-                    coordinates: [data.location.longitude, data.location.latitude],
+                    coordinates: [loc.longitude, loc.latitude],
                 };
             }
             Object.assign(driver, data);
@@ -91,7 +92,7 @@ let MongoDriverRepository = class MongoDriverRepository extends BaseRepository_1
             updateData.reason = reason;
         }
         else {
-            updateData.reason = null;
+            updateData.reason = undefined;
         }
         return super.update(driverId, updateData);
     }
@@ -141,7 +142,7 @@ let MongoDriverRepository = class MongoDriverRepository extends BaseRepository_1
                 $geoNear: {
                     near: { type: "Point", coordinates: [lng, lat] },
                     distanceField: "distance",
-                    maxDistance: 50000, // 50km equivalent in meters
+                    maxDistance: 20000, // 20km equivalent in meters
                     spherical: true,
                     query: matchStage
                 }
@@ -223,9 +224,9 @@ let MongoDriverRepository = class MongoDriverRepository extends BaseRepository_1
                         spherical: true,
                         query: {
                             _id: { $nin: excludedObjectIds },
-                            onlineStatus: 'online',
                             isBlock: false,
                             status: 'approved',
+                            activePayment: true,
                         },
                     },
                 },

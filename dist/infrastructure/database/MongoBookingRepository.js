@@ -45,6 +45,8 @@ let MongoBookingRepository = class MongoBookingRepository extends BaseRepository
                 const plain = b.toObject();
                 return {
                     ...plain,
+                    userId: plain.userId._id.toString(),
+                    driverId: plain.driverId?._id?.toString(),
                     username: plain.userId?.name || "Unknown",
                     place: plain.place || "N/A", // safely access populated username
                     drivername: plain.driverId?.name || "Unknown",
@@ -84,10 +86,12 @@ let MongoBookingRepository = class MongoBookingRepository extends BaseRepository
             const user = bookingObj.userId;
             return {
                 ...bookingObj,
+                userId: user._id.toString(),
+                driverId: bookingObj.driverId?._id?.toString(),
                 name: user.name,
-                place: user.place,
+                place: user.place || "N/A",
                 email: user.email,
-                profile: user.profile,
+                profile: user.profile || "N/A",
                 mobile: user.mobile
             };
         });
@@ -138,6 +142,10 @@ let MongoBookingRepository = class MongoBookingRepository extends BaseRepository
                 userId,
                 status: { $nin: ["CANCELLED", "REJECTED"] },
                 paymentStatus: { $ne: "COMPLETED" },
+                $or: [
+                    { status: { $ne: "EXPIRED" } },
+                    { status: "EXPIRED", userAcknowledged: { $ne: true } }
+                ]
             };
             const [bookings, total] = await Promise.all([
                 Bookingschema_1.default.find(query)
@@ -152,6 +160,8 @@ let MongoBookingRepository = class MongoBookingRepository extends BaseRepository
                 const plain = b.toObject();
                 return {
                     ...plain,
+                    userId: plain.userId._id.toString(),
+                    driverId: plain.driverId?._id?.toString(),
                     username: plain.userId?.name || "Unknown",
                     place: plain.place || "N/A", // safely access populated username
                     drivername: plain.driverId?.name || "Unknown",
@@ -176,7 +186,7 @@ let MongoBookingRepository = class MongoBookingRepository extends BaseRepository
             // Step 1: Construct dynamic query
             const query = {
                 $or: [
-                    { status: { $in: ["CANCELLED", "REJECTED"] } },
+                    { status: { $in: ["CANCELLED", "REJECTED", "EXPIRED"] } },
                     { paymentStatus: "COMPLETED" },
                 ],
             };
@@ -198,14 +208,31 @@ let MongoBookingRepository = class MongoBookingRepository extends BaseRepository
                 .lean();
             // Step 3: Transform based on role
             const transformed = rides.map((b) => {
-                const person = role === "user" ? b.driverId : b.userId;
-                return {
-                    ...b,
-                    email: person?.email,
-                    place: person?.place,
-                    name: person?.name,
-                    profile: role === "user" ? person?.profileImage : person?.profile,
-                };
+                const populatedRide = b;
+                if (role === "user") {
+                    const driver = populatedRide.driverId;
+                    return {
+                        ...b,
+                        userId: populatedRide.userId._id.toString(),
+                        driverId: driver?._id?.toString(),
+                        email: driver?.email,
+                        place: driver?.place || "N/A",
+                        name: driver?.name || "Unknown",
+                        profile: driver?.profileImage || "N/A",
+                    };
+                }
+                else {
+                    const user = populatedRide.userId;
+                    return {
+                        ...b,
+                        userId: user._id.toString(),
+                        driverId: populatedRide.driverId?._id?.toString(),
+                        email: user.email,
+                        place: user.place || "N/A",
+                        name: user.name,
+                        profile: user.profile || "N/A",
+                    };
+                }
             });
             return {
                 data: transformed,
@@ -357,7 +384,7 @@ let MongoBookingRepository = class MongoBookingRepository extends BaseRepository
                     }
                 }
             ]);
-            return result[0] || { earnings: [], rideStats: [] };
+            return (result[0] || { earnings: [], rideStats: [] });
         }
         catch (error) {
             console.error('Error in getDriverDashboardStats:', error.message);

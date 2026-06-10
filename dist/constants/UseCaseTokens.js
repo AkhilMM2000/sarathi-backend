@@ -3,6 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.USECASE_TOKENS = void 0;
 exports.USECASE_TOKENS = {
     REGISTER_DRIVER_USECASE: Symbol.for("REGISTER_DRIVER_USECASE"),
+    ACCEPT_BOOKING_USECASE: Symbol.for("ACCEPT_BOOKING_USECASE"),
     EDIT_DRIVER_PROFILE: Symbol.for("EDIT_DRIVER_PROFILE"),
     ONBOARD_DRIVER_USECASE: Symbol.for("ONBOARD_DRIVER_USECASE"),
     GET_USERBOOKINGS_USECASE: Symbol.for("GET_USERBOOKINGS_USECASE"),
@@ -37,6 +38,7 @@ exports.USECASE_TOKENS = {
     GET_DRIVER_DASHBOARD_STATS_USECASE: Symbol.for("GetDriverDashboardStats"),
     GET_ADMIN_DASHBOARD_STATS_USECASE: Symbol.for("GetAdminDashboardStats"),
     GET_RIDE_HISTORY_USECASE: Symbol.for("GET_RIDE_HISTORY_USECASE"),
+    ACKNOWLEDGE_BOOKING_USECASE: Symbol.for("ACKNOWLEDGE_BOOKING_USECASE"),
     //controller tokens
     DRIVER_CONTROLLER: Symbol.for("DRIVER_CONTROLLER"),
 };

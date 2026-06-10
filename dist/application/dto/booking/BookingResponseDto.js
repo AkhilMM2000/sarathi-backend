@@ -8,7 +8,7 @@ const toRideHistoryResponse = (booking) => {
     return {
         _id: booking.id || booking._id?.toString() || "",
         userId: booking.userId.toString(),
-        driverId: booking.driverId.toString(),
+        driverId: booking.driverId ? booking.driverId.toString() : undefined,
         fromLocation: booking.fromLocation || "",
         toLocation: booking.toLocation || "",
         startDate: booking.startDate instanceof Date ? booking.startDate.toISOString() : String(booking.startDate),

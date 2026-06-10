@@ -24,7 +24,7 @@ const BookingRequestDTO_1 = require("../schemas/booking/BookingRequestDTO");
 const UseCaseTokens_1 = require("../../constants/UseCaseTokens");
 const chatGetSignedUrl_1 = require("../../application/use_cases/chatGetSignedUrl");
 let BookingController = class BookingController {
-    constructor(_bookDriverUseCase, _getEstimatedFareUseCase, _getUserBookingsUseCase, _attachPaymentIntentUseCase, _updateBookingStatusUseCase, _getAllBookingsUseCase, _cancelBookingUseCase, _getMessagesByBookingIdUseCase, _deleteMessageUseCase, _generateSignedUrlUseCase, _walletBalanceUseCase, _walletPaymentUseCase, _getDriverReviewsUseCase, _getBookingStatusSummary, _earningsSummaryUseCase, _getDriverDashboardStatsUseCase, _getRideHistoryUseCase, _generateChatSignedUrlUseCase) {
+    constructor(_bookDriverUseCase, _getEstimatedFareUseCase, _getUserBookingsUseCase, _attachPaymentIntentUseCase, _updateBookingStatusUseCase, _getAllBookingsUseCase, _cancelBookingUseCase, _getMessagesByBookingIdUseCase, _deleteMessageUseCase, _generateSignedUrlUseCase, _walletBalanceUseCase, _walletPaymentUseCase, _getDriverReviewsUseCase, _getBookingStatusSummary, _earningsSummaryUseCase, _getDriverDashboardStatsUseCase, _getRideHistoryUseCase, _generateChatSignedUrlUseCase, _acceptBookingUseCase, _acknowledgeBookingUseCase) {
         this._bookDriverUseCase = _bookDriverUseCase;
         this._getEstimatedFareUseCase = _getEstimatedFareUseCase;
         this._getUserBookingsUseCase = _getUserBookingsUseCase;
@@ -43,6 +43,8 @@ let BookingController = class BookingController {
         this._getDriverDashboardStatsUseCase = _getDriverDashboardStatsUseCase;
         this._getRideHistoryUseCase = _getRideHistoryUseCase;
         this._generateChatSignedUrlUseCase = _generateChatSignedUrlUseCase;
+        this._acceptBookingUseCase = _acceptBookingUseCase;
+        this._acknowledgeBookingUseCase = _acknowledgeBookingUseCase;
         this.bookDriver = (0, catchAsync_1.catchAsync)(async (req, res) => {
             const userId = req.user?.id;
             if (!userId) {
@@ -56,6 +58,18 @@ let BookingController = class BookingController {
                 ...validatedData
             });
             res.status(HttpStatusCode_1.HTTP_STATUS_CODES.CREATED).json({ success: true, data: booking });
+        });
+        this.acceptBooking = (0, catchAsync_1.catchAsync)(async (req, res) => {
+            const driverId = req.user?.id;
+            const { bookingId } = req.params;
+            if (!driverId) {
+                throw new Autherror_1.AuthError(ErrorMessages_1.ERROR_MESSAGES.USER_ID_NOT_FOUND, HttpStatusCode_1.HTTP_STATUS_CODES.UNAUTHORIZED);
+            }
+            const booking = await this._acceptBookingUseCase.execute({
+                bookingId,
+                driverId
+            });
+            res.status(HttpStatusCode_1.HTTP_STATUS_CODES.OK).json({ success: true, data: booking });
         });
         this.getEstimatedFare = (0, catchAsync_1.catchAsync)(async (req, res) => {
             // 1. DTO Validation
@@ -204,6 +218,15 @@ let BookingController = class BookingController {
             const result = await this._getDriverDashboardStatsUseCase.execute(driverId);
             res.status(HttpStatusCode_1.HTTP_STATUS_CODES.OK).json(result);
         });
+        this.acknowledgeBooking = (0, catchAsync_1.catchAsync)(async (req, res) => {
+            const userId = req.user?.id;
+            if (!userId) {
+                throw new Autherror_1.AuthError(ErrorMessages_1.ERROR_MESSAGES.USER_ID_NOT_FOUND, HttpStatusCode_1.HTTP_STATUS_CODES.UNAUTHORIZED);
+            }
+            const { bookingId } = ZodHelper_1.ZodHelper.validate(BookingRequestDTO_1.BookingIdParamSchema, req.params);
+            await this._acknowledgeBookingUseCase.execute(bookingId);
+            res.status(HttpStatusCode_1.HTTP_STATUS_CODES.OK).json({ success: true, message: "Booking acknowledged successfully" });
+        });
     }
 };
 exports.BookingController = BookingController;
@@ -227,6 +250,8 @@ exports.BookingController = BookingController = __decorate([
     __param(15, (0, tsyringe_1.inject)(UseCaseTokens_1.USECASE_TOKENS.GET_DRIVER_DASHBOARD_STATS_USECASE)),
     __param(16, (0, tsyringe_1.inject)(UseCaseTokens_1.USECASE_TOKENS.GET_RIDE_HISTORY_USECASE)),
     __param(17, (0, tsyringe_1.inject)(UseCaseTokens_1.USECASE_TOKENS.GENERATE_CHAT_SIGNED_URL_USECASE)),
-    __metadata("design:paramtypes", [Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, chatGetSignedUrl_1.GenerateChatSignedUrl])
+    __param(18, (0, tsyringe_1.inject)(UseCaseTokens_1.USECASE_TOKENS.ACCEPT_BOOKING_USECASE)),
+    __param(19, (0, tsyringe_1.inject)(UseCaseTokens_1.USECASE_TOKENS.ACKNOWLEDGE_BOOKING_USECASE)),
+    __metadata("design:paramtypes", [Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, chatGetSignedUrl_1.GenerateChatSignedUrl, Object, Object])
 ], BookingController);
 //# sourceMappingURL=BookingController.js.map

@@ -42,8 +42,6 @@ let VerifyOTP = class VerifyOTP {
             throw new Autherror_1.AuthError(ErrorMessages_1.ERROR_MESSAGES.USER_NOT_FOUND, HttpStatusCode_1.HTTP_STATUS_CODES.BAD_REQUEST);
         if (userData.otp !== otp || userData.otpExpires < new Date())
             throw new Autherror_1.AuthError(ErrorMessages_1.ERROR_MESSAGES.OTP_INVALID, HttpStatusCode_1.HTTP_STATUS_CODES.BAD_REQUEST);
-        // Choose repository based on role
-        const repository = role === "user" ? this._userRepository : this._driverRepository;
         let savedUser;
         if (role === "driver") {
             // Remove unwanted fields before saving
@@ -67,18 +65,18 @@ let VerifyOTP = class VerifyOTP {
             console.log("📌 Saving driver to DB:", driverData);
             console.log("📝 Required Schema Fields:", Object.keys(Driverschema_1.default.schema.paths));
             // Save driver in the database
-            savedUser = await repository.create(driverData);
+            savedUser = await this._driverRepository.create(driverData);
         }
         else {
             console.log("📌 Saving user to DB:", userData);
             if (userData.referralCode) {
                 const referalExists = await this._userRepository.findByReferralCode(userData.referralCode);
                 if (referalExists) {
-                    userData.referredBy = referalExists._id;
+                    userData.referredBy = referalExists._id?.toString();
                     userData.referalPay = true;
                 }
             }
-            savedUser = await repository.create(userData);
+            savedUser = await this._userRepository.create(userData);
             const loggesUser = await this._userRepository.findByEmail(userData.email);
             const code = this._referralCodeService.generate(loggesUser?._id?.toString());
             if (loggesUser?._id) {

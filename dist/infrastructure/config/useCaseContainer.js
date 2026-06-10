@@ -17,6 +17,7 @@ const walletTransaction_1 = require("../../application/use_cases/User/walletTran
 const SubmitRating_1 = require("../../application/use_cases/User/SubmitRating");
 const UseCaseTokens_1 = require("../../constants/UseCaseTokens");
 const RegisterDriver_1 = require("../../application/use_cases/Driver/RegisterDriver");
+const AcceptBooking_1 = require("../../application/use_cases/Driver/AcceptBooking");
 const EditDriverProfile_1 = require("../../application/use_cases/Driver/EditDriverProfile");
 const DriverOnboarding_1 = require("../../application/use_cases/Driver/DriverOnboarding");
 const Getdriverbooking_1 = require("../../application/use_cases/Driver/Getdriverbooking");
@@ -51,6 +52,7 @@ const GetNearbyDriverDetails_1 = require("../../application/use_cases/User/GetNe
 const GetDriverDashboardStats_1 = require("../../application/use_cases/Driver/GetDriverDashboardStats");
 const GetAdminDashboardStats_1 = require("../../application/use_cases/Admin/GetAdminDashboardStats");
 const chatGetSignedUrl_1 = require("../../application/use_cases/chatGetSignedUrl");
+const AcknowledgeBooking_1 = require("../../application/use_cases/User/AcknowledgeBooking");
 tsyringe_1.container.registerSingleton(Tokens_1.TOKENS.REGISTER_USER_USECASE, RegisterUser_1.RegisterUser);
 tsyringe_1.container.registerSingleton(Tokens_1.TOKENS.GET_USER_DATA_USECASE, GetUserData_1.GetUserData);
 tsyringe_1.container.registerSingleton(Tokens_1.TOKENS.VERIFY_OTP_USECAE, VerifyOTP_1.VerifyOTP);
@@ -70,6 +72,7 @@ tsyringe_1.container.registerSingleton(UseCaseTokens_1.USECASE_TOKENS.ONBOARD_DR
 tsyringe_1.container.registerSingleton(UseCaseTokens_1.USECASE_TOKENS.GET_USERBOOKINGS_USECASE, Getdriverbooking_1.GetUserBookings);
 tsyringe_1.container.registerSingleton(UseCaseTokens_1.USECASE_TOKENS.VERIFY_DRIVER_PAYMENT_ACCOUNT_USECASE, VerifyAccountStatus_1.VerifyDriverPaymentAccount);
 tsyringe_1.container.registerSingleton(UseCaseTokens_1.USECASE_TOKENS.BOOK_DRIVER_USECASE, BookDriver_1.BookDriver);
+tsyringe_1.container.registerSingleton(UseCaseTokens_1.USECASE_TOKENS.ACCEPT_BOOKING_USECASE, AcceptBooking_1.AcceptBooking);
 tsyringe_1.container.registerSingleton(UseCaseTokens_1.USECASE_TOKENS.GET_ESTIMATED_FARE_USECASE, GetEstimatedFare_1.GetEstimatedFare);
 tsyringe_1.container.registerSingleton(UseCaseTokens_1.USECASE_TOKENS.IGET_USER_BOOKINGS_USECASE, GetUserbooking_1.GetUserBookingsUseCase);
 tsyringe_1.container.registerSingleton(UseCaseTokens_1.USECASE_TOKENS.ATTACH_PAYMENT_INTENT_USECASE, AttachPaymentIntentIdToBooking_1.AttachPaymentIntentIdToBooking);
@@ -100,4 +103,5 @@ tsyringe_1.container.registerSingleton(UseCaseTokens_1.USECASE_TOKENS.FIND_NEARB
 tsyringe_1.container.registerSingleton(UseCaseTokens_1.USECASE_TOKENS.GET_NEARBY_DRIVER_DETAILS_USECASE, GetNearbyDriverDetails_1.GetNearbyDriverDetails);
 tsyringe_1.container.registerSingleton(UseCaseTokens_1.USECASE_TOKENS.GET_DRIVER_DASHBOARD_STATS_USECASE, GetDriverDashboardStats_1.GetDriverDashboardStats);
 tsyringe_1.container.registerSingleton(UseCaseTokens_1.USECASE_TOKENS.GET_ADMIN_DASHBOARD_STATS_USECASE, GetAdminDashboardStats_1.GetAdminDashboardStats);
+tsyringe_1.container.registerSingleton(UseCaseTokens_1.USECASE_TOKENS.ACKNOWLEDGE_BOOKING_USECASE, AcknowledgeBooking_1.AcknowledgeBookingUseCase);
 //# sourceMappingURL=useCaseContainer.js.map

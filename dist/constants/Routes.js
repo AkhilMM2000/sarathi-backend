@@ -51,7 +51,8 @@ exports.ROUTES = {
         REVIEW: {
             BASE: "/review",
             BY_ID: "/review/:id",
-        }
+        },
+        ACKNOWLEDGE_BOOKING: "/booking/acknowledge/:bookingId"
     },
     DRIVER: {
         BASE: "/api/drivers",
@@ -106,6 +107,7 @@ exports.ROUTES = {
         BASE: "/api",
         SLOT: "/book/slot",
         ESTIMATE_FARE: "/book/estimate-fare",
+        ACCEPT: "/booking/accept/:bookingId",
     }
 };
 //# sourceMappingURL=Routes.js.map

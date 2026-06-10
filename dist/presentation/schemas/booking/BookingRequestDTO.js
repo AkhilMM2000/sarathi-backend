@@ -8,13 +8,15 @@ const Booking_1 = require("../../../domain/models/Booking");
  * Handles validation and date coercion for the initial booking request
  */
 exports.BookDriverSchema = zod_1.z.object({
-    driverId: zod_1.z.string().min(1, "Driver ID is required"),
+    driverId: zod_1.z.string().optional(),
     fromLocation: zod_1.z.string().min(1, "From location is required"),
     toLocation: zod_1.z.string().optional(),
     startDate: zod_1.z.coerce.date(),
     endDate: zod_1.z.coerce.date().optional(),
     estimatedKm: zod_1.z.coerce.number().nonnegative().optional(),
     bookingType: zod_1.z.nativeEnum(Booking_1.BookingType),
+    fromLat: zod_1.z.coerce.number(),
+    fromLng: zod_1.z.coerce.number(),
 }).refine((data) => {
     if (data.endDate && data.startDate > data.endDate) {
         return false;
@@ -92,7 +94,7 @@ exports.UserBookingPaginationSchema = zod_1.z.object({
  */
 exports.AttachPaymentIntentSchema = zod_1.z.object({
     paymentIntentId: zod_1.z.string().min(1, "Payment Intent ID is required"),
-    paymentStatus: zod_1.z.string().optional(),
+    paymentStatus: zod_1.z.nativeEnum(Booking_1.paymentStatus).optional(),
     walletDeduction: zod_1.z.coerce.number().nonnegative().optional().default(0),
 });
 /**

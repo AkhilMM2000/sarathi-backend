@@ -50,8 +50,10 @@ const server = http_1.default.createServer(app);
 (0, socket_1.initializeSocket)(server);
 (0, referralSocket_1.initializeReferralSocket)();
 (0, SocketNotification_1.NotificationSocket)();
+const CronScheduler_1 = require("./infrastructure/services/CronScheduler");
 // 5️⃣ DB + Server start
 (0, database_1.connectDB)().then(() => {
+    CronScheduler_1.CronScheduler.start();
     server.listen(PORT, () => console.log(`Server running on port ${PORT}`));
 });
 //# sourceMappingURL=index.js.map

@@ -22,6 +22,15 @@ let SocketNotificationService = class SocketNotificationService {
             this.io.to(socketId).emit("booking:new", data);
         }
     }
+    async broadcastBookingNotification(driverIds, data) {
+        for (const driverId of driverIds) {
+            const socketId = await redisconfig_1.redis.get(`driver:socket:${driverId}`);
+            console.log('booking notification broadcast to driver', driverId, socketId);
+            if (socketId) {
+                this.io.to(socketId).emit("booking:new", data);
+            }
+        }
+    }
     async cancelBookingNotification(driverId, data) {
         const socketId = await redisconfig_1.redis.get(`driver:socket:${driverId}`);
         console.log('booking notifciationcancel', socketId);
@@ -41,6 +50,9 @@ let SocketNotificationService = class SocketNotificationService {
         if (socketId) {
             this.io.to(socketId).emit("booking:confirmation", data);
         }
+    }
+    bookingAssignedNotification(bookingId, driverId) {
+        this.io.emit("booking:assigned", { bookingId, driverId });
     }
     async rejectBookingNotification(userId, data) {
         const socketId = await redisconfig_1.redis.get(`user:socket:${userId}`);

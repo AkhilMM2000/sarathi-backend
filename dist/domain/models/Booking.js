@@ -14,6 +14,7 @@ var BookingStatus;
     BookingStatus["COMPLETED"] = "COMPLETED";
     BookingStatus["CANCELLED"] = "CANCELLED";
     BookingStatus["REJECTED"] = "REJECTED";
+    BookingStatus["EXPIRED"] = "EXPIRED";
 })(BookingStatus || (exports.BookingStatus = BookingStatus = {}));
 var BookingType;
 (function (BookingType) {

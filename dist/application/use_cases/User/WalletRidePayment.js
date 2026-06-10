@@ -31,14 +31,17 @@ let WalletPayment = class WalletPayment {
                 paymentStatus: Booking_1.paymentStatus.COMPLETED,
             };
             const Ride = await this._bookingRepo.findBookingById(rideId);
-            const driver = await this._driverRepository.findDriverById(Ride?.driverId.toString());
             if (!Ride) {
                 throw new Autherror_1.AuthError("Ride not found", HttpStatusCode_1.HTTP_STATUS_CODES.NOT_FOUND);
             }
+            if (!Ride.driverId) {
+                throw new Autherror_1.AuthError("No driver assigned to this ride", HttpStatusCode_1.HTTP_STATUS_CODES.BAD_REQUEST);
+            }
+            const driver = await this._driverRepository.findDriverById(Ride.driverId.toString());
             if (!driver?.stripeAccountId) {
                 throw new Autherror_1.AuthError("stripe connected account not found", HttpStatusCode_1.HTTP_STATUS_CODES.NOT_FOUND);
             }
-            await this._stripeService.transferToDriverFromWallet(Ride?.driverId.toString(), amount, driver?.stripeAccountId);
+            await this._stripeService.transferToDriverFromWallet(Ride.driverId.toString(), amount, driver.stripeAccountId);
             await this._bookingRepo.updateBooking(rideId, { ...Payment, walletDeduction: amount, driver_fee: Math.floor(amount * 0.9) });
             await this._walletRepository.debitAmount(userId, amount, `ride on ${Ride?.startDate}`);
         }

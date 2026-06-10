@@ -13,5 +13,6 @@ exports.bookingController = tsyringe_1.container.resolve(Tokens_1.TOKENS.BOOKING
 // Booking endpoint
 router.post(Routes_1.ROUTES.BOOKING.SLOT, (0, authMiddleware_1.protectRoute)(["user"]), checkBlockedMiddleware.handle.bind(checkBlockedMiddleware), exports.bookingController.bookDriver.bind(exports.bookingController));
 router.post(Routes_1.ROUTES.BOOKING.ESTIMATE_FARE, (0, authMiddleware_1.protectRoute)(["user"]), checkBlockedMiddleware.handle.bind(checkBlockedMiddleware), exports.bookingController.getEstimatedFare.bind(exports.bookingController));
+router.patch(Routes_1.ROUTES.BOOKING.ACCEPT, (0, authMiddleware_1.protectRoute)(["driver"]), checkBlockedMiddleware.handle.bind(checkBlockedMiddleware), exports.bookingController.acceptBooking.bind(exports.bookingController));
 exports.default = router;
 //# sourceMappingURL=BookingRoute.js.map
