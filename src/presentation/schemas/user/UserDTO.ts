@@ -61,7 +61,7 @@ export const UpdateUserSchema = z.object({
 /**
  * Helper to ensure query params are single values even if multiple are sent
  */
-const coerceToSingle = (val: any) => (Array.isArray(val) ? val[0] : val);
+const coerceToSingle = (val: unknown) => (Array.isArray(val) ? val[0] : val);
 
 /**
  * Fetch Drivers Query Schema

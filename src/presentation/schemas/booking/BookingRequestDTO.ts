@@ -99,7 +99,7 @@ export type GetEstimatedFareRequest = z.infer<typeof GetEstimatedFareSchema>;
 /**
  * Helper to ensure query params are single values even if multiple are sent
  */
-const coerceToSingle = (val: any) => (Array.isArray(val) ? val[0] : val);
+const coerceToSingle = (val: unknown) => (Array.isArray(val) ? val[0] : val);
 
 /**
  * User Booking Pagination Schema (Query Params)

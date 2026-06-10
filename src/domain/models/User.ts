@@ -21,6 +21,6 @@ export interface User {
   activePayment?: boolean;
   stripeAccountId?: string;
   referredBy?: string;
-  isBlock:Boolean;
+  isBlock:boolean;
   createdAt?: Date;
 }
