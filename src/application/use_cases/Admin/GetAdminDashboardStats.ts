@@ -51,15 +51,15 @@ export class GetAdminDashboardStats implements IGetAdminDashboardStatsUseCase {
     };
 
     // 2. Process Ride Stats with normalization (Mongo _id -> lowercase keys)
-    rawStats.rideStats?.forEach((stat: any) => {
-      const status = stat._id?.toLowerCase();
+    rawStats.rideStats?.forEach((stat) => {
+      const status = stat._id?.toLowerCase() as keyof typeof defaultStats.rideStats;
       if (status && status in defaultStats.rideStats) {
-        (defaultStats.rideStats as any)[status] = stat.count || 0;
+        defaultStats.rideStats[status] = stat.count || 0;
       }
     });
 
     // 3. Process Trend Data for professional graph visualization
-    defaultStats.earningsTrend = rawStats.earningsTrend?.map((item: any) => ({
+    defaultStats.earningsTrend = rawStats.earningsTrend?.map((item) => ({
       date: item._id,
       earnings: item.earnings || 0
     })) || [];

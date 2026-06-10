@@ -6,6 +6,8 @@ export interface WalletDocument extends Document {
   userId: mongoose.Types.ObjectId;
   balance: number;
   transactions: WalletTransaction[];
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 

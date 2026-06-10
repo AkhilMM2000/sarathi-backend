@@ -35,7 +35,7 @@ export class GetDriverDashboardStats implements IGetDriverDashboardStatsUseCase 
     }
 
     if (rawData.rideStats && rawData.rideStats.length > 0) {
-      rawData.rideStats.forEach((item: any) => {
+      rawData.rideStats.forEach((item) => {
         const status = item._id ? item._id.toLowerCase() : "";
         if (status === "completed") stats.rideStats.completed = item.count;
         else if (status === "pending") stats.rideStats.pending = item.count;

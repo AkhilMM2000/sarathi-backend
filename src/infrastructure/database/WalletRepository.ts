@@ -21,13 +21,13 @@ export class MongoWalletRepository extends BaseRepository<Wallet, WalletDocument
       userId: userId,
       balance: 0,
       transactions: [],
-    } as any);
-    return this.toIWallet(newWallet);
+    });
+    return this.toIWallet(newWallet as unknown as WalletDocument);
   }
 
   async getWalletByUserId(userId: string): Promise<Wallet | null> {
     const wallet = await super.findOne({ userId });
-    return wallet ? this.toIWallet(wallet) : null;
+    return wallet ? this.toIWallet(wallet as unknown as WalletDocument) : null;
   }
 
   async walletBalance(userId: string): Promise<number> {
@@ -121,9 +121,9 @@ export class MongoWalletRepository extends BaseRepository<Wallet, WalletDocument
   }
   
 
-  private toIWallet(wallet: any): Wallet {
+  private toIWallet(wallet: WalletDocument): Wallet {
     return {
-      _id: wallet._id.toString(),
+      _id: (wallet._id as Types.ObjectId).toString(),
       userId: wallet.userId.toString(),
       balance: wallet.balance,
       transactions: wallet.transactions,

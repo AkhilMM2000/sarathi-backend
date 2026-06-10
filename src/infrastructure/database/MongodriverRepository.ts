@@ -2,7 +2,7 @@ import { injectable } from "tsyringe";
 import { IDriverRepository } from "../../domain/repositories/IDriverepository";
 import { Driver } from "../../domain/models/Driver";
 import DriverModel, { IDriver } from "./modals/Driverschema"; // MongoDB Schema
-import { isValidObjectId, Types } from "mongoose";
+import { isValidObjectId, Types, PipelineStage, FilterQuery } from "mongoose";
 import { AuthError } from "../../domain/errors/Autherror";
 import { ConflictError } from "../../domain/errors/ConflictError";
 import { NotFoundError } from "../../domain/errors/NotFoundError";
@@ -52,10 +52,11 @@ export class MongoDriverRepository extends BaseRepository<Driver, IDriver> imple
         "latitude" in data.location &&
         "longitude" in data.location
       ) {
+        const loc = data.location as { latitude: number; longitude: number };
         data.location = {
           type: "Point",
-          coordinates: [data.location.longitude, data.location.latitude],
-        } as any;
+          coordinates: [loc.longitude, loc.latitude],
+        };
       }
 
       Object.assign(driver, data);
@@ -90,11 +91,11 @@ export class MongoDriverRepository extends BaseRepository<Driver, IDriver> imple
     status: "pending" | "approved" | "rejected",
     reason?: string
   ): Promise<Driver | null> {
-    const updateData: any = { status };
+    const updateData: Partial<Driver> = { status };
     if (status === "rejected" && reason) {
       updateData.reason = reason;
     } else {
-      updateData.reason = null;
+      updateData.reason = undefined;
     }
     
     return super.update(driverId, updateData);
@@ -107,11 +108,11 @@ export class MongoDriverRepository extends BaseRepository<Driver, IDriver> imple
   async getDrivers(page: number, limit: number): Promise<PaginatedResult<Driver>> {
     const skip = (page - 1) * limit;
 
-    const aggregationPipeline = [
+    const aggregationPipeline: PipelineStage[] = [
       {
         $facet: {
           data: [
-            { $sort: { createdAt: -1 } as any }, // Assuming recent drivers first
+            { $sort: { createdAt: -1 } }, // Assuming recent drivers first
             { $skip: skip },
             { $limit: limit }
           ],
@@ -144,7 +145,7 @@ export class MongoDriverRepository extends BaseRepository<Driver, IDriver> imple
 ): Promise<PaginatedResult<Driver>> {
   const skip = (page - 1) * limit;
 
-  const matchStage: any = {
+  const matchStage: FilterQuery<IDriver> = {
     status: "approved",
     activePayment: true
   };
@@ -154,7 +155,7 @@ export class MongoDriverRepository extends BaseRepository<Driver, IDriver> imple
     matchStage.place = { $regex: trimmedPlaceKey, $options: "i" };
   }
 
-  const aggregationPipeline: any[] = [];
+  const aggregationPipeline: PipelineStage[] = [];
 
   if (lat !== undefined && lng !== undefined) {
     aggregationPipeline.push({

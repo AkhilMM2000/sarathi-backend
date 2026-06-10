@@ -8,6 +8,7 @@ import { GoogleDistanceService } from "../../application/services/GoogleDistance
 import BookingModel from "../database/modals/Bookingschema";
 import DriverModel from "../database/modals/Driverschema";
 import { BookingStatus } from "../../domain/models/Booking";
+import { Types } from "mongoose";
 
 export const NotificationSocket = () => {
   const io = getIO();
@@ -47,7 +48,7 @@ export const NotificationSocket = () => {
         const bookingLocations = pendingBookings
           .filter(b => b.fromLat !== undefined && b.fromLng !== undefined)
           .map(b => ({
-            id: (b._id as any).toString(),
+            id: (b._id as Types.ObjectId).toString(),
             latitude: b.fromLat!,
             longitude: b.fromLng!
           }));
@@ -62,12 +63,12 @@ export const NotificationSocket = () => {
 
         // Emit booking:new to this driver for all bookings <= 20 km
         for (const booking of pendingBookings) {
-          const roadDist = distances[(booking._id as any).toString()];
-          console.log(`[Catch-Up Check] Booking ${(booking._id as any).toString()} is ${roadDist} km away from Driver ${driverId}`);
+          const roadDist = distances[(booking._id as Types.ObjectId).toString()];
+          console.log(`[Catch-Up Check] Booking ${(booking._id as Types.ObjectId).toString()} is ${roadDist} km away from Driver ${driverId}`);
           if (roadDist !== undefined && roadDist <= 20) {
-            console.log(`📣 Emitting catch-up notification to Driver ${driverId} for Booking ${(booking._id as any).toString()}`);
+            console.log(`📣 Emitting catch-up notification to Driver ${driverId} for Booking ${(booking._id as Types.ObjectId).toString()}`);
             socket.emit("booking:new", {
-              bookingId: (booking._id as any).toString(),
+              bookingId: (booking._id as Types.ObjectId).toString(),
               fromLocation: booking.fromLocation,
               toLocation: booking.toLocation,
               estimatedFare: booking.estimatedFare,

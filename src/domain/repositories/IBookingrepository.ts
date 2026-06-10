@@ -57,6 +57,36 @@ export interface IBookingRepository {
     totalEarnings: number;
     totalRides: number;
   }>;
-  getDriverDashboardStats(driverId: string): Promise<any>;
-  getAdminDashboardStats(): Promise<any>;
+  getDriverDashboardStats(driverId: string): Promise<RawDriverDashboardStats>;
+  getAdminDashboardStats(): Promise<RawAdminDashboardStats>;
+}
+
+export interface RawDriverDashboardStats {
+  earnings: {
+    total: number;
+    today: number;
+    thisWeek: number;
+  }[];
+  rideStats: {
+    _id: string;
+    count: number;
+  }[];
+}
+
+export interface RawAdminDashboardStats {
+  finance: {
+    totalPlatformProfit: number;
+    totalRevenue: number;
+    totalDriverPayout: number;
+    todayPlatformProfit: number;
+    weekPlatformProfit: number;
+  }[];
+  rideStats: {
+    _id: string;
+    count: number;
+  }[];
+  earningsTrend: {
+    _id: string;
+    earnings: number;
+  }[];
 }

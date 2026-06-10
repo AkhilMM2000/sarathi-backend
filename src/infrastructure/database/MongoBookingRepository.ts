@@ -1,12 +1,13 @@
-import { BookingWithUsername, IBookingRepository, PaginatedResult, rideHistory } from "../../domain/repositories/IBookingrepository"; 
+import { BookingWithUsername, IBookingRepository, PaginatedResult, rideHistory, RawDriverDashboardStats, RawAdminDashboardStats } from "../../domain/repositories/IBookingrepository"; 
 import { Booking, paymentStatus } from "../../domain/models/Booking"; 
 import BookingModel, { BookingDocument } from "./modals/Bookingschema"; 
 import { injectable } from "tsyringe";
 import { AuthError } from "../../domain/errors/Autherror";
 import { STATUS_CODES } from "http";
 import { HTTP_STATUS_CODES } from "../../constants/HttpStatusCode";
-import mongoose from "mongoose";
+import mongoose, { FilterQuery } from "mongoose";
 import { BaseRepository } from "./BaseRepository";
+import { PopulatedBooking } from "./interfaces/PopulatedBooking";
 
 @injectable()
 export class MongoBookingRepository extends BaseRepository<Booking, BookingDocument> implements IBookingRepository {
@@ -37,15 +38,17 @@ export class MongoBookingRepository extends BaseRepository<Booking, BookingDocum
       ]);
     
       const formattedBookings: BookingWithUsername[] = bookings.map((b) => {
-        const plain = b.toObject() as Booking & { place?: string };
+        const plain = b.toObject() as unknown as PopulatedBooking;
         return {
           ...plain,
-          username: (plain.userId as any)?.name || "Unknown", 
+          userId: plain.userId._id.toString(),
+          driverId: plain.driverId?._id?.toString(),
+          username: plain.userId?.name || "Unknown", 
           place: plain.place || "N/A", // safely access populated username
-          drivername: (plain.driverId as any)?.name|| "Unknown",
-          driverImage: (plain.driverId as any)?.profileImage || "N/A", // safely access populated username
-           userImage: (plain.userId as any)?.profile || "N/A", // safely access populated username
-        };
+          drivername: plain.driverId?.name || "Unknown",
+          driverImage: plain.driverId?.profileImage || "N/A", // safely access populated username
+          userImage: plain.userId?.profile || "N/A", // safely access populated username
+        } as unknown as BookingWithUsername;
       });
     
       return {
@@ -69,11 +72,11 @@ export class MongoBookingRepository extends BaseRepository<Booking, BookingDocum
   limit: number
 ): Promise<PaginatedResult<rideHistory>> {
   const skip = (page - 1) * limit;
-const query: any = {
-          driverId,
-  status: { $nin: ["CANCELLED", "REJECTED"] },
-  paymentStatus: { $ne: "COMPLETED" },
-};
+  const query: FilterQuery<BookingDocument> = {
+    driverId,
+    status: { $nin: ["CANCELLED", "REJECTED"] },
+    paymentStatus: { $ne: "COMPLETED" },
+  };
 
   const [bookings, total] = await Promise.all([
     BookingModel.find(query)
@@ -85,23 +88,19 @@ const query: any = {
   ]);
 
   const formattedBookings: rideHistory[] = bookings.map((b) => {
-    const bookingObj = b.toObject(); // Convert Mongoose document to plain object
-    const user = bookingObj.userId as unknown as {
-      name: string;
-      place: string;
-      email: string;
-      profile: string;
-      mobile:string
-    };
+    const bookingObj = b.toObject() as unknown as PopulatedBooking; // Convert Mongoose document to plain object
+    const user = bookingObj.userId;
 
     return {
       ...bookingObj,
+      userId: user._id.toString(),
+      driverId: bookingObj.driverId?._id?.toString(),
       name: user.name,
-      place: user.place,
+      place: user.place || "N/A",
       email: user.email,
-      profile: user.profile,
-      mobile:user.mobile
-    };
+      profile: user.profile || "N/A",
+      mobile: user.mobile
+    } as unknown as rideHistory;
   });
 
   return {
@@ -157,15 +156,15 @@ const conflict = await BookingModel.findOne({
 async findBookingsByUser(userId: string, page: number, limit: number): Promise<PaginatedResult<BookingWithUsername>> {
   try {
     const skip = (page - 1) * limit;
-    const query: any = {
-          userId,
-  status: { $nin: ["CANCELLED", "REJECTED"] },
-  paymentStatus: { $ne: "COMPLETED" },
-  $or: [
-    { status: { $ne: "EXPIRED" } },
-    { status: "EXPIRED", userAcknowledged: { $ne: true } }
-  ]
-};
+    const query: FilterQuery<BookingDocument> = {
+      userId,
+      status: { $nin: ["CANCELLED", "REJECTED"] },
+      paymentStatus: { $ne: "COMPLETED" },
+      $or: [
+        { status: { $ne: "EXPIRED" } },
+        { status: "EXPIRED", userAcknowledged: { $ne: true } }
+      ]
+    };
     const [bookings, total] = await Promise.all([
       BookingModel.find(query)
         .populate("userId", "name") 
@@ -177,15 +176,16 @@ async findBookingsByUser(userId: string, page: number, limit: number): Promise<P
     ]);
   
     const formattedBookings: BookingWithUsername[] = bookings.map((b) => {
-      const plain = b.toObject() as Booking & { place?: string };
+      const plain = b.toObject() as unknown as PopulatedBooking;
       return {
         ...plain,
-        username: (plain.userId as any)?.name || "Unknown", 
+        userId: plain.userId._id.toString(),
+        driverId: plain.driverId?._id?.toString(),
+        username: plain.userId?.name || "Unknown", 
         place: plain.place || "N/A", // safely access populated username
-        drivername: (plain.driverId as any)?.name || "Unknown",
-         driverImage: (plain.driverId as any)?.profileImage || "N/A", // safely access populated username
-     
-      };
+        drivername: plain.driverId?.name || "Unknown",
+        driverImage: plain.driverId?.profileImage || "N/A", // safely access populated username
+      } as unknown as BookingWithUsername;
     });
   
     return {
@@ -209,7 +209,7 @@ async getRideHistoryByRole(
     const skip = (page - 1) * limit;
 
     // Step 1: Construct dynamic query
-    const query: any = {
+    const query: FilterQuery<BookingDocument> = {
       $or: [
         { status: { $in: ["CANCELLED", "REJECTED", "EXPIRED"] } },
         { paymentStatus: "COMPLETED" },
@@ -237,14 +237,30 @@ async getRideHistoryByRole(
 
     // Step 3: Transform based on role
     const transformed: rideHistory[] = rides.map((b) => {
-      const person = role === "user" ?  (b.driverId as any):(b.userId as any) 
-      return {
-        ...b,
-        email: person?.email,
-        place: person?.place,
-        name: person?.name,
-        profile: role === "user" ? person?.profileImage:person?.profile ,
-      };
+      const populatedRide = b as unknown as PopulatedBooking;
+      if (role === "user") {
+        const driver = populatedRide.driverId;
+        return {
+          ...b,
+          userId: populatedRide.userId._id.toString(),
+          driverId: driver?._id?.toString(),
+          email: driver?.email,
+          place: driver?.place || "N/A",
+          name: driver?.name || "Unknown",
+          profile: driver?.profileImage || "N/A",
+        } as unknown as rideHistory;
+      } else {
+        const user = populatedRide.userId;
+        return {
+          ...b,
+          userId: user._id.toString(),
+          driverId: populatedRide.driverId?._id?.toString(),
+          email: user.email,
+          place: user.place || "N/A",
+          name: user.name,
+          profile: user.profile || "N/A",
+        } as unknown as rideHistory;
+      }
     });
 
     return {
@@ -263,7 +279,7 @@ async getRideHistoryByRole(
 }
 async countBookingsByStatus(driverId: string, year?: number, month?: number): Promise<Record<string, number>> {
     try {
-      const matchStage: any = {
+      const matchStage: FilterQuery<BookingDocument> = {
       driverId: new mongoose.Types.ObjectId(driverId)
     };
 
@@ -311,7 +327,7 @@ async countBookingsByStatus(driverId: string, year?: number, month?: number): Pr
     totalRides: number;
   }> {
     try {
-      const matchStage: any = {
+      const matchStage: FilterQuery<BookingDocument> = {
       driverId: new mongoose.Types.ObjectId(driverId),
       paymentStatus: 'COMPLETED'
     };
@@ -362,7 +378,7 @@ async countBookingsByStatus(driverId: string, year?: number, month?: number): Pr
     }
   }
 
-  async getDriverDashboardStats(driverId: string): Promise<any> {
+  async getDriverDashboardStats(driverId: string): Promise<RawDriverDashboardStats> {
     try {
       const now = new Date();
       const todayStart = new Date(now);
@@ -417,14 +433,14 @@ async countBookingsByStatus(driverId: string, year?: number, month?: number): Pr
         }
       ]);
 
-      return result[0] || { earnings: [], rideStats: [] };
+      return (result[0] || { earnings: [], rideStats: [] }) as RawDriverDashboardStats;
     } catch (error: any) {
       console.error('Error in getDriverDashboardStats:', error.message);
       throw new AuthError('Failed to fetch dashboard stats', HTTP_STATUS_CODES.INTERNAL_SERVER_ERROR);
     }
   }
 
-  async getAdminDashboardStats(): Promise<any> {
+  async getAdminDashboardStats(): Promise<RawAdminDashboardStats> {
     try {
       const now = new Date();
       const startOfToday = new Date(now);
@@ -491,7 +507,7 @@ async countBookingsByStatus(driverId: string, year?: number, month?: number): Pr
         }
       ]);
 
-      return result[0];
+      return result[0] as RawAdminDashboardStats;
     } catch (error: any) {
       console.error('Error in getAdminDashboardStats:', error.message);
       throw new AuthError('Failed to fetch admin dashboard stats', HTTP_STATUS_CODES.INTERNAL_SERVER_ERROR);
