@@ -119,7 +119,7 @@ export class BookDriver implements IBookDriverUseCase  {
 
     if (savedBooking.driverId) {
       await this._notificationService.sendBookingNotification(savedBooking.driverId.toString(), {
-        bookingId: (savedBooking as any)._id?.toString() || savedBooking.id,
+        bookingId: savedBooking._id?.toString() || savedBooking.id || "",
         fromLocation: savedBooking.fromLocation,
         toLocation: savedBooking.toLocation,
         estimatedFare: savedBooking.estimatedFare,
@@ -128,7 +128,7 @@ export class BookDriver implements IBookDriverUseCase  {
       });
     } else {
       await this._notificationService.broadcastBookingNotification(targetedDriverIds, {
-        bookingId: (savedBooking as any)._id?.toString() || savedBooking.id,
+        bookingId: savedBooking._id?.toString() || savedBooking.id || "",
         fromLocation: savedBooking.fromLocation,
         toLocation: savedBooking.toLocation,
         estimatedFare: savedBooking.estimatedFare,

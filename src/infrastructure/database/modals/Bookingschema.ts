@@ -1,7 +1,7 @@
 import mongoose, { Schema, Document } from "mongoose";
 import { BookingStatus, BookingType, Booking,paymentStatus } from "../../../domain/models/Booking";
 
-export interface BookingDocument extends Omit<Booking, "id">, Document {} // use "id", not "_id"
+export interface BookingDocument extends Omit<Booking, "id" | "_id">, Document {}
 
 const bookingSchema = new Schema<BookingDocument>(
   {

@@ -18,6 +18,7 @@ export enum BookingType {
     ROUND_TRIP = "RANGE_OF_DATES",  
         }
 export interface Booking {
+    _id?: Types.ObjectId | string;
     id?: string;
     userId:Types.ObjectId;
     driverId?: Types.ObjectId;
