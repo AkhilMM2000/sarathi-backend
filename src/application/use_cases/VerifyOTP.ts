@@ -13,6 +13,9 @@ import { HTTP_STATUS_CODES } from "../../constants/HttpStatusCode";
 import { ERROR_MESSAGES } from "../../constants/ErrorMessages";
 import { VerifyOtpResponseDto } from "../dto/auth/AuthResponseDto";
 import { IVerifyOtp } from "./Interfaces/IVerifyOtp";
+import { User } from "../../domain/models/User";
+import { Driver } from "../../domain/models/Driver";
+
 dotenv.config();
 @injectable()
 export class VerifyOTP implements IVerifyOtp {
@@ -28,17 +31,14 @@ export class VerifyOTP implements IVerifyOtp {
  
     const userData = await this._store.getUser(email);
 
-console.log('userData',userData);
+    console.log('userData',userData);
 
     if (!userData)  throw new AuthError(ERROR_MESSAGES.USER_NOT_FOUND, HTTP_STATUS_CODES.BAD_REQUEST);
     if (userData.otp !== otp || userData.otpExpires < new Date()) throw new AuthError(ERROR_MESSAGES.OTP_INVALID,HTTP_STATUS_CODES.BAD_REQUEST);
 
    
 
-    // Choose repository based on role
-    const repository = role === "user" ? this._userRepository : this._driverRepository;
-
-    let savedUser;
+    let savedUser: User | Driver;
     if (role === "driver") {
       // Remove unwanted fields before saving
       const { otp, otpExpires, confirmPassword, ...driverData } = userData;
@@ -63,7 +63,7 @@ console.log('userData',userData);
       console.log("📌 Saving driver to DB:", driverData);
       console.log("📝 Required Schema Fields:", Object.keys(Driverschema.schema.paths));
       // Save driver in the database
-      savedUser = await repository.create(driverData);
+      savedUser = await this._driverRepository.create(driverData as unknown as Driver);
     } else {
 
       console.log("📌 Saving user to DB:", userData);
@@ -72,14 +72,14 @@ console.log('userData',userData);
       if (userData.referralCode) {
         const referalExists = await this._userRepository.findByReferralCode(userData.referralCode);
         if (referalExists) {
-          userData.referredBy = referalExists._id;
+          userData.referredBy = referalExists._id?.toString();
            userData.referalPay=true
 
         }
       }
       
      
-      savedUser = await repository.create(userData);
+      savedUser = await this._userRepository.create(userData as unknown as User);
       const loggesUser=await this._userRepository.findByEmail(userData.email)
       const code = this._referralCodeService.generate(loggesUser?._id?.toString());
     

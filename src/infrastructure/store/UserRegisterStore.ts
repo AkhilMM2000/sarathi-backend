@@ -1,10 +1,11 @@
 import { injectable } from "tsyringe";
 import { redis } from "../../config/redisconfig";
 import { IRedisrepository } from "../../domain/repositories/IRedisrepository"; 
+import { RegistrationPayload } from "../../domain/models/RegistrationPayload";
 
 @injectable()
 export class RedisUserRegistrationStore implements IRedisrepository{
-  async addUser(email: string, userData: any): Promise<void> {
+  async addUser(email: string, userData: RegistrationPayload): Promise<void> {
     await redis.set(`register:${email}`, JSON.stringify(userData), { ex: 600 }); // Expiry: 5 mins
   }
   async addTokenUser(role: string, token: string, userId: string): Promise<void> {
@@ -17,8 +18,8 @@ export class RedisUserRegistrationStore implements IRedisrepository{
     const userId = await redis.get(`${role}_${token}`)as string | null;
     return userId
   }
-  async getUser(email: string): Promise<any | null> {
-    const data = await redis.get(`register:${email}`);
+  async getUser(email: string): Promise<RegistrationPayload | null> {
+    const data = await redis.get<RegistrationPayload>(`register:${email}`);
    
     return data 
   }

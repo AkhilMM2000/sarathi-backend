@@ -9,7 +9,7 @@ export abstract class BaseRepository<T, U extends Document> implements IBaseRepo
     try {
       const createdItem = new this.model(data);
       const result = await createdItem.save();
-      return result.toObject() as unknown as T;
+      return result.toObject<T>();
     } catch (error: any) {
       if (error.code === 11000) {
         throw new ConflictError("Resource with this data already exists");
