@@ -32,10 +32,14 @@ let CancelBookingInputUseCase = class CancelBookingInputUseCase {
         }
         // Only restrict cancellation if the booking is already CONFIRMED (assigned to a driver)
         if (booking.status === Booking_1.BookingStatus.CONFIRMED) {
-            const threeHours = 3 * 60 * 60 * 1000;
-            const timeDiff = new Date(booking.startDate).getTime() - Date.now();
-            if (timeDiff < threeHours) {
-                throw new Autherror_1.AuthError("Bookings can only be cancelled up to 3 hours before start time.", HttpStatusCode_1.HTTP_STATUS_CODES.BAD_REQUEST);
+            const IST_OFFSET = 5.5 * 60 * 60 * 1000;
+            const startIST = new Date(new Date(booking.startDate).getTime() + IST_OFFSET);
+            const cutoffIST = new Date(startIST);
+            cutoffIST.setUTCDate(cutoffIST.getUTCDate() - 1);
+            cutoffIST.setUTCHours(21, 0, 0, 0); // 9:00 PM IST
+            const cutoffTime = cutoffIST.getTime() - IST_OFFSET;
+            if (Date.now() > cutoffTime) {
+                throw new Autherror_1.AuthError("Bookings can only be cancelled before 9:00 PM of the day before the ride.", HttpStatusCode_1.HTTP_STATUS_CODES.BAD_REQUEST);
             }
         }
         await this._bookingRepo.updateBooking(bookingId, {
