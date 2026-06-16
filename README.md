@@ -15,6 +15,17 @@ It handles automated driver matchmaking, WebRTC video calling & chat signaling, 
 
 ---
 
+## 🔑 Demo Credentials
+
+For testing and evaluation purposes, you can log in to the application using the following pre-configured test credentials:
+
+| Account Type | Email Address | Password |
+| :--- | :--- | :--- |
+| **👤 User Account** | `manojakhil36@gmail.com` | `Amm@12345` |
+| **🚗 Driver Account** | `manojakhil36@gmail.com` | `Amm@1234` |
+
+---
+
 ## 📸 Core Features in Action
 
 * **Real-time Matchmaking & Broadcast:**
