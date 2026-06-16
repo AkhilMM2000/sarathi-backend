@@ -22,6 +22,11 @@ It handles automated driver matchmaking, WebRTC video calling & chat signaling, 
   ![Real-time Booking Request Broadcasting](Screenshot%202026-06-16%20124019.png)
   *Example of a user booking request dynamically broadcasting to active drivers' screens in real-time.*
 
+* **Driver Selection & Proximity Telemetry:**
+  
+  ![Driver Selection UI](driver_list.png)
+  *Users can view available drivers sorted and filtered by exact road-wise distance calculated via Google Maps APIs (with custom formatting for close proximity, e.g. "0 m away" / "Nearby").*
+
 * **MongoDB Database Schema:**
   
   ![MongoDB Atlas Data Explorer](image.png)
