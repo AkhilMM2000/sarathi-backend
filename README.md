@@ -26,7 +26,7 @@ It handles automated driver matchmaking, WebRTC video calling & chat signaling, 
   
   ![MongoDB Database Schema Compass View](https://via.placeholder.com/800x400.png?text=Placeholder:+Add+MongoDB+Compass+Collections+screenshot+here)
   *(Replace with a screenshot of your MongoDB Compass database collections).*
-
+![alt text](<Screenshot 2026-06-16 124019.png>)
 ---
 
 ## 🏗️ Architecture & Design Patterns
