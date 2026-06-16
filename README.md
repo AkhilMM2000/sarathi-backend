@@ -16,17 +16,16 @@ It handles automated driver matchmaking, WebRTC video calling & chat signaling, 
 ---
 
 ## 📸 Core Features in Action
-> **Note to Developer:** Add your screenshots here to showcase the app to recruiters!
-* **Real-time Matchmaking Radar & Video Calling:**
+
+* **Real-time Matchmaking & Broadcast:**
   
-  ![Live WebRTC Video Call & Chat Matchmaking Screen](https://via.placeholder.com/800x400.png?text=Placeholder:+Add+split+screen+screenshot+of+User+and+Driver+live+video+call+here)
-  *(Replace with a split-screen screenshot of your frontend showing the user calling a driver).*
+  ![Real-time Booking Request Broadcasting](Screenshot%202026-06-16%20124019.png)
+  *Example of a user booking request dynamically broadcasting to active drivers' screens in real-time.*
 
 * **MongoDB Database Schema:**
   
   ![MongoDB Database Schema Compass View](https://via.placeholder.com/800x400.png?text=Placeholder:+Add+MongoDB+Compass+Collections+screenshot+here)
   *(Replace with a screenshot of your MongoDB Compass database collections).*
-![alt text](<Screenshot 2026-06-16 124019.png>)
 ---
 
 ## 🏗️ Architecture & Design Patterns
