@@ -1,0 +1,58 @@
+@startuml pricing-strategy
+skinparam classAttributeIconSize 0
+
+enum RideType {
+  ECONOMY
+  PREMIUM
+  XL
+}
+
+class PricingContext {
+  - rideType: RideType
+  - distanceKm: number
+  - durationMinutes: number
+  - surgeMultiplier: number
+  - rentalDays: number
+  + getRideType(): RideType
+  + getDistanceKm(): number
+  + getDurationMinutes(): number
+  + getSurgeMultiplier(): number
+}
+
+class FareBreakdown {
+  - baseFare: number
+  - distanceFare: number
+  - timeFare: number
+  - surgeMultiplier: number
+  - totalFare: number
+  - rideType: RideType
+}
+
+interface IPricingStrategy {
+  + calculateFare(ctx: PricingContext): FareBreakdown
+}
+
+class StandardRidePricingStrategy implements IPricingStrategy {
+  + calculateFare(ctx: PricingContext): FareBreakdown
+}
+
+class SurgeDynamicPricingStrategy implements IPricingStrategy {
+  + calculateFare(ctx: PricingContext): FareBreakdown
+}
+
+class MultiDayRentalPricingStrategy implements IPricingStrategy {
+  + calculateFare(ctx: PricingContext): FareBreakdown
+}
+
+class PricingStrategyFactory {
+  + {static} getStrategy(ctx: PricingContext): IPricingStrategy
+}
+
+PricingStrategyFactory ..> IPricingStrategy : creates >
+StandardRidePricingStrategy ..> PricingContext : uses >
+SurgeDynamicPricingStrategy ..> PricingContext : uses >
+MultiDayRentalPricingStrategy ..> PricingContext : uses >
+IPricingStrategy ..> FareBreakdown : returns >
+PricingContext --> RideType
+
+@enduml

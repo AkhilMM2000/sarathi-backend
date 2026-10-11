@@ -1,0 +1,63 @@
+@startuml cancellation-sequence
+autonumber
+skinparam style strictuml
+skinparam sequenceMessageAlign center
+
+actor "Rider / Admin" as Actor
+participant "BookingController" as Controller
+participant "CancelBooking" as UseCase
+participant "MongoBookingRepository" as Repo
+participant "BookingEventBus" as EventBus
+participant "NotificationSubscriber" as NotifSub
+participant "PaymentRefundSubscriber" as RefundSub
+participant "AuditLogSubscriber" as AuditSub
+
+Actor -> Controller: POST /bookings/{id}/cancel (reason)
+activate Controller
+
+Controller -> UseCase: execute(bookingId, actorId, role, reason)
+activate UseCase
+
+UseCase -> Repo: findById(bookingId)
+activate Repo
+Repo --> UseCase: bookingEntity
+deactivate Repo
+
+UseCase -> UseCase: validateCancellationCutoff(booking, role)
+alt Past Cutoff or Already Completed/Cancelled
+    UseCase --> Controller: throw InvalidCancellationError (400 / 409)
+    Controller --> Actor: HTTP Error Response
+else Cancellation Permitted
+    UseCase -> Repo: updateStatus(bookingId, CANCELLED, reason, actorId)
+    activate Repo
+    Repo --> UseCase: updatedBooking
+    deactivate Repo
+
+    UseCase -> EventBus: publish(BookingCancelledEvent)
+    activate EventBus
+    
+    par Async Event Fan-Out (Observer Pattern)
+        EventBus -> NotifSub: onBookingCancelled(event)
+        activate NotifSub
+        NotifSub -> NotifSub: emitDriverSocket("rideCancelled")
+        deactivate NotifSub
+    else
+        EventBus -> RefundSub: onBookingCancelled(event)
+        activate RefundSub
+        RefundSub -> RefundSub: creditWalletOrStripeRefund()
+        deactivate RefundSub
+    else
+        EventBus -> AuditSub: onBookingCancelled(event)
+        activate AuditSub
+        AuditSub -> AuditSub: appendAuditLogRecord()
+        deactivate AuditSub
+    end
+    deactivate EventBus
+
+    UseCase --> Controller: cancellationSuccessDto
+    deactivate UseCase
+    Controller --> Actor: HTTP 200 OK (Booking Cancelled)
+    deactivate Controller
+end
+
+@enduml

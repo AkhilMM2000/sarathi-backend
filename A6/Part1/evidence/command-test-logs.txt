@@ -1,0 +1,37 @@
+================================================================================
+SARATHI BACKEND: ACTUAL COMMAND & TEST EXECUTION LOG (PART 1 BASELINE)
+================================================================================
+Timestamp: 2026-10-11T16:04:40+05:30
+Executed By: Team A6 (Sai Sameer)
+System Environment: Windows NT 10.0, Node.js v24.12.0, PowerShell 5.1
+
+Command 1: Inspect repository test suites
+Command: powershell -Command "Get-ChildItem -Recurse -Filter '*test*' | Select-Object FullName"
+Exit Code: 0
+Output:
+(No test files found in baseline repository)
+Limitation Note: The upstream Sarathi backend was published without unit/integration tests or test framework configurations.
+
+Command 2: Verify TypeScript compiler and compilation status
+Command: npm run build
+Output:
+> sarathi-backend@1.0.0 build
+> tsc
+'tsc' is not recognized as an internal or external command, operable program or batch file.
+Exit Code: 1
+Diagnostic: Baseline repository does not include node_modules/ in version control. All TypeScript dependencies must be installed via 'npm install' inside an isolated container.
+
+Command 3: Inspect Git baseline branch and commit
+Command: git rev-parse HEAD; git status
+Exit Code: 0
+Output:
+c8766f4c88b9f36235d5f4399ef9b4cf20df3c8a
+On branch baseline-analysis
+nothing to commit, working tree clean
+
+Command 4: Verify architectural layer isolation
+Command: node A6/tools/generate-inventory.js
+Exit Code: 0
+Output:
+Successfully generated A6/Part1/evidence/source-inventory.txt (118 source files, 7,725 lines of TypeScript/JavaScript)
+================================================================================

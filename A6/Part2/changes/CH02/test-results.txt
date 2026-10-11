@@ -1,0 +1,28 @@
+================================================================================
+CH02 TEST EXECUTION RESULTS: RIDE CANCELLATION & OBSERVER PATTERN
+================================================================================
+Test Suite: A6/tools/tests/booking-cancellation.test.ts (Node.js Test Runner)
+Timestamp: 2026-10-11T16:17:35+05:30
+Executed By: Team A6 (Leela Shankar, Reviewed by Kumar)
+
+✔ Test 1: User successfully cancels PENDING booking without cutoff penalty (PASS)
+✔ Test 2: User successfully cancels CONFIRMED booking before 9:00 PM cutoff (PASS)
+✔ Test 3: Admin successfully cancels CONFIRMED booking past user cutoff (PASS)
+✔ Test 4: User cancellation past 9:00 PM cutoff rejected with HTTP 400 (PASS)
+✔ Test 5: Cancellation of COMPLETED booking strictly rejected with HTTP 409 Conflict (PASS)
+✔ Test 6: Duplicate cancellation on CANCELLED booking rejected with HTTP 409 Conflict (PASS)
+✔ Test 7: Unauthorized cancellation by non-owner user rejected with HTTP 403 Forbidden (PASS)
+✔ Test 8: BookingCancelledEvent published upon successful cancellation (PASS)
+✔ Test 9: NotificationSubscriber dispatches driver socket alert (PASS)
+✔ Test 10: PaymentRefundSubscriber automatically credits wallet when walletDeduction > 0 (PASS)
+✔ Test 11: PaymentRefundSubscriber issues Stripe refund when card payment captured (PASS)
+✔ Test 12: Notification dispatch failure does not corrupt database cancellation state (PASS)
+
+Test Results Summary:
+Total Tests: 12
+Passed: 12
+Failed: 0
+Skipped: 0
+Duration: 48ms
+Exit Code: 0
+================================================================================

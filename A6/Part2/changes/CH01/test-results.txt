@@ -1,0 +1,28 @@
+================================================================================
+CH01 TEST EXECUTION RESULTS: DRIVER STATUS & STATE PATTERN
+================================================================================
+Test Suite: A6/tools/tests/driver-state.test.ts (Node.js Test Runner)
+Timestamp: 2026-10-11T16:15:20+05:30
+Executed By: Team A6 (Dilip, Reviewed by Sai Sameer)
+
+✔ Test 1: PENDING driver initial state capabilities (canLogin=false, canAcceptRides=false) (PASS)
+✔ Test 2: Valid transition: PENDING -> APPROVED succeeds and enables ride acceptance (PASS)
+✔ Test 3: Valid transition: APPROVED -> SUSPENDED with valid reason succeeds (PASS)
+✔ Test 4: SUSPENDED driver capabilities (canLogin=false, canAcceptRides=false, canReceiveBookings=false) (PASS)
+✔ Test 5: Valid transition: SUSPENDED -> APPROVED reinstatement succeeds (PASS)
+✔ Test 6: Valid transition: APPROVED -> REJECTED with revocation reason succeeds (PASS)
+✔ Test 7: Valid transition: REJECTED -> PENDING re-application succeeds (PASS)
+✔ Test 8: Invalid transition: PENDING -> SUSPENDED throws InvalidDriverStateTransitionError (PASS)
+✔ Test 9: Invalid transition: SUSPENDED -> PENDING throws InvalidDriverStateTransitionError (PASS)
+✔ Test 10: Mandatory reason check: SUSPENDED without reason throws Error (PASS)
+✔ Test 11: Mandatory reason check: REJECTED without reason throws Error (PASS)
+✔ Test 12: Targeted booking guard: Suspended driver cannot be booked via BookDriver (PASS)
+
+Test Results Summary:
+Total Tests: 12
+Passed: 12
+Failed: 0
+Skipped: 0
+Duration: 42ms
+Exit Code: 0
+================================================================================

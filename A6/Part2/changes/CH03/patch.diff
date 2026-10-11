@@ -1,0 +1,109 @@
+diff --git a/src/domain/models/Booking.ts b/src/domain/models/Booking.ts
+index c4d5e6f..f8a9b0c 100644
+--- a/src/domain/models/Booking.ts
++++ b/src/domain/models/Booking.ts
+@@ -19,6 +19,12 @@ export enum BookingType {
+   ONE_WAY = "ONE_RIDE",
+   ROUND_TRIP = "RANGE_OF_DATES",  
+ }
++export enum RideType {
++  ECONOMY = "ECONOMY",
++  PREMIUM = "PREMIUM",
++  XL = "XL"
++}
+ export interface Booking {
+     _id?: Types.ObjectId | string;
+     id?: string;
+@@ -33,6 +39,8 @@ export interface Booking {
+     finalKm?: number;
+     estimatedFare?: number;
+     finalFare?: number;
+     bookingType:BookingType; 
++    rideType?: RideType;
++    surgeMultiplier?: number;
+     status?: BookingStatus; 
+     paymentStatus?: paymentStatus; 
+diff --git a/src/domain/strategies/pricing/IPricingStrategy.ts b/src/domain/strategies/pricing/IPricingStrategy.ts
+new file mode 100644
+index 0000000..d1e2f3a
+--- /dev/null
++++ b/src/domain/strategies/pricing/IPricingStrategy.ts
+@@ -0,0 +1,20 @@
++import { BookingType, RideType } from "../../models/Booking";
++
++export interface PricingContext {
++  rideType: RideType;
++  bookingType: BookingType;
++  distanceKm: number;
++  durationMinutes?: number;
++  surgeMultiplier?: number;
++  startDate: Date;
++  endDate?: Date;
++}
++
++export interface FareBreakdown {
++  baseFare: number;
++  distanceFare: number;
++  timeFare: number;
++  surgeMultiplier: number;
++  totalFare: number;
++  rideType: RideType;
++}
++
++export interface IPricingStrategy {
++  readonly strategyName: string;
++  calculateFare(context: PricingContext): FareBreakdown;
++}
+diff --git a/src/infrastructure/services/FareCalculatorService.ts b/src/infrastructure/services/FareCalculatorService.ts
+index d8a9b0c..e4f5a6b 100644
+--- a/src/infrastructure/services/FareCalculatorService.ts
++++ b/src/infrastructure/services/FareCalculatorService.ts
+@@ -1,37 +1,25 @@
+ import { injectable } from "tsyringe";
+ import { IFareCalculatorService } from "../../application/services/FareCalculatorService";
+-import { BookingType } from "../../domain/models/Booking";
++import { BookingType, RideType } from "../../domain/models/Booking";
++import { PricingStrategyFactory } from "./pricing/PricingStrategyFactory";
+ 
+ @injectable()
+ export class FareCalculatorService implements IFareCalculatorService {
+-  private readonly PER_KM_RATE = 10;
+-  private readonly PER_DAY_RATE = 1000;
++  private _factory: PricingStrategyFactory = new PricingStrategyFactory();
+ 
+   calculate(params: {
+     bookingType: BookingType;
++    rideType?: RideType;
+     estimatedKm?: number;
++    durationMinutes?: number;
++    surgeMultiplier?: number;
+     startDate: Date;
+     endDate?: Date;
+   }): number {
+-    const { bookingType, estimatedKm, startDate, endDate } = params;
+-    if (bookingType === BookingType.ONE_WAY) {
+-      if (!estimatedKm) throw new Error("Estimated KM is required for ONE_WAY booking");
+-      let fare = estimatedKm * this.PER_KM_RATE;
+-      return fare < 450 ? 450 : fare;
+-    }
+-    if (bookingType === BookingType.ROUND_TRIP) {
+-      if (!endDate) throw new Error("End date is required for ROUND_TRIP booking");
+-      const start = new Date(startDate).getTime();
+-      const end = new Date(endDate).getTime();
+-      const dayCount = Math.ceil((end - start) / (1000 * 60 * 60 * 24)) + 1;
+-      return dayCount * this.PER_DAY_RATE;
+-    }
+-    throw new AuthError("Invalid booking type", 400);
++    const context = {
++      rideType: params.rideType || RideType.ECONOMY,
++      bookingType: params.bookingType,
++      distanceKm: params.estimatedKm || 0,
++      durationMinutes: params.durationMinutes,
++      surgeMultiplier: params.surgeMultiplier || 1.0,
++      startDate: params.startDate,
++      endDate: params.endDate
++    };
++    const strategy = this._factory.getStrategy(context);
++    return strategy.calculateFare(context).totalFare;
+   }
+ }

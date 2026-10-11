@@ -30,4 +30,7 @@ package-lock.json
 .claude/
 skills-lock.json
 .output/
-.DS_Store
+.DS_Store
+__pycache__/
+*.pyc
+

@@ -1,0 +1,53 @@
+@startuml
+title CH01: Driver State Lifecycle Comparison (Before vs. After)
+
+skinparam state {
+    BorderColor RoyalBlue
+}
+
+state "BEFORE: Primitive String Union" as Before {
+    state "pending" as B_Pending #LightYellow
+    state "approved" as B_Approved #LightYellow
+    state "rejected" as B_Rejected #LightYellow
+
+    [*] --> B_Pending
+    B_Pending --> B_Approved : Admin approves
+    B_Pending --> B_Rejected : Admin rejects
+    B_Approved --> B_Rejected : Admin revokes
+    
+    note bottom of B_Pending
+      * No SUSPENDED state
+      * Any status can overwrite any status
+      * No State-pattern classes
+    end note
+}
+
+state "AFTER: Enforced GoF State Pattern" as After {
+    state "PENDING" as A_Pending #LightCyan
+    state "APPROVED" as A_Approved #LightCyan
+    state "SUSPENDED" as A_Suspended #PeachPuff
+    state "REJECTED" as A_Rejected #MistyRose
+
+    [*] --> A_Pending
+    A_Pending --> A_Approved : Admin approval
+    A_Pending --> A_Rejected : Admin rejection (reason mandatory)
+    
+    A_Approved --> A_Suspended : Disciplinary hold (reason mandatory)
+    A_Approved --> A_Rejected : Revocation (reason mandatory)
+    
+    A_Suspended --> A_Approved : Reinstatement
+    A_Suspended --> A_Rejected : Permanent termination
+    
+    A_Rejected --> A_Pending : Re-application with new docs
+    
+    note bottom of A_Suspended
+      * Enforces IDriverState methods:
+        canLogin() = false
+        canAcceptRides() = false
+        canReceiveNewBookings() = false
+      * Throws InvalidDriverStateTransitionError
+        on illegal transitions
+    end note
+}
+
+@enduml

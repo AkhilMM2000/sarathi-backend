@@ -1,0 +1,118 @@
+diff --git a/src/domain/models/Driver.ts b/src/domain/models/Driver.ts
+index 8e5a1b2..d3a90c1 100644
+--- a/src/domain/models/Driver.ts
++++ b/src/domain/models/Driver.ts
+@@ -22,7 +22,7 @@ export interface Driver {
+     aadhaarImage: string;
+     licenseImage: string;
+-    status: "pending" | "approved" | "rejected";
++    status: "pending" | "approved" | "rejected" | "suspended";
+     isBlock: boolean; 
+     role:"driver";
+     onlineStatus: 'online' | 'offline';
+diff --git a/src/domain/models/DriverState.ts b/src/domain/models/DriverState.ts
+new file mode 100644
+index 0000000..f4a12bc
+--- /dev/null
++++ b/src/domain/models/DriverState.ts
+@@ -0,0 +1,78 @@
++export enum DriverStatus {
++  PENDING = "pending",
++  APPROVED = "approved",
++  SUSPENDED = "suspended",
++  REJECTED = "rejected"
++}
++
++export interface IDriverState {
++  readonly status: DriverStatus;
++  canLogin(): boolean;
++  canAcceptRides(): boolean;
++  canReceiveNewBookings(): boolean;
++  transitionTo(target: DriverStatus, reason?: string): IDriverState;
++}
++
++export class PendingDriverState implements IDriverState {
++  readonly status = DriverStatus.PENDING;
++  canLogin(): boolean { return false; }
++  canAcceptRides(): boolean { return false; }
++  canReceiveNewBookings(): boolean { return false; }
++  transitionTo(target: DriverStatus, reason?: string): IDriverState {
++    if (target === DriverStatus.APPROVED) return new ApprovedDriverState();
++    if (target === DriverStatus.REJECTED) {
++      if (!reason?.trim()) throw new Error("Rejection reason is mandatory.");
++      return new RejectedDriverState(reason);
++    }
++    throw new Error(`Invalid transition from PENDING to ${target}`);
++  }
++}
++
++export class ApprovedDriverState implements IDriverState {
++  readonly status = DriverStatus.APPROVED;
++  canLogin(): boolean { return true; }
++  canAcceptRides(): boolean { return true; }
++  canReceiveNewBookings(): boolean { return true; }
++  transitionTo(target: DriverStatus, reason?: string): IDriverState {
++    if (target === DriverStatus.SUSPENDED) {
++      if (!reason?.trim()) throw new Error("Suspension reason is mandatory.");
++      return new SuspendedDriverState(reason);
++    }
++    if (target === DriverStatus.REJECTED) {
++      if (!reason?.trim()) throw new Error("Revocation reason is mandatory.");
++      return new RejectedDriverState(reason);
++    }
++    throw new Error(`Invalid transition from APPROVED to ${target}`);
++  }
++}
++
++export class SuspendedDriverState implements IDriverState {
++  readonly status = DriverStatus.SUSPENDED;
++  constructor(public readonly reason: string) {}
++  canLogin(): boolean { return false; }
++  canAcceptRides(): boolean { return false; }
++  canReceiveNewBookings(): boolean { return false; }
++  transitionTo(target: DriverStatus, reason?: string): IDriverState {
++    if (target === DriverStatus.APPROVED) return new ApprovedDriverState();
++    if (target === DriverStatus.REJECTED) {
++      if (!reason?.trim()) throw new Error("Termination reason is mandatory.");
++      return new RejectedDriverState(reason);
++    }
++    throw new Error(`Invalid transition from SUSPENDED to ${target}`);
++  }
++}
++
++export class RejectedDriverState implements IDriverState {
++  readonly status = DriverStatus.REJECTED;
++  constructor(public readonly reason: string) {}
++  canLogin(): boolean { return false; }
++  canAcceptRides(): boolean { return false; }
++  canReceiveNewBookings(): boolean { return false; }
++  transitionTo(target: DriverStatus): IDriverState {
++    if (target === DriverStatus.PENDING) return new PendingDriverState();
++    throw new Error(`Cannot transition REJECTED driver directly to ${target}`);
++  }
++}
+diff --git a/src/application/use_cases/Admin/AdminChangeDriverStatus.ts b/src/application/use_cases/Admin/AdminChangeDriverStatus.ts
+index c4d29e1..a819b4f 100644
+--- a/src/application/use_cases/Admin/AdminChangeDriverStatus.ts
++++ b/src/application/use_cases/Admin/AdminChangeDriverStatus.ts
+@@ -17,14 +17,16 @@ export class AdminChangeDriverStatus implements IAdminChangeDriverStatusUseCase
+   async execute(
+     driverId: string,
+-    status: "pending" | "approved" | "rejected",
++    status: "pending" | "approved" | "rejected" | "suspended",
+     reason?: string
+   ): Promise<AdminDriverResponseDto | null> {
+-    if (!["pending", "approved", "rejected"].includes(status)) {
++    if (!["pending", "approved", "rejected", "suspended"].includes(status)) {
+         throw new AuthError("Invalid status value.", HTTP_STATUS_CODES.BAD_REQUEST);
+     }
++    const driver = await this._driverRepository.findDriverById(driverId);
++    if (!driver) throw new AuthError("Driver not found", HTTP_STATUS_CODES.NOT_FOUND);
++    const currentState = DriverStateFactory.create(driver.status as any, driver.reason);
++    const nextState = currentState.transitionTo(status as any, reason);
+     await this._notificationService.adminChangeDriverStatusNotification(driverId, { status, reason });
+-    const updatedDriver = await this._driverRepository.updateStatus(driverId, status, reason);
++    const updatedDriver = await this._driverRepository.updateStatus(driverId, nextState.status, reason);
+     return updatedDriver ? toAdminDriverResponse(updatedDriver) : null;
+   }
+ }

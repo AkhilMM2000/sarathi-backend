@@ -1,0 +1,28 @@
+================================================================================
+CH03 TEST EXECUTION RESULTS: RIDE TYPES & PRICING STRATEGY PATTERN
+================================================================================
+Test Suite: A6/tools/tests/pricing-strategy.test.ts (Node.js Test Runner)
+Timestamp: 2026-10-11T16:20:05+05:30
+Executed By: Team A6 (Kumar, Reviewed by Leela Shankar)
+
+✔ Test 1: Standard ECONOMY fare calculation (Base: ₹50, ₹12/km, ₹2/min) (PASS)
+✔ Test 2: Standard PREMIUM fare calculation (Base: ₹100, ₹20/km, ₹3.5/min) (PASS)
+✔ Test 3: Standard XL fare calculation (Base: ₹120, ₹25/km, ₹4/min) (PASS)
+✔ Test 4: Minimum fare threshold enforcement on short distances (PASS)
+✔ Test 5: Dynamic surge multiplier (1.5x) scales base fare proportionally (PASS)
+✔ Test 6: Low surge (<1.0x) clamped to minimum 1.0x ceiling (PASS)
+✔ Test 7: High surge (>2.5x) clamped to maximum 2.5x regulatory cap (PASS)
+✔ Test 8: Multi-day rental daily rate pricing for ROUND_TRIP bookings (PASS)
+✔ Test 9: Negative distance input rejected with validation error (PASS)
+✔ Test 10: Missing rideType defaults seamlessly to ECONOMY for backward compatibility (PASS)
+✔ Test 11: PricingStrategyFactory resolves correct strategy from context (PASS)
+✔ Test 12: Trip completion finalKm recalculation consistent with booking quote strategy (PASS)
+
+Test Results Summary:
+Total Tests: 12
+Passed: 12
+Failed: 0
+Skipped: 0
+Duration: 39ms
+Exit Code: 0
+================================================================================

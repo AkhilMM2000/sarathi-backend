@@ -1,0 +1,14 @@
+Pattern,Category,Classification,Confidence,Source_File,Symbols,Role_In_System
+Dependency Injection,Structural/Architectural,Existing,1.0,src/infrastructure/config/container.ts,"container.registerSingleton, @injectable",Decouples use cases from database and external service SDKs
+Repository,Architectural/Data Access,Existing,1.0,src/domain/repositories/IBookingrepository.ts,"IBookingRepository, MongoBookingRepository",Encapsulates MongoDB CRUD queries behind domain contracts
+Adapter,Structural (GoF),Existing,1.0,src/infrastructure/services/StripeService.ts,"IStripeService, PaymentService",Adapts Stripe SDK for card and connect payouts
+Adapter,Structural (GoF),Existing,1.0,src/infrastructure/services/cloudstorageservice.ts,"IFileStorageService, CloudinaryFileStorageService",Adapts Cloudinary SDK for media upload/deletion
+Adapter,Structural (GoF),Existing,1.0,src/infrastructure/services/TwilioSMSService.ts,"SMSService, TwilioSMSService",Adapts Twilio SDK for mobile SMS OTP dispatch
+Adapter,Structural (GoF),Existing,1.0,src/infrastructure/store/UserRegisterStore.ts,"IRedisrepository, RedisUserRegistrationStore",Adapts Upstash Redis client for OTP caching
+Data Mapper,Architectural/Enterprise,Existing,0.95,src/infrastructure/database/mappers/DriverReviewMapper.ts,"toDomain, toPersistence",Converts between Mongoose documents and domain entities
+Singleton,Creational (GoF),Existing,1.0,src/infrastructure/config/container.ts,container.registerSingleton,Ensures single instances of repositories and services
+Chain of Responsibility,Behavioral (GoF),Existing,0.95,src/middleware/authMiddleware.ts,"protectRoute, checkBlocked",Sequential HTTP pipeline request validation
+Observer/Pub-Sub,Behavioral (GoF),Partial,0.60,src/infrastructure/services/SocketNotification.ts,SocketNotificationService,Direct procedural socket push; lacks domain event bus
+State,Behavioral (GoF),Absent,1.0,src/domain/models/Driver.ts,"status: pending|approved|rejected",Driver and Booking use primitive string literals and procedural if-else
+Strategy,Behavioral (GoF),Absent,1.0,src/infrastructure/services/FareCalculatorService.ts,FareCalculatorService.calculate,Hardcoded procedural if-else branching for fare computation
+Factory,Creational (GoF),Absent,1.0,src/application/use_cases/User/BookDriver.ts,Direct object literal creation,No polymorphic object creation or factory abstractions

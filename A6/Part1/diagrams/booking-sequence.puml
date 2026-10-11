@@ -1,0 +1,82 @@
+@startuml
+title Sarathi Backend: Baseline Booking Lifecycle Sequence (Part 1)
+
+autonumber
+actor "Rider (User)" as Rider
+boundary "BookingController" as Controller
+control "BookDriver UseCase" as BookDriver
+control "FareCalculatorService" as FareCalc
+entity "MongoDriverRepository" as DriverRepo
+control "GoogleDistanceService" as DistanceService
+entity "MongoBookingRepository" as BookingRepo
+control "SocketNotificationService" as SocketNotif
+actor "Driver" as Driver
+control "AcceptBooking UseCase" as AcceptBooking
+
+== Phase 1: Fare Calculation & Request Creation ==
+Rider -> Controller: POST /user/book-driver\n{ fromLocation, toLocation, bookingType, fromLat, fromLng }
+activate Controller
+
+Controller -> BookDriver: execute(data)
+activate BookDriver
+
+BookDriver -> FareCalc: calculate({ bookingType, estimatedKm, ... })
+activate FareCalc
+FareCalc --> BookDriver: estimatedFare (fixed flat rate)
+deactivate FareCalc
+
+BookDriver -> DriverRepo: findNearbyDriversWithinRadius(coords, [], 30km)
+activate DriverRepo
+DriverRepo --> BookDriver: nearbyDrivers (MongoDB $geoNear)
+deactivate DriverRepo
+
+BookDriver -> DistanceService: getDistances(pickupCoords, driverLocations)
+activate DistanceService
+DistanceService --> BookDriver: roadDistances
+deactivate DistanceService
+
+BookDriver -> BookDriver: filter drivers where roadDistance <= 20km
+
+BookDriver -> BookingRepo: createBooking(newBooking { status: PENDING })
+activate BookingRepo
+BookingRepo --> BookDriver: savedBooking
+deactivate BookingRepo
+
+BookDriver -> SocketNotif: broadcastBookingNotification(targetedDriverIds, bookingData)
+activate SocketNotif
+SocketNotif -> Driver: Socket.IO emit("booking:new")
+deactivate SocketNotif
+
+BookDriver --> Controller: savedBooking
+deactivate BookDriver
+Controller --> Rider: 201 Created { booking }
+deactivate Controller
+
+== Phase 2: Driver Acceptance ==
+Driver -> Controller: POST /driver/accept-booking\n{ bookingId, driverId }
+activate Controller
+
+Controller -> AcceptBooking: execute({ bookingId, driverId })
+activate AcceptBooking
+
+AcceptBooking -> BookingRepo: findOneAndUpdate({ _id, status: PENDING }, { status: CONFIRMED, driverId })
+activate BookingRepo
+BookingRepo --> AcceptBooking: updatedBooking (Atomic claim)
+deactivate BookingRepo
+
+AcceptBooking -> SocketNotif: sendBookingConfirmation(userId, bookingData)
+activate SocketNotif
+SocketNotif -> Rider: Socket.IO emit("booking:confirmation")
+deactivate SocketNotif
+
+AcceptBooking -> SocketNotif: bookingAssignedNotification(bookingId, driverId)
+activate SocketNotif
+SocketNotif -> Driver: Socket.IO emit("booking:assigned")\n(Dismiss popup for other drivers)
+deactivate SocketNotif
+
+AcceptBooking --> Controller: updatedBooking
+deactivate AcceptBooking
+Controller --> Driver: 200 OK { booking }
+deactivate Controller
+
+@enduml

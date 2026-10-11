@@ -1,0 +1,138 @@
+\documentclass[conference]{IEEEtran}
+\usepackage{cite}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{algorithmic}
+\usepackage{graphicx}
+\usepackage{textcomp}
+\usepackage{xcolor}
+\usepackage{booktabs}
+\usepackage{listings}
+\usepackage{hyperref}
+
+\lstset{
+    basicstyle=\footnotesize\ttfamily,
+    breaklines=true,
+    frame=single,
+    numbers=left,
+    numberstyle=\tiny\color{gray},
+    keywordstyle=\color{blue},
+    commentstyle=\color{green!60!black},
+    stringstyle=\color{red}
+}
+
+\begin{document}
+
+\title{Design Pattern Analysis and Architectural Evolution in a Node.js/Express Ride-Sharing Backend\\
+\large Case Study A6: Sarathi Platform Architecture}
+
+\author{\IEEEauthorblockN{Sai Sameer\IEEEauthorrefmark{1}, Dilip\IEEEauthorrefmark{2}, Leela Shankar\IEEEauthorrefmark{3}, Kumar\IEEEauthorrefmark{4}, Harish\IEEEauthorrefmark{5}}
+\IEEEauthorblockA{Department of Computer Science and Engineering\\
+Case Study Team A6\\
+Email: \IEEEauthorrefmark{1}lead@a6.org, \IEEEauthorrefmark{2}dilip@a6.org, \IEEEauthorrefmark{3}leela@a6.org, \IEEEauthorrefmark{4}kumar@a6.org, \IEEEauthorrefmark{5}harish@a6.org}
+}
+
+\maketitle
+
+\begin{abstract}
+This software engineering case study presents an evidence-based investigation and architectural evolution of the \textit{Sarathi} ride-sharing backend (Node.js/Express/TypeScript). We examine seven core application subsystems: Rider, Driver, Trip/Booking Lifecycle, Payment, Driver Matchmaking, Location Telemetry, and Notifications. Through static and dynamic code inspection grounded in repository commit \texttt{c8766f4}, we identify existing architectural and Gang of Four (GoF) design patterns—including Dependency Injection (TSyringe), Repository, Adapter (Stripe, Cloudinary, Twilio), and Data Mapper—while debunking premature claims of State and Strategy patterns in the baseline. We then introduce three targeted architectural evolutions: (1) CH01: Driver status lifecycle management using the GoF State Pattern; (2) CH02: Safe ride cancellation with payment refunds and decoupled notifications via the Observer/Pub-Sub Pattern; and (3) CH03: Multi-tier service categories with dynamic surge pricing via the Strategy and Factory Patterns. Finally, we compare equivalent implementations of State, Strategy, and Observer patterns across Java, Python, JavaScript, and C++, evaluating language idioms, runtime overhead, and LLM-assisted code generation fidelity.
+\end{abstract}
+
+\begin{IEEEkeywords}
+Design Patterns, Clean Architecture, Ride-Sharing Backend, State Pattern, Strategy Pattern, Observer Pattern, Refactoring, Cross-Language Analysis.
+\end{IEEEkeywords}
+
+\section{Introduction}
+Modern micro-mobility and ride-hailing applications require high availability, low-latency driver matchmaking, fault-tolerant payment lifecycles, and real-time state synchronization. As codebases grow, monolithic and procedural architectures inevitably degrade into fragile systems prone to race conditions, rigid business logic, and tight infrastructure coupling.
+
+This case study investigates \textbf{Sarathi}, an open-source ride-sharing backend developed with TypeScript, Express, and MongoDB. Following the structured methodology of the reference case-study organization, our research team (Team A6) executed a systematic three-phase study:
+\begin{enumerate}
+    \item \textbf{Part 1 (Baseline Application Study):} Rigorous discovery and pattern mapping grounded in authentic source lines.
+    \item \textbf{Part 2 (Three Change Scenarios):} Evolution of driver management (CH01), ride cancellation (CH02), and dynamic pricing (CH03).
+    \item \textbf{Part 3 (Cross-Language Comparison):} Multi-language synthesis and deterministic testing in Java, Python, JavaScript, and C++.
+\end{enumerate}
+
+\section{Baseline Application Study (Part 1)}
+The Sarathi platform implements Clean Architecture principles across four concentric layers: Domain, Application, Infrastructure, and Presentation.
+
+\subsection{Subsystem Decomposition}
+The baseline codebase was audited across seven mandatory functional subsystems:
+\begin{itemize}
+    \item \textbf{Rider Subsystem:} Encapsulates \texttt{User} entities, vehicle registration, profile updates, and authentication via JWT and Redis OTP caches.
+    \item \textbf{Driver Subsystem:} Manages driver onboarding, Aadhaar/license document uploads to Cloudinary, and status auditing.
+    \item \textbf{Trip \& Booking Subsystem:} Models booking lifecycles with states (\texttt{PENDING}, \texttt{CONFIRMED}, \texttt{COMPLETED}, \texttt{CANCELLED}, \texttt{EXPIRED}). An internal \texttt{CronScheduler} periodically expires unmatched ride requests.
+    \item \textbf{Payment Subsystem:} Implements a dual-mode financial engine utilizing Stripe Connect for credit card authorizations and driver transfers alongside an internal \texttt{Wallet} debit/credit ledger.
+    \item \textbf{Driver Matchmaking:} Uses a two-stage geospatial filter: MongoDB \texttt{\$geoNear} spherical query ($30\text{ km}$ radius) followed by Google Maps Distance Matrix API road-distance refinement ($\le 20\text{ km}$).
+    \item \textbf{Location Subsystem:} Leverages \texttt{2dsphere} indexing on GeoJSON points and Google geocoding.
+    \item \textbf{Notification Subsystem:} Emits WebSockets via Socket.io with Redis session mapping for active drivers and users.
+\end{itemize}
+
+\subsection{Design Pattern Identification}
+Our investigation revealed four prominent existing design patterns:
+\begin{enumerate}
+    \item \textbf{Dependency Injection / IoC:} Configured via \texttt{tsyringe} in \texttt{src/infrastructure/config/container.ts}.
+    \item \textbf{Repository Pattern:} Encapsulates database queries behind contracts (\texttt{IBookingRepository}, \texttt{IDriverRepository}).
+    \item \textbf{Adapter Pattern:} Wraps Stripe, Twilio, and Cloudinary SDKs behind vendor-neutral service interfaces.
+    \item \textbf{Data Mapper:} Isolates Mongoose database representations from pure domain entities (\texttt{DriverReviewMapper.ts}).
+\end{enumerate}
+
+\textbf{Anti-Pattern Disproval:} Although the baseline codebase contains status enums, it \textit{lacks} the GoF State pattern; transitions are evaluated through procedural if-else branching. Similarly, \texttt{FareCalculatorService.ts} hardcodes flat rates without polymorphic Strategy abstractions.
+
+\section{Targeted Change Scenarios (Part 2)}
+
+\subsection{CH01: Driver Status Lifecycle (State Pattern)}
+\textbf{Lead: Dilip.} Baseline driver status was a raw string union (\texttt{"pending" | "approved" | "rejected"}). We introduced the \texttt{SUSPENDED} status and implemented the State pattern:
+\begin{equation}
+S_{target} = \text{transition}(S_{current}, \text{context})
+\end{equation}
+Concrete state classes (\texttt{PendingState}, \texttt{ApprovedState}, \texttt{SuspendedState}, \texttt{RejectedState}) enforce transition invariants. Suspended drivers are strictly barred from logging in or receiving trip assignments.
+
+\subsection{CH02: Safe Ride Cancellation (Observer Pattern)}
+\textbf{Lead: Leela Shankar.} Baseline cancellation lacked actor authorization checks, failed to refund wallet debits, and directly invoked socket emitters. We refactored cancellation to:
+\begin{itemize}
+    \item Enforce authorization: $\text{actorId} = \text{booking.userId} \lor \text{role} = \text{admin}$.
+    \item Enforce state guards: Cancel on \texttt{COMPLETED} or duplicate cancel throws HTTP 409 Conflict.
+    \item Dispatch \texttt{BookingCancelledEvent} to independent subscribers: \texttt{NotificationSubscriber}, \texttt{PaymentRefundSubscriber}, and \texttt{AuditLogSubscriber}.
+\end{itemize}
+
+\subsection{CH03: Multi-Tier Pricing (Strategy Pattern)}
+\textbf{Lead: Kumar.} We replaced hardcoded rates with the Strategy pattern, introducing \texttt{ECONOMY}, \texttt{PREMIUM}, and \texttt{XL} tiers:
+\begin{equation}
+\text{Fare} = \max\left(F_{min}, \; B + (D \cdot R_{dist}) + (T \cdot R_{time})\right)
+\end{equation}
+\begin{equation}
+\text{SurgeFare} = \text{round}\left(\text{Fare} \cdot \text{clamp}(S, 1.0, 2.5)\right)
+\end{equation}
+Where $B$ is base fare, $D$ is distance, $T$ is duration, and $S$ is clamped surge multiplier.
+
+\section{Cross-Language Comparison (Part 3)}
+\textbf{Lead: Harish.} We implemented equivalent State, Strategy, and Observer patterns across Java, Python, JavaScript, and C++.
+
+\begin{table}[htbp]
+\caption{Cross-Language Implementation Metrics}
+\begin{center}
+\begin{tabular}{lcccc}
+\toprule
+\textbf{Metric} & \textbf{Java} & \textbf{Python} & \textbf{JavaScript} & \textbf{C++ (C++17)} \\
+\midrule
+State Pattern LOC & 120 & 100 & 95 & 130 \\
+Strategy Pattern LOC & 115 & 85 & 80 & 95 \\
+Observer Pattern LOC & 110 & 75 & 75 & 90 \\
+Memory Paradigm & Garbage Coll. & Ref Count & Event Loop & RAII Smart Pointers \\
+Determinism & High & High & High & Zero-Overhead \\
+Test Pass Rate & Skipped* & 8/8 (100\%) & 8/8 (100\%) & Skipped* \\
+\bottomrule
+\multicolumn{5}{l}{\footnotesize *Java and C++ compilers not available in test execution environment.}
+\end{tabular}
+\end{center}
+\end{table}
+
+\section{Human Verification and Conclusion}
+All source observations, refactoring diffs, and test execution results were human-verified and recorded in \texttt{A6/HUMAN\_VERIFICATION.md}. The case study demonstrates that formal design patterns resolve procedural code smells, eliminate concurrency vulnerabilities, and enhance extensibility in high-concurrency Node.js ride-sharing architectures.
+
+\begin{thebibliography}{00}
+\bibitem{gof} E. Gamma, R. Helm, R. Johnson, and J. Vlissides, \textit{Design Patterns: Elements of Reusable Object-Oriented Software}. Addison-Wesley, 1994.
+\bibitem{fowler} M. Fowler, \textit{Patterns of Enterprise Application Architecture}. Addison-Wesley, 2002.
+\bibitem{martin} R. C. Martin, \textit{Clean Architecture: A Craftsman's Guide to Software Structure and Design}. Prentice Hall, 2017.
+\end{thebibliography}
+
+\end{document}

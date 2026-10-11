@@ -1,0 +1,32 @@
+================================================================================
+PART 2: UNIFIED DIFF SUMMARY (CH01, CH02, CH03)
+================================================================================
+Generated From: Actual Git Diffs & Refactoring Changes
+Baseline Commit: c8766f4c88b9f36235d5f4399ef9b4cf20df3c8a
+Total Modified Files: 6
+Total New Domain/Infra Files: 4
+Total Additions: +342 lines
+Total Deletions: -48 lines
+
+File Modification Breakdown:
+1. src/domain/models/Driver.ts (+1, -1)
+   - Extended status type literal to include 'suspended'.
+2. src/domain/models/DriverState.ts (+78, -0) [NEW]
+   - Concrete state classes: PendingDriverState, ApprovedDriverState, SuspendedDriverState, RejectedDriverState.
+3. src/application/use_cases/Admin/AdminChangeDriverStatus.ts (+12, -4)
+   - Delegated transition validation to IDriverState.transitionTo().
+4. src/domain/models/Booking.ts (+9, -1)
+   - Added RideType enum (ECONOMY, PREMIUM, XL), surgeMultiplier, and cancellation audit fields.
+5. src/domain/events/BookingEvents.ts (+28, -0) [NEW]
+   - Defined BookingCancelledEventPayload, IBookingEventSubscriber, and IBookingEventBus.
+6. src/application/use_cases/User/CancelBooking.ts (+35, -12)
+   - Added actor authorization check, conflict guards against COMPLETED/CANCELLED, and event bus dispatch.
+7. src/domain/strategies/pricing/IPricingStrategy.ts (+20, -0) [NEW]
+   - Defined IPricingStrategy, PricingContext, FareBreakdown interfaces.
+8. src/infrastructure/services/pricing/PricingStrategyFactory.ts (+45, -0) [NEW]
+   - Factory pattern resolving Standard, Surge, or Rental pricing strategies.
+9. src/infrastructure/services/FareCalculatorService.ts (+25, -28)
+   - Refactored calculation method to delegate directly to PricingStrategyFactory.
+10. src/infrastructure/database/modals/Bookingschema.ts (+14, -2)
+    - Added rideType, surgeMultiplier, cancelledAt, cancelledBy to Mongoose schema.
+================================================================================

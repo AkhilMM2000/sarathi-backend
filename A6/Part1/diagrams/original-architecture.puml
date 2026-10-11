@@ -1,0 +1,78 @@
+@startuml
+title Sarathi Backend: Original System Architecture (Part 1)
+
+skinparam componentStyle uml2
+skinparam package {
+    BackgroundColor WhiteSmoke
+    BorderColor DimGray
+}
+
+package "Presentation Layer" {
+    [UserController]
+    [DriverController]
+    [BookingController]
+    [AdminController]
+    [AuthController]
+    [authMiddleware / checkBlocked]
+}
+
+package "Application Layer" {
+    [BookDriver]
+    [AcceptBooking]
+    [UpdateBookingStatus]
+    [CancelBooking]
+    [CreatePaymentIntent]
+    [WalletRidePayment]
+    [FareCalculatorService]
+    [GoogleDistanceService]
+    [NotificationService]
+}
+
+package "Domain Layer" {
+    [User Entity]
+    [Driver Entity]
+    [Booking Entity]
+    [Wallet Entity]
+    [IBookingRepository]
+    [IDriverRepository]
+    [IUserRepository]
+    [IWalletRepository]
+    [IStripeService]
+    [IFileStorageService]
+}
+
+package "Infrastructure Layer" {
+    [MongoBookingRepository]
+    [MongoDriverRepository]
+    [MongoUserRepository]
+    [MongoWalletRepository]
+    [PaymentService (Stripe)]
+    [CloudinaryFileStorageService]
+    [TwilioSMSService]
+    [SocketNotificationService]
+    [RedisUserRegistrationStore]
+    [TSyringe Container]
+}
+
+database "MongoDB Atlas" {
+    [users collection]
+    [drivers collection]
+    [bookings collection]
+    [wallets collection]
+}
+
+cloud "External APIs" {
+    [Stripe Connect & Payments API]
+    [Cloudinary Media API]
+    [Twilio SMS API]
+    [Google Maps Geocoding & Distance API]
+}
+
+[Presentation Layer] --> [Application Layer]
+[Application Layer] --> [Domain Layer]
+[Infrastructure Layer] ..|> [Domain Layer] : implements contracts
+[Infrastructure Layer] --> [MongoDB Atlas]
+[Infrastructure Layer] --> [External APIs]
+[Application Layer] ..> [TSyringe Container] : resolved by
+
+@enduml

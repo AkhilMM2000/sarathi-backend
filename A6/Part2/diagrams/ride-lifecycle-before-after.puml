@@ -1,0 +1,51 @@
+@startuml
+title CH02: Ride Lifecycle & Cancellation Comparison (Before vs. After)
+
+skinparam state {
+    BorderColor RoyalBlue
+}
+
+state "BEFORE: Procedural Cancellation" as Before {
+    state "PENDING" as B_Pend #LightYellow
+    state "CONFIRMED" as B_Conf #LightYellow
+    state "COMPLETED" as B_Comp #LightYellow
+    state "CANCELLED" as B_Canc #LightYellow
+
+    [*] --> B_Pend
+    B_Pend --> B_Conf : Driver accepts
+    B_Conf --> B_Comp : Driver completes
+    B_Conf --> B_Canc : User cancels before 9PM
+    B_Comp --> B_Canc : Bug: COMPLETED can be overwritten!
+    
+    note bottom of B_Canc
+      * No actor authorization check
+      * Debited wallet balances not refunded
+      * Direct procedural call to socket emitter
+    end note
+}
+
+state "AFTER: State & Observer Domain Event Bus" as After {
+    state "PENDING" as A_Pend #LightCyan
+    state "CONFIRMED" as A_Conf #LightCyan
+    state "COMPLETED" as A_Comp #LightGreen
+    state "CANCELLED" as A_Canc #MistyRose
+
+    [*] --> A_Pend
+    A_Pend --> A_Conf : Driver accepts
+    A_Pend --> A_Canc : Owner cancels (Instant refund)
+    A_Conf --> A_Comp : Ride finished
+    A_Conf --> A_Canc : Owner cancels before cutoff\nOR Admin cancels
+    
+    A_Comp -[#red]-> A_Canc : REJECTED (409 Conflict)
+    A_Canc -[#red]-> A_Canc : REJECTED (Duplicate conflict)
+    
+    note bottom of A_Canc
+      * Emits BookingCancelledEvent
+      * Decoupled Subscribers:
+        1. NotificationSubscriber (Socket)
+        2. PaymentRefundSubscriber (Wallet credit)
+        3. AuditLogSubscriber (Immutable log)
+    end note
+}
+
+@enduml

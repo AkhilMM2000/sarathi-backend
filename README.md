@@ -15,6 +15,47 @@ It handles automated driver matchmaking, WebRTC video calling & chat signaling, 
 
 ---
 
+## 🎓 Design Pattern Case Study (Team A6)
+
+This repository hosts the empirical software engineering deliverables for the **Team A6 Case Study**: *“Design Pattern Analysis in a Node.js/Express Ride-Sharing Application”*.
+
+### 📌 Quick Navigation & Deliverables
+* 📄 **Academic Report:** [`A6/A6_Report.tex`](A6/A6_Report.tex) *(IEEE conference format; ready for TeXLive / Overleaf compilation)*
+* 📋 **Audit & Sign-Off:** [`A6/HUMAN_VERIFICATION.md`](A6/HUMAN_VERIFICATION.md) *(Empirical verification protocol and team sign-offs)*
+* 📊 **Empirical Datasets:**
+  * [`A6/data/patterns.csv`](A6/data/patterns.csv) *(Ground-truth baseline pattern catalog)*
+  * [`A6/data/pattern-counts.csv`](A6/data/pattern-counts.csv) *(Pattern frequencies and architectural density)*
+  * [`A6/data/cross-language-comparison.csv`](A6/data/cross-language-comparison.csv) *(Idiomatic parity across Java, Python, JS, and C++)*
+  * [`A6/data/evaluation-dataset.jsonl`](A6/data/evaluation-dataset.jsonl) *(8-task reproducible LLM benchmark dataset)*
+* 🔍 **Part 1 — Baseline Application Analysis:** [`A6/Part1/README.md`](A6/Part1/README.md) *(7 Subsystems, ground-truth pattern identification, code snapshot)*
+* ⚙️ **Part 2 — Architectural Evolution Scenarios:** [`A6/Part2/README.md`](A6/Part2/README.md)
+  * **CH01:** Driver Status Management & State Pattern ([`A6/Part2/changes/CH01/`](A6/Part2/changes/CH01/))
+  * **CH02:** Ride Cancellation & Observer Event Bus ([`A6/Part2/changes/CH02/`](A6/Part2/changes/CH02/))
+  * **CH03:** Multi-Tier Ride Types & Dynamic Pricing Strategy ([`A6/Part2/changes/CH03/`](A6/Part2/changes/CH03/))
+* 🌐 **Part 3 — Cross-Language Implementations:** [`A6/Part3/README.md`](A6/Part3/README.md) *(Java, Python, JS, C++ implementations for State, Strategy, and Observer)*
+* 🤖 **LLM Evaluation Framework:**
+  * Workflows: [`A6/Part1/llm/README.md`](A6/Part1/llm/README.md) & [`A6/Part2/llm/README.md`](A6/Part2/llm/README.md)
+  * Evaluation Methodology: [`A6/data/evaluation-methodology.md`](A6/data/evaluation-methodology.md)
+  * Standardized Rubric: [`A6/data/evaluation-rubric.md`](A6/data/evaluation-rubric.md)
+  * Ground-Truth Answers: [`A6/data/reference-answers.md`](A6/data/reference-answers.md)
+
+### 🧪 Executing Case Study Tests & Validation
+```bash
+# 1. Run Part 3 JavaScript pattern test suite (8/8 pass)
+node A6/Part3/test-cases/test_patterns.js
+
+# 2. Run Part 3 Python pattern test suite (8/8 pass)
+python A6/Part3/test-cases/test_patterns.py
+
+# 3. Validate LLM evaluation dataset schema, provenance & grounding (8/8 valid)
+python A6/tools/validate_dataset.py
+
+# 4. Run polyglot cross-language runner (skips uninstalled toolchains)
+bash A6/Part3/tools/run_all.sh
+```
+
+---
+
 ## 🔑 Demo Credentials
 
 For testing and evaluation purposes, you can log in to the application using the following pre-configured test credentials:

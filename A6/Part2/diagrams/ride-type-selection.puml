@@ -1,0 +1,48 @@
+@startuml
+title CH03: Ride Type Selection & Pricing Strategy Factory Flow
+
+autonumber
+actor Rider
+boundary "BookingController" as Controller
+control "GetEstimatedFare / BookDriver" as UseCase
+control "PricingStrategyFactory" as Factory
+control "StandardPricingStrategy" as StandardStrat
+control "SurgeDynamicPricingStrategy" as SurgeStrat
+control "RentalDailyPricingStrategy" as RentalStrat
+
+Rider -> Controller: Selects ride parameters\n{ bookingType, rideType: 'PREMIUM', estimatedKm: 15 }
+activate Controller
+
+Controller -> UseCase: execute(pricingRequest)
+activate UseCase
+
+UseCase -> Factory: getStrategy(pricingContext)
+activate Factory
+
+alt bookingType == ROUND_TRIP
+    Factory -> RentalStrat: new RentalDailyPricingStrategy()
+    RentalStrat --> Factory: strategyInstance
+else surgeMultiplier > 1.0 (High local demand)
+    Factory -> StandardStrat: new StandardPricingStrategy(config)
+    Factory -> SurgeStrat: new SurgeDynamicPricingStrategy(standardStrat, clampedMultiplier)
+    SurgeStrat --> Factory: decoratedStrategyInstance
+else Standard One-Way Ride
+    Factory -> StandardStrat: new StandardPricingStrategy(config)
+    StandardStrat --> Factory: strategyInstance
+end
+
+Factory --> UseCase: selectedPricingStrategy
+deactivate Factory
+
+UseCase -> StandardStrat: calculateFare(pricingContext)
+activate StandardStrat
+StandardStrat --> UseCase: FareBreakdown { baseFare, distanceFare, timeFare, totalFare }
+deactivate StandardStrat
+
+UseCase --> Controller: fareQuoteResponse
+deactivate UseCase
+
+Controller --> Rider: Displays quote: ₹450 (PREMIUM)
+deactivate Controller
+
+@enduml

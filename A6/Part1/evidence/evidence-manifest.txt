@@ -1,0 +1,41 @@
+================================================================================
+PART 1 EVIDENCE MANIFEST & VERIFICATION AUDIT
+================================================================================
+Deliverable Group: Part 1 — Baseline Application Study
+Baseline Commit Hash: c8766f4c88b9f36235d5f4399ef9b4cf20df3c8a
+Verification Date: 2026-10-11
+Auditor: Sai Sameer (A6 Lead)
+
+Tracked Evidence Files:
+1. A6/Part1/application-study.md
+   - Purpose: Exhaustive breakdown of application purpose, tech stack, 7 subsystems, and technical debt.
+   - Status: Complete & Verified against active codebase.
+
+2. A6/Part1/pattern-identification.md
+   - Purpose: Comprehensive pattern inventory (Existing: DI, Repository, Adapter, Data Mapper; Absent: State, Strategy).
+   - Status: Complete & Verified.
+
+3. A6/Part1/source-evidence.md
+   - Purpose: Exact file paths and line number proofs grounding all architectural claims.
+   - Status: Complete & Line-grounded.
+
+4. A6/Part1/diagrams/original-architecture.puml
+   - Purpose: Component & layered Clean Architecture diagram of unchanged application.
+   - Status: Complete (PlantUML format).
+
+5. A6/Part1/diagrams/booking-sequence.puml
+   - Purpose: Sequence diagram detailing the baseline ride request, matchmaking, acceptance, and completion lifecycle.
+   - Status: Complete (PlantUML format).
+
+6. A6/Part1/evidence/source-inventory.txt
+   - Purpose: Complete catalog of all 118 source files in src/ (file sizes, line counts).
+   - Status: Generated programmatically.
+
+7. A6/Part1/evidence/command-test-logs.txt
+   - Purpose: Verifiable log of actual executed terminal commands, compiler outputs, and exit codes.
+   - Status: Complete & Honest (no fabricated passes).
+
+8. A6/Part1/code/
+   - Purpose: Isolated, reproducible snapshot of unchanged baseline application source files.
+   - Status: Copied from root src/ (360 KB, 118 files, excluding .env and node_modules).
+================================================================================

@@ -1,0 +1,111 @@
+diff --git a/src/domain/models/Booking.ts b/src/domain/models/Booking.ts
+index b1e2f3a..c4d5e6f 100644
+--- a/src/domain/models/Booking.ts
++++ b/src/domain/models/Booking.ts
+@@ -43,6 +43,9 @@ export interface Booking {
+     fromLng?: number;
+     userAcknowledged?: boolean;
++    cancelledAt?: Date;
++    cancelledBy?: Types.ObjectId;
++    cancelledByRole?: "user" | "driver" | "admin";
+     createdAt?: Date;   
+     updatedAt?: Date;
+   }
+diff --git a/src/domain/events/BookingEvents.ts b/src/domain/events/BookingEvents.ts
+new file mode 100644
+index 0000000..e7f8a9b
+--- /dev/null
++++ b/src/domain/events/BookingEvents.ts
+@@ -0,0 +1,28 @@
++export interface BookingCancelledEventPayload {
++  bookingId: string;
++  userId: string;
++  driverId?: string;
++  actorId: string;
++  actorRole: "user" | "driver" | "admin";
++  reason: string;
++  cancelledAt: Date;
++  walletDeduction?: number;
++  paymentIntentId?: string;
++}
++
++export interface IBookingEventSubscriber<T> {
++  handle(event: T): Promise<void>;
++}
++
++export interface IBookingEventBus {
++  subscribe<T>(eventType: string, subscriber: IBookingEventSubscriber<T>): void;
++  publish<T>(eventType: string, payload: T): Promise<void>;
++}
+diff --git a/src/application/use_cases/User/CancelBooking.ts b/src/application/use_cases/User/CancelBooking.ts
+index 7a8b9c0..1d2e3f4 100644
+--- a/src/application/use_cases/User/CancelBooking.ts
++++ b/src/application/use_cases/User/CancelBooking.ts
+@@ -10,7 +10,8 @@ interface CancelBookingInput {
+   bookingId: string;
+   status: BookingStatus;
+   reason: string;
++  actorId: string;
++  actorRole: "user" | "driver" | "admin";
+ }
+ 
+ @injectable()
+ export class CancelBookingInputUseCase implements ICancelBookingUseCase {
+   constructor(
+     @inject(TOKENS.NOTIFICATION_SERVICE)
+     private _notificationService: INotificationService,
+     @inject(TOKENS.IBOOKING_REPO)
+-    private _bookingRepo: IBookingRepository
++    private _bookingRepo: IBookingRepository,
++    @inject("IBookingEventBus")
++    private _eventBus: IBookingEventBus
+   ) {}
+ 
+   async execute(input: CancelBookingInput): Promise<void> {
+-    const { bookingId, status, reason } = input;
++    const { bookingId, reason, actorId, actorRole } = input;
+     const booking = await this._bookingRepo.findBookingById(bookingId);
+     if (!booking) {
+       throw new AuthError(ERROR_MESSAGES.BOOKING_NOT_FOUND, HTTP_STATUS_CODES.NOT_FOUND);
+     }
++    if (actorRole !== "admin" && booking.userId.toString() !== actorId) {
++      throw new AuthError("You are not authorized to cancel this booking.", HTTP_STATUS_CODES.FORBIDDEN);
++    }
++    if (booking.status === BookingStatus.COMPLETED) {
++      throw new AuthError("Completed rides cannot be cancelled.", HTTP_STATUS_CODES.CONFLICT);
++    }
++    if (booking.status === BookingStatus.CANCELLED) {
++      throw new AuthError("Booking is already cancelled.", HTTP_STATUS_CODES.CONFLICT);
++    }
+     // Restrict cancellation cutoff if CONFIRMED
+     if (booking.status === BookingStatus.CONFIRMED && actorRole === "user") {
+       const cutoffTime = new Date(booking.startDate).getTime() - 24 * 60 * 60 * 1000;
+       if (Date.now() > cutoffTime) {
+         throw new AuthError("Bookings can only be cancelled before 9:00 PM of the previous day.", HTTP_STATUS_CODES.BAD_REQUEST);
+       }
+     }
+     await this._bookingRepo.updateBooking(bookingId, {
+-      status,
+-      reason
++      status: BookingStatus.CANCELLED,
++      reason,
++      cancelledAt: new Date(),
++      cancelledBy: new Types.ObjectId(actorId),
++      cancelledByRole: actorRole
+     });
+-    if (booking.driverId) {
+-      await this._notificationService.cancelBookingNotification(booking.driverId.toString(), { status, reason, startDate: booking.startDate, bookingId })
+-    }
++    await this._eventBus.publish("BOOKING_CANCELLED", {
++      bookingId,
++      userId: booking.userId.toString(),
++      driverId: booking.driverId?.toString(),
++      actorId,
++      actorRole,
++      reason,
++      walletDeduction: booking.walletDeduction,
++      paymentIntentId: booking.paymentIntentId,
++      cancelledAt: new Date()
++    });
+   }
+ }
